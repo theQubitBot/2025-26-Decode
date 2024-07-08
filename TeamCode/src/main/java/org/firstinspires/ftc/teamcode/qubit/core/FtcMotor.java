@@ -39,8 +39,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * A cache enabled (performant) DcMotorEx implementation.
  */
 public class FtcMotor implements DcMotorEx {
-    public static final double MOTOR_MIN_POWER = -1.0;
-    public static final double MOTOR_MAX_POWER = 1.0;
+    public static final double MIN_POWER = -1.0;
+    public static final double MAX_POWER = 1.0;
+    public static final double ZERO_POWER = 0.0;
     private final DcMotorEx motor;
 
     // PERFORMANCE
@@ -177,6 +178,7 @@ public class FtcMotor implements DcMotorEx {
         return motor.getZeroPowerBehavior();
     }
 
+    @Deprecated
     @Override
     public void setPowerFloat() {
         motor.setPowerFloat();

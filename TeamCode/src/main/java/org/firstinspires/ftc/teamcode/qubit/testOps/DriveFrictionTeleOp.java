@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcDriveTrain;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
@@ -50,7 +51,7 @@ public class DriveFrictionTeleOp extends OpMode {
     private ElapsedTime runtime = null;
     private ElapsedTime loopTime = null;
     private boolean lastDPadUpPressed = false, lastDPadDownPressed = false;
-    double newMotorPower = FtcDriveTrain.ZERO_POWER, oldMotorPower = FtcDriveTrain.ZERO_POWER;
+    double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
     double rampUpDownPower = 0.01;
     double lfVelocity, lrVelocity, rfVelocity, rrVelocity, maxVelocity;
     FtcDriveTrain driveTrain = null;
@@ -125,7 +126,7 @@ public class DriveFrictionTeleOp extends OpMode {
         }
 
         newMotorPower = Range.clip(newMotorPower,
-                FtcDriveTrain.ZERO_POWER, FtcDriveTrain.MAXIMUM_FORWARD_POWER);
+                FtcMotor.ZERO_POWER, FtcDriveTrain.MAXIMUM_FORWARD_POWER);
         if (newMotorPower != oldMotorPower) {
             driveTrain.setDrivePower(newMotorPower, newMotorPower, newMotorPower, newMotorPower);
             oldMotorPower = newMotorPower;

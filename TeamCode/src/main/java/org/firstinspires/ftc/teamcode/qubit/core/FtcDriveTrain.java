@@ -60,7 +60,6 @@ public class FtcDriveTrain extends FtcSubSystem {
     public static final double MINIMUM_TURN_POWER = 0.20;
     public static final double FORWARD_SLO_MO_POWER = 0.20;
     public static final double STRAFE_SLO_MO_POWER = 0.30;
-    public static final double ZERO_POWER = 0.0;
 
     // JITTER is ideally the minimum motor power to move a wheel when the robot is jacked up.
     // Empirically, the minimum power would be the one to overcome internal friction.
@@ -190,8 +189,8 @@ public class FtcDriveTrain extends FtcSubSystem {
      * @return True, if the robot is strafing.
      */
     private boolean isBotStrafing(double robotHeading, double joystickHeading) {
-        double rH = FtcImu.normalizeHeading(robotHeading);
-        double jH = FtcImu.normalizeHeading(joystickHeading);
+        double rH = FtcImu.normalize(robotHeading);
+        double jH = FtcImu.normalize(joystickHeading);
         double delta = Math.abs(rH - jH);
 
         // Robot's zero heading is forward, joy stick's zero heading is towards right.
@@ -223,10 +222,10 @@ public class FtcDriveTrain extends FtcSubSystem {
         FtcLogger.enter();
 
         // Setup a variable for each side drive wheel to display power level for telemetry
-        double leftFrontPower = ZERO_POWER;
-        double leftRearPower = ZERO_POWER;
-        double rightFrontPower = ZERO_POWER;
-        double rightRearPower = ZERO_POWER;
+        double leftFrontPower = FtcMotor.ZERO_POWER;
+        double leftRearPower = FtcMotor.ZERO_POWER;
+        double rightFrontPower = FtcMotor.ZERO_POWER;
+        double rightRearPower = FtcMotor.ZERO_POWER;
 
         // Use left stick for forward/backward/strafe, use right stick for turn
         double y = -gamePad1.left_stick_y;
@@ -280,7 +279,7 @@ public class FtcDriveTrain extends FtcSubSystem {
         double turn = gamePad1.right_stick_x;
         double turnMagnitude = Math.abs(turn);
         if (turnMagnitude <= JITTER) {
-            turn = ZERO_POWER;
+            turn = FtcMotor.ZERO_POWER;
             if (enableUnbalancedRobotCorrection) {
                 // Correction for left/right pull for an unbalanced robot.
                 // Apply correction only if driver is not explicitly turning the robot.
@@ -509,6 +508,9 @@ public class FtcDriveTrain extends FtcSubSystem {
                 telemetry.addData("Right Rear Motor", "power %.2f distance %d",
                         rightRearMotor.getPower(), rightRearMotor.getCurrentPosition());
             }
+
+            telemetry.addData(">", "%s, %s", driveTrainEnum.name(),
+                    driveTypeEnum.name());
         }
 
         FtcLogger.exit();
@@ -519,7 +521,7 @@ public class FtcDriveTrain extends FtcSubSystem {
      */
     public void stop() {
         FtcLogger.enter();
-        setDrivePower(ZERO_POWER, ZERO_POWER, ZERO_POWER, ZERO_POWER);
+        setDrivePower(FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER);
         FtcLogger.exit();
     }
 }

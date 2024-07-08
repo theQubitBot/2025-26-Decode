@@ -83,8 +83,8 @@ public class OptionBase {
     }
 
     protected void stopCrawlingToBackProp() {
-        robot.driveTrain.setDrivePower(FtcDriveTrain.ZERO_POWER, FtcDriveTrain.ZERO_POWER,
-                FtcDriveTrain.ZERO_POWER, FtcDriveTrain.ZERO_POWER);
+        robot.driveTrain.stop();
+        ;
     }
 
     protected double lcrValue(double leftValue, double centerValue, double rightValue) {

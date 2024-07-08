@@ -27,81 +27,105 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBlinkinLed;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DisplayMode;
 
 import java.util.concurrent.TimeUnit;
 
-/*
- * Display patterns of a REV Robotics Blinkin LED Driver.
- * AUTO mode cycles through all of the patterns.
- * MANUAL mode allows the user to manually change patterns using the
- * left and right bumpers of a gamepad.
- *
- * Configure the driver on a servo port, and name it "blinkin".
- *
- * Displays the first pattern upon init.
- */
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
 public class FtcBlinkinLedTeleOp extends OpMode {
+    // Declare OpMode members
+    private ElapsedTime runtime = null;
+    private ElapsedTime loopTime = null;
 
     /*
-     * Change the pattern every 10 seconds in AUTO mode.
+     * Change the pattern every LED_PERIOD seconds in AUTO mode.
      */
-    private final static int LED_PERIOD = 10;
+    private final static int LED_PERIOD = 3;
 
     /*
      * Rate limit gamepad button presses to every 500ms.
      */
     private final static int GAMEPAD_LOCKOUT = 500;
 
-    FtcBlinkinLed blinkinLed;
-    RevBlinkinLedDriver.BlinkinPattern pattern;
+    FtcBlinkinLed blinkinLed = null;
+    DisplayMode displayMode = DisplayMode.AUTO;
 
-    Telemetry.Item patternName;
-    Telemetry.Item display;
-    DisplayKind displayKind;
     Deadline ledCycleDeadline;
     Deadline gamepadRateLimit;
 
-    protected enum DisplayKind {
-        MANUAL,
-        AUTO
-    }
-
+    /*
+     * Code to run ONCE when the driver hits INIT
+     */
     @Override
     public void init() {
-        displayKind = DisplayKind.AUTO;
-
+        FtcLogger.enter();
         blinkinLed = new FtcBlinkinLed();
         blinkinLed.init(hardwareMap, telemetry);
-        pattern = RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE;
-        blinkinLed.set(pattern);
+        blinkinLed.telemetryEnabled = FtcUtils.DEBUG;
+        FtcLogger.exit();
+    }
 
-        display = telemetry.addData("Display Kind: ", displayKind.toString());
-        patternName = telemetry.addData("Pattern: ", pattern.toString());
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+     */
+    @Override
+    public void init_loop() {
+        telemetry.addData(">", "Waiting for driver to press play");
+        telemetry.update();
+        FtcUtils.sleep(10);
+    }
+
+    /*
+     * Code to run ONCE when the driver hits PLAY
+     */
+    @Override
+    public void start() {
+        FtcLogger.enter();
+        telemetry.addData(">", "Starting...");
+        telemetry.update();
+        runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
         ledCycleDeadline = new Deadline(LED_PERIOD, TimeUnit.SECONDS);
         gamepadRateLimit = new Deadline(GAMEPAD_LOCKOUT, TimeUnit.MILLISECONDS);
+
+        FtcLogger.exit();
     }
 
     @Override
     public void loop() {
+        FtcLogger.enter();
+        loopTime.reset();
+        telemetry.addData(">", "a: Auto, b: Manual");
+        telemetry.addLine();
         handleGamepad();
 
-        if (displayKind == DisplayKind.AUTO) {
+        if (displayMode == DisplayMode.AUTO) {
             doAutoDisplay();
         } else {
             /*
-             * MANUAL mode: Nothing to do, setting the pattern as a result of a gamepad event.
+             * MANUAL mode: Pattern already set by game pad handler.
              */
         }
+
+        telemetry.addData(">", "Display: %s", displayMode.toString());
+        if (displayMode == DisplayMode.MANUAL) {
+            telemetry.addData(">", "Left bumper: previous, Right bumper: next");
+        }
+
+        blinkinLed.showTelemetry();
+        telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
+                loopTime.milliseconds(), runtime.seconds());
+        FtcLogger.exit();
     }
 
     /*
@@ -121,37 +145,24 @@ public class FtcBlinkinLedTeleOp extends OpMode {
         }
 
         if (gamepad1.a) {
-            setDisplayKind(DisplayKind.MANUAL);
+            displayMode = DisplayMode.AUTO;
             gamepadRateLimit.reset();
         } else if (gamepad1.b) {
-            setDisplayKind(DisplayKind.AUTO);
+            displayMode = DisplayMode.MANUAL;
             gamepadRateLimit.reset();
-        } else if ((displayKind == DisplayKind.MANUAL) && (gamepad1.left_bumper)) {
-            pattern = pattern.previous();
-            displayPattern();
+        } else if ((displayMode == DisplayMode.MANUAL) && gamepad1.left_bumper) {
+            blinkinLed.setPreviousPattern();
             gamepadRateLimit.reset();
-        } else if ((displayKind == DisplayKind.MANUAL) && (gamepad1.right_bumper)) {
-            pattern = pattern.next();
-            displayPattern();
+        } else if ((displayMode == DisplayMode.MANUAL) && gamepad1.right_bumper) {
+            blinkinLed.setNextPattern();
             gamepadRateLimit.reset();
         }
-    }
-
-    protected void setDisplayKind(DisplayKind displayKind) {
-        this.displayKind = displayKind;
-        display.setValue(displayKind.toString());
     }
 
     protected void doAutoDisplay() {
         if (ledCycleDeadline.hasExpired()) {
-            pattern = pattern.next();
-            displayPattern();
+            blinkinLed.setNextPattern();
             ledCycleDeadline.reset();
         }
-    }
-
-    protected void displayPattern() {
-        blinkinLed.set(pattern);
-        patternName.setValue(pattern.toString());
     }
 }

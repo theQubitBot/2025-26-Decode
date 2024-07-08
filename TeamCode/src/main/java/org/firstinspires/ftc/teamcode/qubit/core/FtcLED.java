@@ -26,27 +26,29 @@
 
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.LedColorEnum;
 
 import java.util.Locale;
 
 /**
- * A class to manage the robot intake.
+ * A class to manage a REV Robotics digital LED.
  */
-public class FtcIntake2 extends FtcSubSystem {
-    private static final String TAG = "FtcIntake2";
-    public static final String INTAKE_MOTOR_NAME = "intakeMotor";
-    private static final double IN_POWER = 0.50;
-    private static final double OUT_POWER = -0.50;
-    private static final double ZERO_POWER = 0;
-    private final boolean intakeEnabled = true;
+public class FtcLED {
+    private static final String TAG = "FtcLed";
+    public static final String STATUS_GREEN_LED_NAME = "statusGreenLed";
+    public static final String STATUS_RED_LED_NAME = "statusRedLed";
+    public static final boolean LED_HIGH = true;
+    public static final boolean LED_LOW = false;
+    private final boolean ledEnabled = true;
     public boolean telemetryEnabled = true;
     private Telemetry telemetry = null;
-    public FtcMotor intakeMotor = null;
+    private DigitalChannel greenLed = null;
+    private DigitalChannel redLed = null;
+    private LedColorEnum currentLedColor = LedColorEnum.BLACK;
 
     /**
      * Initialize standard Hardware interfaces.
@@ -57,11 +59,12 @@ public class FtcIntake2 extends FtcSubSystem {
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         FtcLogger.enter();
         this.telemetry = telemetry;
-        if (intakeEnabled) {
-            intakeMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, INTAKE_MOTOR_NAME));
-            intakeMotor.setDirection(DcMotorEx.Direction.FORWARD);
-            intakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-            intakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        if (ledEnabled) {
+            greenLed = hardwareMap.get(DigitalChannel.class, STATUS_GREEN_LED_NAME);
+            greenLed.setMode(DigitalChannel.Mode.OUTPUT);
+            redLed = hardwareMap.get(DigitalChannel.class, STATUS_RED_LED_NAME);
+            redLed.setMode(DigitalChannel.Mode.OUTPUT);
+            setBlack();
             showTelemetry();
             telemetry.addData(TAG, "initialized");
         } else {
@@ -71,59 +74,46 @@ public class FtcIntake2 extends FtcSubSystem {
         FtcLogger.exit();
     }
 
-    /**
-     * Operates the intake using the gamePads.
-     * Left bumper -> rotate out
-     * Left trigger -> rotate in
-     *
-     * @param gamePad1 The first gamePad to use.
-     * @param gamePad2 The second gamePad to use.
-     */
-    public void operate(Gamepad gamePad1, Gamepad gamePad2) {
-        FtcLogger.enter();
-        if (gamePad1.left_bumper || gamePad2.left_bumper) {
-            rotateOut();
-        } else if (gamePad1.left_trigger >= 0.5 || gamePad2.left_trigger >= 0.5) {
-            rotateIn();
-        } else {
-            stop();
+    public void setAmber() {
+        if (ledEnabled) {
+            greenLed.setState(LED_LOW);
+            redLed.setState(LED_LOW);
+            currentLedColor = LedColorEnum.AMBER;
         }
+    }
 
-        FtcLogger.exit();
+    public void setBlack() {
+        if (ledEnabled) {
+            greenLed.setState(LED_HIGH);
+            redLed.setState(LED_HIGH);
+            currentLedColor = LedColorEnum.BLACK;
+        }
+    }
+
+    public void setGreen() {
+        if (ledEnabled) {
+            greenLed.setState(LED_HIGH);
+            redLed.setState(LED_LOW);
+            currentLedColor = LedColorEnum.GREEN;
+        }
+    }
+
+    public void setRed() {
+        if (ledEnabled) {
+            greenLed.setState(LED_LOW);
+            redLed.setState(LED_HIGH);
+            currentLedColor = LedColorEnum.RED;
+        }
     }
 
     /**
-     * Rotate inwards to intake the object.
-     */
-    private void rotateIn() {
-        FtcLogger.enter();
-        if (intakeEnabled) {
-            intakeMotor.setPower(IN_POWER);
-        }
-
-        FtcLogger.exit();
-    }
-
-    /**
-     * Rotate outwards to outtake the object.
-     */
-    private void rotateOut() {
-        FtcLogger.enter();
-        if (intakeEnabled) {
-            intakeMotor.setPower(OUT_POWER);
-        }
-
-        FtcLogger.exit();
-    }
-
-    /**
-     * Displays intake telemetry. Helps with debugging.
+     * Displays LED telemetry. Helps with debugging.
      */
     public void showTelemetry() {
         FtcLogger.enter();
-        if (intakeEnabled && telemetryEnabled && intakeMotor != null) {
-            telemetry.addData(TAG, String.format(Locale.US, "Position: %.4f",
-                    intakeMotor.getPower()));
+        if (ledEnabled && telemetryEnabled && greenLed != null && redLed != null) {
+            telemetry.addData(TAG, String.format(Locale.US, "%s",
+                    currentLedColor.toString()));
         }
 
         FtcLogger.exit();
@@ -138,14 +128,11 @@ public class FtcIntake2 extends FtcSubSystem {
     }
 
     /**
-     * Stops the intake.
+     * Stops the LED.
      */
     public void stop() {
         FtcLogger.enter();
-        if (intakeEnabled) {
-            intakeMotor.setPower(ZERO_POWER);
-        }
-
+        setBlack();
         FtcLogger.exit();
     }
 }

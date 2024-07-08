@@ -42,15 +42,15 @@ public class FtcBot extends FtcSubSystem {
     private static final String TAG = "FtcBot";
     private boolean telemetryEnabled = true;
     public FtcBulkRead bulkRead = null;
-    public MatchConfig config = null;
-    public FtcBlinkinLed blinkinLed = null;
     public FtcDriveTrain driveTrain = null;
 
     // robot sub systems
     public FtcImu imu = null;
+    public FtcIntakeM intake = null;
+    public FtcIntakeExtension intakeExtension = null;
     public FtcOpenCvCam openCvCam = null;
-    public FtcIntake2 intake = null;
     public FtcShooter shooter = null;
+    public MatchConfig config = null;
     private Telemetry telemetry = null;
 
     /* Constructor */
@@ -60,10 +60,10 @@ public class FtcBot extends FtcSubSystem {
     public void disableTelemetry() {
         FtcLogger.enter();
         telemetryEnabled = false;
-        blinkinLed.telemetryEnabled = false;
         driveTrain.telemetryEnabled = false;
         imu.telemetryEnabled = false;
         intake.telemetryEnabled = false;
+        intakeExtension.telemetryEnabled = false;
         shooter.telemetryEnabled = false;
         FtcLogger.exit();
     }
@@ -71,10 +71,10 @@ public class FtcBot extends FtcSubSystem {
     public void enableTelemetry() {
         FtcLogger.enter();
         telemetryEnabled = true;
-        blinkinLed.telemetryEnabled = true;
         driveTrain.telemetryEnabled = true;
         imu.telemetryEnabled = true;
         intake.telemetryEnabled = true;
+        intakeExtension.telemetryEnabled = true;
         shooter.telemetryEnabled = true;
         FtcLogger.exit();
     }
@@ -90,7 +90,6 @@ public class FtcBot extends FtcSubSystem {
      */
     public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
         FtcLogger.enter();
-        // Save reference to Hardware map
         this.telemetry = telemetry;
 
         bulkRead = new FtcBulkRead();
@@ -100,10 +99,10 @@ public class FtcBot extends FtcSubSystem {
         driveTrain = new FtcDriveTrain(this);
         driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
         driveTrain.init(hardwareMap, telemetry);
-        blinkinLed = new FtcBlinkinLed();
-        blinkinLed.init(hardwareMap, telemetry);
-        intake = new FtcIntake2();
+        intake = new FtcIntakeM();
         intake.init(hardwareMap, telemetry);
+        intakeExtension = new FtcIntakeExtension();
+        intakeExtension.init(hardwareMap, telemetry);
         shooter = new FtcShooter();
         shooter.init(hardwareMap, telemetry);
         imu = new FtcImu();
@@ -134,11 +133,15 @@ public class FtcBot extends FtcSubSystem {
         // Drive operation
         driveTrain.operate(gamePad1, gamePad2, loopTime);
         intake.operate(gamePad1, gamePad2);
+        intakeExtension.operate(gamePad1, gamePad2);
         shooter.operate(gamePad1, gamePad2);
         if (telemetryEnabled) {
             imu.showTelemetry();
             showGamePadTelemetry(gamePad1);
             driveTrain.showTelemetry();
+            intake.showTelemetry();
+            intakeExtension.showTelemetry();
+            shooter.showTelemetry();
         }
 
         FtcLogger.exit();
@@ -167,6 +170,7 @@ public class FtcBot extends FtcSubSystem {
     public void start() {
         FtcLogger.enter();
         intake.start();
+        intakeExtension.start();
         shooter.start();
         FtcLogger.exit();
     }
@@ -183,6 +187,10 @@ public class FtcBot extends FtcSubSystem {
 
         if (intake != null) {
             intake.stop();
+        }
+
+        if (intakeExtension != null) {
+            intakeExtension.stop();
         }
 
         if (shooter != null) {

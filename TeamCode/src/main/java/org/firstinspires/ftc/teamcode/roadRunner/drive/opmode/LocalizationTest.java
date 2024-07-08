@@ -93,7 +93,7 @@ public class LocalizationTest extends LinearOpMode {
             Pose2d poseEstimate = drive.getPoseEstimate();
             telemetry.addData("Drive pose estimate", "x: %.1f, y: %.1f, heading: %.1f",
                     poseEstimate.getX(), poseEstimate.getY(),
-                    FtcImu.normalizeHeading(Math.toDegrees(poseEstimate.getHeading())));
+                    FtcImu.normalize(Math.toDegrees(poseEstimate.getHeading())));
 
             if (DriveConstants.RUN_USING_ENCODER) {
                 telemetry.addData("Motors", "LF: %d, LR: %d, RF: %d, RR: %d",

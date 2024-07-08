@@ -26,23 +26,22 @@
 
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBno055Imu;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcLED;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
-public class FtcAdafruitImuTeleOp extends OpMode {
+public class FtcLedTeleOp extends OpMode {
     // Declare OpMode members
     private ElapsedTime runtime = null;
     private ElapsedTime loopTime = null;
-    FtcBno055Imu imu = null;
-    double targetHeading = 0;
+    private double lastLoopTime = 0.0;
+    FtcLED led = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -52,13 +51,8 @@ public class FtcAdafruitImuTeleOp extends OpMode {
         FtcLogger.enter();
         telemetry.addData(">", "Initializing, please wait...");
         telemetry.update();
-        imu = new FtcBno055Imu();
-        imu.init(hardwareMap, telemetry);
-        imu.telemetryEnabled = FtcUtils.DEBUG;
-        imu.showTelemetry();
-
-        // Inform the driver that initialization is complete.
-        telemetry.update();
+        led = new FtcLED();
+        led.init(hardwareMap, telemetry);
         FtcLogger.exit();
     }
 
@@ -69,7 +63,7 @@ public class FtcAdafruitImuTeleOp extends OpMode {
     public void init_loop() {
         telemetry.addData(">", "Waiting for driver to press play");
         telemetry.update();
-        FtcUtils.sleep(50);
+        FtcUtils.sleep(10);
     }
 
     /*
@@ -82,6 +76,7 @@ public class FtcAdafruitImuTeleOp extends OpMode {
         telemetry.update();
         runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        led.telemetryEnabled = FtcUtils.DEBUG;
         FtcLogger.exit();
     }
 
@@ -93,21 +88,22 @@ public class FtcAdafruitImuTeleOp extends OpMode {
         FtcLogger.enter();
         loopTime.reset();
 
-        imu.read();
-        imu.showTelemetry();
-        if (gamepad1.y)
-            targetHeading = 0;
-        else if (gamepad1.b)
-            targetHeading = -90;
-        else if (gamepad1.x)
-            targetHeading = 90;
-        else if (gamepad1.a)
-            targetHeading = -180;
-        telemetry.addData(">", "Target %.1f, Heading %.1f",
-                targetHeading, imu.getHeading());
+        telemetry.addData(">", "a: Green, b: RED, x: AMBER, y: BLACK");
+        if (gamepad1.a || gamepad2.a) {
+            led.setGreen();
+        } else if (gamepad1.b || gamepad2.b) {
+            led.setRed();
+        } else if (gamepad1.x || gamepad2.x) {
+            led.setAmber();
+        } else if (gamepad1.y || gamepad2.y) {
+            led.setBlack();
+        }
+
+        led.showTelemetry();
         telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
                 loopTime.milliseconds(), runtime.seconds());
         telemetry.update();
+        lastLoopTime = loopTime.milliseconds();
         FtcLogger.exit();
     }
 
@@ -117,6 +113,7 @@ public class FtcAdafruitImuTeleOp extends OpMode {
     @Override
     public void stop() {
         FtcLogger.enter();
+        ;led.stop();
         telemetry.addData(">", "Tele Op stopped.");
         telemetry.update();
         FtcLogger.exit();

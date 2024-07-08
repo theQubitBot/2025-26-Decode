@@ -42,7 +42,7 @@ import java.lang.reflect.Modifier;
  * Global utility functions
  */
 public final class FtcUtils {
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     public static final double EPSILON1 = 1e-1;
     public static final double EPSILON2 = 1e-2;
     public static final double EPSILON3 = 1e-3;
@@ -200,9 +200,7 @@ public final class FtcUtils {
     }
 
     public static Point getMidpoint(Rect rect) {
-        synchronized (rect) {
-            return new Point(getMidpointX(rect), getMidpointY(rect));
-        }
+        return new Point(getMidpointX(rect), getMidpointY(rect));
     }
 
     public static double getAspectRatio(Rect rect) {
@@ -222,7 +220,7 @@ public final class FtcUtils {
      */
     public static double getAspectRatio(RotatedRect rect) {
         synchronized (rect) {
-            if (rect.size.height == 0)
+            if (areEqual(rect.size.height, 0, EPSILON4))
                 return Double.MAX_VALUE;
             else
                 return rect.size.width / rect.size.height;
@@ -278,4 +276,3 @@ public final class FtcUtils {
         return SimpleGson.getInstance().fromJson(data, classOf);
     }
 }
-

@@ -26,29 +26,27 @@
 
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.Locale;
 
 /**
- * A class to manage the spinning wheel.
+ * A class to manage the intake extension.
  */
-public class FtcShooter extends FtcSubSystem {
-    private static final String TAG = "FtcShooter";
-    public static final String SHOOTER_MOTOR_NAME = "shooterMotor";
-    private final boolean shooterEnabled = true;
+public class FtcIntakeExtension extends FtcSubSystem {
+    private static final String TAG = "FtcIntakeExtension";
+    public static final String INTAKE_EXTENSION_SERVO_NAME = "intakeServo";
+    private static final double UP_POSITION = 0.5000;
+    private static final double DOWN_POSITION = 0.6000;
+    private static final long UP_DOWN_TIME_MS = 500;
+    private final boolean extensionEnabled = true;
     public boolean telemetryEnabled = true;
     private Telemetry telemetry = null;
-    public FtcMotor motor = null;
-
-    /* Constructor */
-    public FtcShooter() {
-    }
+    public FtcServo intakeExtensionServo = null;
 
     /**
      * Initialize standard Hardware interfaces
@@ -59,39 +57,75 @@ public class FtcShooter extends FtcSubSystem {
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         FtcLogger.enter();
         this.telemetry = telemetry;
-        if (shooterEnabled) {
-            motor = new FtcMotor(hardwareMap.get(DcMotorEx.class, SHOOTER_MOTOR_NAME));
-            motor.setDirection(DcMotorEx.Direction.FORWARD);
-            motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-            motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        if (extensionEnabled) {
+            intakeExtensionServo = new FtcServo(hardwareMap.get(Servo.class, INTAKE_EXTENSION_SERVO_NAME));
             showTelemetry();
             telemetry.addData(TAG, "initialized");
+        } else {
+            telemetry.addData(TAG, "not enabled");
         }
 
         FtcLogger.exit();
     }
 
     /**
-     * Operates the wheel using the gamePads.
+     * Moves the intake extension up.
+     *
+     * @param waitTillUp When true, waits till the intake extension is fully up.
+     */
+    public void moveUp(boolean waitTillUp) {
+        FtcLogger.enter();
+        if (extensionEnabled) {
+            intakeExtensionServo.setPosition(UP_POSITION);
+            if (waitTillUp) {
+                FtcUtils.sleep(UP_DOWN_TIME_MS);
+            }
+        }
+
+        FtcLogger.exit();
+    }
+
+    /**
+     * Moves the intake extension down.
+     *
+     * @param waitTillDown When true, waits till the intake extension is fully down.
+     */
+    public void moveDown(boolean waitTillDown) {
+        FtcLogger.enter();
+        if (extensionEnabled) {
+            intakeExtensionServo.setPosition(DOWN_POSITION);
+            if (waitTillDown) {
+                FtcUtils.sleep(UP_DOWN_TIME_MS);
+            }
+        }
+
+        FtcLogger.exit();
+    }
+
+    /**
+     * Operates the intake extension using the gamePads.
+     * Left bumper -> move the intake extension up
+     * Left trigger -> move the intake extension down
      *
      * @param gamePad1 The first gamePad to use.
      * @param gamePad2 The second gamePad to use.
      */
     public void operate(Gamepad gamePad1, Gamepad gamePad2) {
-        if (shooterEnabled && motor != null) {
-            double power = gamePad1.right_trigger;
-            power = Range.clip(power, FtcMotor.MIN_POWER, FtcMotor.MAX_POWER);
-            motor.setPower(power);
+        if (gamePad1.right_bumper || gamePad2.right_bumper) {
+            moveUp(false);
+        } else if (gamePad1.left_trigger >= 0.05 || gamePad2.left_trigger >= 0.05) {
+            moveDown(false);
         }
     }
 
     /**
-     * Displays wheel servo telemetry. Helps with debugging.
+     * Emits intake extension telemetry. Helps with debugging.
      */
     public void showTelemetry() {
         FtcLogger.enter();
-        if (shooterEnabled && telemetryEnabled) {
-            telemetry.addData(TAG, String.format(Locale.US, "Power %3.2f", motor.getPower()));
+        if (extensionEnabled && telemetryEnabled) {
+            telemetry.addData(TAG, String.format(Locale.US, "Position %5.4f",
+                    intakeExtensionServo.getPosition()));
         }
 
         FtcLogger.exit();
@@ -102,18 +136,25 @@ public class FtcShooter extends FtcSubSystem {
      */
     public void start() {
         FtcLogger.enter();
+        if (extensionEnabled) {
+            intakeExtensionServo.getController().pwmEnable();
+            moveUp(false);
+        }
+
         FtcLogger.exit();
     }
 
     /**
-     * Stops the wheel.
+     * Stops the intake extension.
      */
     public void stop() {
         FtcLogger.enter();
-        if (shooterEnabled) {
-            motor.setPower(FtcMotor.ZERO_POWER);
+        if (extensionEnabled) {
+            intakeExtensionServo.getController().pwmDisable();
         }
 
+        // There is no need to explicitly move the servo upon stop as
+        // the power is cut off to servo when Auto/Tele Op ends.
         FtcLogger.exit();
     }
 }

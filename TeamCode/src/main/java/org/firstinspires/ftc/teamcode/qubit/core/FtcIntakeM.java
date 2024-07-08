@@ -36,22 +36,20 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.Locale;
 
 /**
- * A class to manage the spinning wheel.
+ * A class to manage the robot intake.
  */
-public class FtcShooter extends FtcSubSystem {
-    private static final String TAG = "FtcShooter";
-    public static final String SHOOTER_MOTOR_NAME = "shooterMotor";
-    private final boolean shooterEnabled = true;
+public class FtcIntakeM extends FtcSubSystem {
+    private static final String TAG = "FtcIntakeM";
+    public static final String INTAKE_MOTOR_NAME = "intakeMotor";
+    private static final double IN_POWER = 0.50;
+    private static final double OUT_POWER = -0.50;
+    private final boolean intakeEnabled = true;
     public boolean telemetryEnabled = true;
     private Telemetry telemetry = null;
-    public FtcMotor motor = null;
-
-    /* Constructor */
-    public FtcShooter() {
-    }
+    public FtcMotor intakeMotor = null;
 
     /**
-     * Initialize standard Hardware interfaces
+     * Initialize standard Hardware interfaces.
      *
      * @param hardwareMap The hardware map to use for initialization.
      * @param telemetry   The telemetry to use.
@@ -59,39 +57,82 @@ public class FtcShooter extends FtcSubSystem {
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
         FtcLogger.enter();
         this.telemetry = telemetry;
-        if (shooterEnabled) {
-            motor = new FtcMotor(hardwareMap.get(DcMotorEx.class, SHOOTER_MOTOR_NAME));
-            motor.setDirection(DcMotorEx.Direction.FORWARD);
-            motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-            motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        if (intakeEnabled) {
+            intakeMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, INTAKE_MOTOR_NAME));
+            intakeMotor.setDirection(DcMotorEx.Direction.FORWARD);
+            intakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+            intakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
             showTelemetry();
             telemetry.addData(TAG, "initialized");
+        } else {
+            telemetry.addData(TAG, "not enabled");
         }
 
         FtcLogger.exit();
     }
 
     /**
-     * Operates the wheel using the gamePads.
+     * Operates the intake using the gamePads.
+     * Left bumper -> rotate out
+     * Left trigger -> rotate in
      *
      * @param gamePad1 The first gamePad to use.
      * @param gamePad2 The second gamePad to use.
      */
     public void operate(Gamepad gamePad1, Gamepad gamePad2) {
-        if (shooterEnabled && motor != null) {
-            double power = gamePad1.right_trigger;
-            power = Range.clip(power, FtcMotor.MIN_POWER, FtcMotor.MAX_POWER);
-            motor.setPower(power);
+        FtcLogger.enter();
+        if (gamePad1.left_bumper || gamePad2.left_bumper) {
+            rotateOut();
+        } else if (gamePad1.left_trigger >= 0.05 || gamePad2.left_trigger >= 0.05) {
+            rotateIn(gamePad1, gamePad2);
+        } else {
+            stop();
         }
+
+        FtcLogger.exit();
     }
 
     /**
-     * Displays wheel servo telemetry. Helps with debugging.
+     * Rotate inwards to intake the object.
+     */
+    private void rotateIn(Gamepad gamePad1, Gamepad gamePad2) {
+        FtcLogger.enter();
+
+        if (intakeEnabled) {
+            double power = FtcMotor.ZERO_POWER;
+            if (gamePad1.left_trigger >= 0.05) {
+                power = gamePad1.left_trigger;
+            } else if (gamePad2.left_trigger >= 0.05) {
+                power = gamePad2.left_trigger;
+            }
+
+            power = Range.clip(power, FtcMotor.ZERO_POWER, FtcMotor.MAX_POWER);
+            intakeMotor.setPower(power);
+        }
+
+        FtcLogger.exit();
+    }
+
+    /**
+     * Rotate outwards to outtake the object.
+     */
+    private void rotateOut() {
+        FtcLogger.enter();
+        if (intakeEnabled) {
+            intakeMotor.setPower(OUT_POWER);
+        }
+
+        FtcLogger.exit();
+    }
+
+    /**
+     * Displays intake telemetry. Helps with debugging.
      */
     public void showTelemetry() {
         FtcLogger.enter();
-        if (shooterEnabled && telemetryEnabled) {
-            telemetry.addData(TAG, String.format(Locale.US, "Power %3.2f", motor.getPower()));
+        if (intakeEnabled && telemetryEnabled && intakeMotor != null) {
+            telemetry.addData(TAG, String.format(Locale.US, "Power: %.2f",
+                    intakeMotor.getPower()));
         }
 
         FtcLogger.exit();
@@ -106,12 +147,12 @@ public class FtcShooter extends FtcSubSystem {
     }
 
     /**
-     * Stops the wheel.
+     * Stops the intake.
      */
     public void stop() {
         FtcLogger.enter();
-        if (shooterEnabled) {
-            motor.setPower(FtcMotor.ZERO_POWER);
+        if (intakeEnabled) {
+            intakeMotor.setPower(FtcMotor.ZERO_POWER);
         }
 
         FtcLogger.exit();

@@ -30,18 +30,17 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcIntake2;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcIntakeM;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
 //@Disabled
 @TeleOp(group = "TestOp")
-public class FtcIntake2TeleOp extends OpMode {
+public class FtcIntakeMTeleOp extends OpMode {
     // Declare OpMode members
     private ElapsedTime runtime = null;
     private ElapsedTime loopTime = null;
-    private double lastLoopTime = 0.0;
-    FtcIntake2 intake = null;
+    FtcIntakeM intake = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -51,7 +50,8 @@ public class FtcIntake2TeleOp extends OpMode {
         FtcLogger.enter();
         telemetry.addData(">", "Initializing, please wait...");
         telemetry.update();
-        intake = new FtcIntake2();
+        intake = new FtcIntakeM();
+        intake.telemetryEnabled = FtcUtils.DEBUG;
         intake.init(hardwareMap, telemetry);
         FtcLogger.exit();
     }
@@ -76,7 +76,7 @@ public class FtcIntake2TeleOp extends OpMode {
         telemetry.update();
         runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        intake.telemetryEnabled = FtcUtils.DEBUG;
+        intake.start();
         FtcLogger.exit();
     }
 
@@ -89,13 +89,12 @@ public class FtcIntake2TeleOp extends OpMode {
         // Show the elapsed game time and wheel power.
         loopTime.reset();
 
-        telemetry.addData(">", "left trigger: In, left bumper: Out");
+        telemetry.addData(">", "Left trigger: In, Left bumper: Out");
         intake.operate(gamepad1, gamepad2);
         intake.showTelemetry();
         telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
                 loopTime.milliseconds(), runtime.seconds());
         telemetry.update();
-        lastLoopTime = loopTime.milliseconds();
         FtcLogger.exit();
     }
 
