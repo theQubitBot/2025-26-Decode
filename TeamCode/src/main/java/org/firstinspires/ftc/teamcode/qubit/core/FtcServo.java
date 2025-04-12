@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -37,7 +37,9 @@ public class FtcServo implements Servo {
     public static final double MID_POSITION = (Servo.MIN_POSITION + Servo.MAX_POSITION) / 2.0;
     public static final double LARGE_INCREMENT = 0.0005;
     public static final double SMALL_INCREMENT = 0.0001;
-    public static final double INVALID_POSITION = Double.MIN_VALUE;
+
+    // Invalid position must be far away from zero.
+    public static final double INVALID_POSITION = -997;
     private final Servo servo;
 
     // PERFORMANCE

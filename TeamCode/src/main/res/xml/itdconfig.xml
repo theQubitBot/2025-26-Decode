@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC">
+    <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
+        <LynxModule name="Expansion Hub 2" port="2">
+            <goBILDA5202SeriesMotor name="rightFrontMotor" port="0" />
+            <goBILDA5202SeriesMotor name="rightRearMotor" port="1" />
+            <goBILDA5202SeriesMotor name="rightLiftMotor" port="3" />
+            <Servo name="flagServo" port="0" />
+            <Servo name="leftSpinServo" port="1" />
+            <Servo name="leftFlipServo" port="2" />
+            <Servo name="rightSpinServo" port="3" />
+            <Servo name="rightFlipServo" port="4" />
+            <Servo name="verticalSpinServo" port="5" />
+            <RevTouchSensor name="rightLiftTouch" port="1" />
+        </LynxModule>
+        <LynxModule name="Control Hub" port="173">
+            <goBILDA5202SeriesMotor name="leftFrontMotor" port="0" />
+            <goBILDA5202SeriesMotor name="leftRearMotor" port="1" />
+            <goBILDA5202SeriesMotor name="leftLiftMotor" port="2" />
+            <Servo name="leftSpecimenServo" port="0" />
+            <Servo name="armServo" port="1" />
+            <Servo name="rightSpecimenServo" port="2" />
+            <Servo name="rnpServo" port="4" />
+            <RevBlinkinLedDriver name="blinkinLed" port="5" />
+            <RevTouchSensor name="leftLiftTouch" port="1" />
+            <RevTouchSensor name="extendLimitSwitch" port="5" />
+            <RevTouchSensor name="retractLimitSwitch" port="7" />
+            <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
+            <goBILDAPinpoint name="goboDriver" port="0" bus="1" />
+        </LynxModule>
+    </LynxUsbDevice>
+</Robot>

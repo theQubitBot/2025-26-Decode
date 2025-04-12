@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -28,9 +28,12 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 
 import java.util.Locale;
 
@@ -42,11 +45,16 @@ public class FtcBlinkinLed extends FtcSubSystem {
     private static final String BLINKIN_NAME = "blinkinLed";
     private final boolean blinkinLedEnabled = true;
     public boolean telemetryEnabled = true;
-    RevBlinkinLedDriver blinkinLedDriver = null;
+    private RevBlinkinLedDriver blinkinLedDriver = null;
 
     // Start with LED strip being off.
-    BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.BLACK;
-    Telemetry telemetry;
+    private BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.BLACK;
+    private Telemetry telemetry;
+    private FtcBot parent = null;
+
+    public FtcBlinkinLed(FtcBot robot) {
+        parent = robot;
+    }
 
     /**
      * Initialize standard Hardware interfaces
@@ -63,6 +71,53 @@ public class FtcBlinkinLed extends FtcSubSystem {
         } else {
             telemetry.addData(TAG, "not enabled");
         }
+    }
+
+    public void operate(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
+        FtcLogger.enter();
+        if (blinkinLedEnabled) {
+            if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
+                stop();
+            } else if (gamePad1.right_bumper || gamePad2.right_bumper) {
+                if (parent != null) {
+                    if (!parent.rnp.isRetracted() ||
+                            !parent.lift.atPosition(FtcLift.POSITION_FLOOR) ||
+                            !parent.arm.isForward()) {
+                        parent.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.FIRE_LARGE);
+                    } else {
+                        stop();
+                    }
+                }
+            } else if (gamePad1.left_bumper || gamePad2.left_bumper) {
+                if (parent != null) {
+                    if (parent.intake.isDelivering()) {
+                        parent.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.FIRE_LARGE);
+                    } else {
+                        stop();
+                    }
+                }
+            } else if (FtcUtils.lastNSeconds(runtime, 10)) {
+                if (parent != null) {
+                    if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
+                        if (currentPattern != BlinkinPattern.HEARTBEAT_BLUE) {
+                            set(BlinkinPattern.HEARTBEAT_BLUE);
+                        }
+                    } else {
+                        if (currentPattern != BlinkinPattern.HEARTBEAT_RED) {
+                            set(BlinkinPattern.HEARTBEAT_RED);
+                        }
+                    }
+                } else {
+                    if (currentPattern != BlinkinPattern.HEARTBEAT_WHITE) {
+                        set(BlinkinPattern.HEARTBEAT_WHITE);
+                    }
+                }
+            } else {
+                stop();
+            }
+        }
+
+        FtcLogger.exit();
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcLift;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
@@ -50,7 +51,7 @@ public class DriverTeleOp extends OpMode {
     @Override
     public void init() {
         FtcLogger.enter();
-        telemetry.addData(">", "Initializing, please wait...");
+        telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
         telemetry.update();
         robot = new FtcBot();
         robot.init(hardwareMap, telemetry, false);
@@ -63,8 +64,8 @@ public class DriverTeleOp extends OpMode {
      */
     @Override
     public void init_loop() {
-        telemetry.addData(">", "Waiting for driver to press play");
-        FtcUtils.sleep(50);
+        telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
+        FtcUtils.sleep(FtcUtils.CYCLE_MS);
     }
 
     /*
@@ -73,7 +74,7 @@ public class DriverTeleOp extends OpMode {
     @Override
     public void start() {
         FtcLogger.enter();
-        telemetry.addData(">", "Starting...");
+        telemetry.addData(FtcUtils.TAG, "Starting...");
         telemetry.update();
 
         loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -99,7 +100,7 @@ public class DriverTeleOp extends OpMode {
         robot.operate(gamepad1, gamepad2, lastLoopTime, runtime);
 
         // Show the elapsed game time.
-        telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
+        telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
                 loopTime.milliseconds(), runtime.seconds());
         lastLoopTime = loopTime.milliseconds();
         FtcLogger.exit();
@@ -120,7 +121,9 @@ public class DriverTeleOp extends OpMode {
         // This may be an issue if the Control Hub needs a reboot
         // in the middle of the match and FOD is enabled.
         FtcImu.endAutoOpHeading = 0;
-        telemetry.addData(">", "Tele Op stopped.");
+        FtcLift.endAutoOpLeftLiftPosition = FtcLift.POSITION_MINIMUM;
+        FtcLift.endAutoOpRightLiftPosition = FtcLift.POSITION_MINIMUM;
+        telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
         telemetry.update();
         FtcLogger.exit();
     }

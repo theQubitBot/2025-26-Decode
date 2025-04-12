@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -27,10 +27,14 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 
@@ -48,30 +52,30 @@ import java.util.List;
  */
 public class FtcDriveTrain extends FtcSubSystem {
     private static final String TAG = "FtcDriveTrain";
-    public static final double MAXIMUM_FORWARD_POWER = 1.00;
+    public static final double MAXIMUM_FORWARD_POWER = 0.80;
     public static final double MECANUM_POWER_BOOST_FACTOR = 1.00;
-    public static final double MINIMUM_FORWARD_TELE_OP_POWER = 0.20;
+    public static final double MINIMUM_FORWARD_TELE_OP_POWER = 0.25;
 
     // Ideally, you would find the min power value by incrementing motor power by 0.01
     // and noting the min power at which the robot begins to move/turn.
     // Robot weight distribution would impact rotational inertia, which would impact
     // the turn value most.
-    public static final double MAXIMUM_TURN_POWER = 0.90;
-    public static final double MINIMUM_TURN_POWER = 0.20;
-    public static final double FORWARD_SLO_MO_POWER = 0.20;
-    public static final double STRAFE_SLO_MO_POWER = 0.30;
+    public static final double MAXIMUM_TURN_POWER = 0.80;
+    public static final double MINIMUM_TURN_POWER = 0.25;
+    public static final double FORWARD_SLO_MO_POWER = 0.25;
+    public static final double STRAFE_SLO_MO_POWER = 0.40;
 
     // JITTER is ideally the minimum motor power to move a wheel when the robot is jacked up.
     // Empirically, the minimum power would be the one to overcome internal friction.
     // So, if the joystick is jittery, we can safely ignore joystick values below this.
     // Must set this to at least 0.01 for trigonometry to work.
-    private static final double JITTER = 0.05;
+    private static final double JITTER = 0.06;
 
     // Ramp up/down time is used for software assisted anti-lock braking (ABS) or
     // Electronic Stability Control (ESC), or Dynamic Stability Control (DSC).
     // Provides anti skid acceleration, anti-lock braking aka smooth acceleration/deceleration.
-    // Smaller values result in tight brakes. Experiment with your bot to find the right value.
-    private static final double POWER_RAMP_UP_DOWN_TIME = 200.0; // milliseconds
+    // Smaller values result in tighter brakes. Experiment with your bot to find the right value.
+    private static final double POWER_RAMP_UP_DOWN_TIME = 250.0; // milliseconds
 
     // The amount of proportional (p) feedback to apply for software assisted straight line steering.
     // Larger is more responsive, but less stable. Typical values lie in [0.01, 0.10] interval.
@@ -99,11 +103,30 @@ public class FtcDriveTrain extends FtcSubSystem {
     // This data is used for heading correction for an unbalanced robot.
     private double lastTheta = 0, lastHeading = 0;
     private final boolean useMotorEncoders = false;
-    private final boolean enableUnbalancedRobotCorrection = true;
+    private final boolean enableUnbalancedRobotHeadingCorrection = false;
     private final boolean enableMecanumPowerBoost = true;
+    private final boolean useLiftPositionForSpeedAdjustment = true;
 
     public FtcDriveTrain(FtcBot robot) {
         parent = robot;
+    }
+
+    /**
+     * Evaluates if unbalanced robot heading should be automatically corrected
+     * by the software.
+     *
+     * @return True if feature is enabled, false otherwise
+     */
+    private boolean AutomaticallyCorrectUnbalancedRobotHeading(Gamepad gamepad1, Gamepad gamepad2) {
+        // Correction is off if list is higher than lower basket, on otherwise.
+        boolean enableCorrectionForLowLiftPosition = parent == null || parent.lift == null ||
+                parent.lift.getLeftPosition() < FtcLift.POSITION_LOW_BASKET;
+
+        // Grant wants correction to be off when samples are being intook.
+        boolean enableCorrectionForIntake = !(gamepad1.right_trigger >= 0.5) && !(gamepad2.right_trigger >= 0.5);
+
+        return enableUnbalancedRobotHeadingCorrection && enableCorrectionForLowLiftPosition &&
+                enableCorrectionForIntake;
     }
 
     /**
@@ -122,8 +145,7 @@ public class FtcDriveTrain extends FtcSubSystem {
                     driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
                 leftFrontMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "leftFrontMotor"));
                 rightFrontMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "rightFrontMotor"));
-                leftFrontMotor.setDirection(DcMotorEx.Direction.REVERSE);
-                rightFrontMotor.setDirection(DcMotorEx.Direction.FORWARD);
+                leftFrontMotor.setDirection(DcMotorSimple.Direction.REVERSE);
                 frontMotors = Arrays.asList(leftFrontMotor, rightFrontMotor);
                 activeMotors = frontMotors;
             }
@@ -133,8 +155,7 @@ public class FtcDriveTrain extends FtcSubSystem {
                     driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
                 leftRearMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "leftRearMotor"));
                 rightRearMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "rightRearMotor"));
-                leftRearMotor.setDirection(DcMotorEx.Direction.FORWARD);
-                rightRearMotor.setDirection(DcMotorEx.Direction.FORWARD);
+                leftRearMotor.setDirection(DcMotorSimple.Direction.REVERSE);
                 rearMotors = Arrays.asList(leftRearMotor, rightRearMotor);
                 activeMotors = rearMotors;
             }
@@ -176,7 +197,7 @@ public class FtcDriveTrain extends FtcSubSystem {
      * Robot is considered strafing if it moves in the 90 degree cones
      * perpendicular to its forward direction.
      * <p>
-     * \     |     /
+     * \     |      /
      * \   |   /
      * strafing \ | /  strafing
      * -----------------------------------
@@ -189,8 +210,8 @@ public class FtcDriveTrain extends FtcSubSystem {
      * @return True, if the robot is strafing.
      */
     private boolean isBotStrafing(double robotHeading, double joystickHeading) {
-        double rH = FtcImu.normalize(robotHeading);
-        double jH = FtcImu.normalize(joystickHeading);
+        double rH = FtcImu.normalize(robotHeading, AngleUnit.DEGREES);
+        double jH = FtcImu.normalize(joystickHeading, AngleUnit.DEGREES);
         double delta = Math.abs(rH - jH);
 
         // Robot's zero heading is forward, joy stick's zero heading is towards right.
@@ -218,7 +239,7 @@ public class FtcDriveTrain extends FtcSubSystem {
      * @param loopTime The loopTime passed in by TeleOp that determines how fast the TeleOp loop
      *                 is executing. Shorter the loopTime, shorter the anti-skid braking power step.
      */
-    public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime) {
+    public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
         FtcLogger.enter();
 
         // Setup a variable for each side drive wheel to display power level for telemetry
@@ -235,6 +256,11 @@ public class FtcDriveTrain extends FtcSubSystem {
         double powerMagnitude = Math.max(yMagnitude, xMagnitude);
         double maxWheelPower;
         double joyStickHeading = 0;
+
+        if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
+            stop();
+            return;
+        }
 
         parent.imu.resetReadOnce();
         if (powerMagnitude > JITTER) {
@@ -280,7 +306,7 @@ public class FtcDriveTrain extends FtcSubSystem {
         double turnMagnitude = Math.abs(turn);
         if (turnMagnitude <= JITTER) {
             turn = FtcMotor.ZERO_POWER;
-            if (enableUnbalancedRobotCorrection) {
+            if (AutomaticallyCorrectUnbalancedRobotHeading(gamePad1, gamePad2)) {
                 // Correction for left/right pull for an unbalanced robot.
                 // Apply correction only if driver is not explicitly turning the robot.
                 // Tangent comparison will maintain orientation when driver changes power
@@ -303,7 +329,7 @@ public class FtcDriveTrain extends FtcSubSystem {
             int turnDirection = (int) Math.signum(turn);
             turn = MINIMUM_TURN_POWER + (turnMagnitude * (MAXIMUM_TURN_POWER - MINIMUM_TURN_POWER));
             turn *= turnDirection;
-            if (enableUnbalancedRobotCorrection) {
+            if (AutomaticallyCorrectUnbalancedRobotHeading(gamePad1, gamePad2)) {
                 // Driver is changing robot orientation explicitly.
                 // Store new heading
                 parent.imu.readOnce();
@@ -333,10 +359,10 @@ public class FtcDriveTrain extends FtcSubSystem {
         }
 
         // Handle precision drive mode
-        if (gamePad1.dpad_left || gamePad2.dpad_left) {
+        if (gamePad1.dpad_left) {
             // set global precision drive variable
             precisionDriveMode = true;
-        } else if (gamePad1.dpad_right || gamePad2.dpad_right) {
+        } else if (gamePad1.dpad_right) {
             // set global precision drive variable
             precisionDriveMode = false;
         } else {
@@ -367,6 +393,26 @@ public class FtcDriveTrain extends FtcSubSystem {
                 rightFrontPower /= crawlFactor;
                 rightRearPower /= crawlFactor;
             }
+        } else if (useLiftPositionForSpeedAdjustment && parent != null && parent.lift != null) {
+            int liftPosition = Math.max(parent.lift.getLeftPosition(), parent.lift.getRightPosition());
+            liftPosition = Range.clip(liftPosition, FtcLift.POSITION_MINIMUM, FtcLift.POSITION_HIGH_BASKET);
+
+            // Scale reduces as lift rises
+            double scaleFactor = (FtcLift.POSITION_HIGH_BASKET - liftPosition) *
+                    (MAXIMUM_FORWARD_POWER - MINIMUM_FORWARD_TELE_OP_POWER) /
+                    (FtcLift.POSITION_HIGH_BASKET - FtcLift.POSITION_FLOOR);
+
+            // Scale can't be outside the wheel power limits.
+            scaleFactor = Range.clip(scaleFactor, MINIMUM_FORWARD_TELE_OP_POWER, MAXIMUM_FORWARD_POWER);
+
+            // Power factor goes down with scale, but we need minimum power to strafe.
+            scaleFactor = STRAFE_SLO_MO_POWER + scaleFactor;
+
+            // Scale power for all wheels
+            leftFrontPower *= scaleFactor;
+            leftRearPower *= scaleFactor;
+            rightFrontPower *= scaleFactor;
+            rightRearPower *= scaleFactor;
         }
 
         setDrivePowerSmooth(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower, loopTime);
@@ -486,7 +532,7 @@ public class FtcDriveTrain extends FtcSubSystem {
     }
 
     /**
-     * Display motor power and position. Helps with debugging.
+     * Display driveTrain information. Helps with debugging.
      */
     public void showTelemetry() {
         FtcLogger.enter();
@@ -509,7 +555,7 @@ public class FtcDriveTrain extends FtcSubSystem {
                         rightRearMotor.getPower(), rightRearMotor.getCurrentPosition());
             }
 
-            telemetry.addData(">", "%s, %s", driveTrainEnum.name(),
+            telemetry.addData(FtcUtils.TAG, "%s, %s", driveTrainEnum.name(),
                     driveTypeEnum.name());
         }
 

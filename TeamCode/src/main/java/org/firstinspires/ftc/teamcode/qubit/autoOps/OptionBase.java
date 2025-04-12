@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -26,42 +26,86 @@
 
 package org.firstinspires.ftc.teamcode.qubit.autoOps;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcDriveTrain;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcLift;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TeamPropLocationEnum;
-import org.firstinspires.ftc.teamcode.roadRunner.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
+import org.firstinspires.ftc.teamcode.roadRunner.MecanumDrive;
 
 /**
  * A base class to provide common variables and methods.
  */
 public class OptionBase {
-    public static final double RADIAN90;
-    public static final double RADIAN45;
-    private final long DRIVE_TIME_TO_BACKDROP = 1000; // milliseconds
+    protected static final double RADIAN0;
+    protected static final double RADIAN15;
+    protected static final double RADIAN20;
+    protected static final double RADIAN30;
+    protected static final double RADIAN45;
+    protected static final double RADIAN60;
+    protected static final double RADIAN75;
+    protected static final double RADIAN90;
+    protected static final double RADIAN105;
+    protected static final double RADIAN120;
+    protected static final double RADIAN135;
+    protected static final double RADIAN150;
+    protected static final double RADIAN180;
+    protected final long CRAWL_TIME_TO_BUCKET = 100; // milliseconds
+    private final long CRAWL_TIME_TO_SUBMERSIBLE = 500; // milliseconds
     protected LinearOpMode autoOpMode;
     protected FtcBot robot;
-    protected SampleMecanumDrive drive;
+    protected MecanumDrive drive;
 
-    protected Pose2d startPose, pose1, pose2, pose3, pose4;
-    protected Vector2d v1, v2, v3, v4, v5;
-    protected Trajectory t1, t2, t3, t4, t5;
+    public Pose2d startPose, pose1, pose2, pose3, pose4, pose5, pose6,
+            pose7, pose8, pose9, pose10, pose11, pose12;
+    protected Vector2d v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12;
+    protected TrajectoryActionBuilder tab1, tab2, tab3, tab4, tab5, tab6,
+            tab7, tab8, tab9, tab10, tab11, tab12;
+    protected Action a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12;
 
     static {
-        RADIAN90 = Math.toRadians(90);
+        RADIAN0 = Math.toRadians(0);
+        RADIAN15 = Math.toRadians(15);
+        RADIAN20 = Math.toRadians(20);
+        RADIAN30 = Math.toRadians(30);
         RADIAN45 = Math.toRadians(45);
+        RADIAN60 = Math.toRadians(60);
+        RADIAN75 = Math.toRadians(75);
+        RADIAN90 = Math.toRadians(90);
+        RADIAN105 = Math.toRadians(105);
+        RADIAN120 = Math.toRadians(120);
+        RADIAN135 = Math.toRadians(135);
+        RADIAN150 = Math.toRadians(150);
+        RADIAN180 = Math.toRadians(180);
     }
 
-    public OptionBase(LinearOpMode autoOpMode, FtcBot robot, SampleMecanumDrive drive) {
+    public OptionBase(LinearOpMode autoOpMode, FtcBot robot, MecanumDrive drive) {
         this.autoOpMode = autoOpMode;
         this.robot = robot;
         this.drive = drive;
+    }
+
+    public boolean saveAndTest() {
+        // Save settings for use by TeleOp
+        FtcLift.endAutoOpLeftLiftPosition = robot.lift.getLeftPosition();
+        FtcLift.endAutoOpRightLiftPosition = robot.lift.getRightPosition();
+        if (robot.driveTrain.driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE &&
+                robot.driveTrain.driveTypeEnum == DriveTypeEnum.FIELD_ORIENTED_DRIVE) {
+            robot.imu.read();
+            FtcImu.endAutoOpHeading = robot.imu.getHeading();
+        }
+
+        return autoOpMode.opModeIsActive();
     }
 
     /**
@@ -70,26 +114,20 @@ public class OptionBase {
     protected void initialize() {
         FtcLogger.enter();
 
-        // Starting position
-        startPose = new Pose2d(0, 0, 0);
-        drive.setPoseEstimate(startPose);
         FtcLogger.exit();
     }
 
-    protected void startCrawlingToBackProp() {
+    protected void reverseCrawlToBucket(boolean waitTillCompletion) {
         robot.driveTrain.setDrivePower(-FtcDriveTrain.FORWARD_SLO_MO_POWER, -FtcDriveTrain.FORWARD_SLO_MO_POWER,
                 -FtcDriveTrain.FORWARD_SLO_MO_POWER, -FtcDriveTrain.FORWARD_SLO_MO_POWER);
-        FtcUtils.sleep(DRIVE_TIME_TO_BACKDROP);
+        if (waitTillCompletion) {
+            FtcUtils.sleep(CRAWL_TIME_TO_BUCKET);
+            stopCrawling();
+        }
     }
 
-    protected void stopCrawlingToBackProp() {
-        robot.driveTrain.stop();
-        ;
-    }
-
-    protected double lcrValue(double leftValue, double centerValue, double rightValue) {
-        if (robot.config.teamPropLocation == TeamPropLocationEnum.LEFT) return leftValue;
-        if (robot.config.teamPropLocation == TeamPropLocationEnum.CENTER) return centerValue;
-        return rightValue;
+    protected void stopCrawling() {
+        robot.driveTrain.setDrivePower(FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER,
+                FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER);
     }
 }

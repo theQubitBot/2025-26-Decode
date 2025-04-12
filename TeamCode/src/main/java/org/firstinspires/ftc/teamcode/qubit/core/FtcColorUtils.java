@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -67,4 +67,3 @@ public final class FtcColorUtils {
     public static final String TAG_YELLOW = "Yellow";
     public static final String TAG_WHITE = "White";
 }
-

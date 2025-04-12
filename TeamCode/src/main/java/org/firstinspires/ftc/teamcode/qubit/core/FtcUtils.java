@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -28,25 +28,37 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.collections.SimpleGson;
 import org.firstinspires.ftc.robotcore.internal.system.Assert;
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 
 import java.lang.reflect.Modifier;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Global utility functions
  */
 public final class FtcUtils {
-    public static final boolean DEBUG = true;
+    public static final String TAG = ">";
+    public static final boolean DEBUG = false;
+    public static final double EPSILON0 = 0;
     public static final double EPSILON1 = 1e-1;
     public static final double EPSILON2 = 1e-2;
     public static final double EPSILON3 = 1e-3;
     public static final double EPSILON4 = 1e-4;
+    public static final int AUTO_OP_DURATION = 30; // seconds
+    public static final int AUTO_2_TELE_OP_TRANSITION_TIME = 8; // seconds
+    public static final int TELE_OP_DURATION = 120; // seconds
+    public static final int END_GAME_DURATION = 30; // seconds
+    public static final int BUZZER_DURATION = 8; // seconds
+    public static final int CYCLE_MS = 50;
 
     /* Constructor */
     public FtcUtils() {
@@ -121,6 +133,31 @@ public final class FtcUtils {
             destination.size.width = source.size.width;
             destination.angle = source.angle;
         }
+    }
+
+    public static boolean lastNSeconds(ElapsedTime runtime, int nSeconds) {
+        return runtime.seconds() >= (TELE_OP_DURATION - nSeconds);
+    }
+
+    public static boolean endGame(ElapsedTime runtime) {
+        return runtime.seconds() >= (TELE_OP_DURATION - END_GAME_DURATION);
+    }
+
+    public static boolean hangInitiated(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
+        return
+                // Either option button is pressed
+                ((gamePad1.options || gamePad2.options) &&
+                        ( // Debug mode
+                                DEBUG ||
+                                        // End game
+                                        endGame(runtime) ||
+                                        // both drivers initiate hang
+                                        (gamePad1.options && gamePad2.options)));
+    }
+
+    public static boolean gameOver(ElapsedTime runtime) {
+        // Include buzzer duration in game play time.
+        return runtime.seconds() >= (TELE_OP_DURATION + BUZZER_DURATION);
     }
 
     /**
@@ -232,6 +269,17 @@ public final class FtcUtils {
     }
 
     /**
+     * Sleep until given deadline expires.
+     *
+     * @param deadline The remaining duration to sleep until.
+     */
+    public static void sleep(Deadline deadline) {
+        if (deadline != null && !deadline.hasExpired()) {
+            sleep(deadline.timeRemaining(TimeUnit.MILLISECONDS));
+        }
+    }
+
+    /**
      * Sleep for given milli seconds.
      *
      * @param milliseconds The time to sleep in milliseconds.
@@ -268,7 +316,7 @@ public final class FtcUtils {
      * Deserializes the given JSon string into an object of given type.
      *
      * @param data    The JSon string representation of the object.
-     * @param classOf The type of the object to deserialize to.
+     * @param classOf The class of the object to deserialize to.
      * @param <T>     The type of object.
      * @return The deserialized object.
      */

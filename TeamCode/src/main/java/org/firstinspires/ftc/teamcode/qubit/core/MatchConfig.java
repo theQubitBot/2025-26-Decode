@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -34,7 +34,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TeamPropLocationEnum;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +56,6 @@ public class MatchConfig {
 
     public AllianceColorEnum allianceColor;
     public RobotPositionEnum robotPosition;
-    public TeamPropLocationEnum teamPropLocation;
     public long delayInSeconds;
 
     /**
@@ -121,7 +119,7 @@ public class MatchConfig {
             } catch (IOException e) {
                 reset();
             } catch (Exception e) {
-                // First time around, config file is absent. Do nothing
+                // First time around, config file doesn't exist. Do nothing
                 reset();
             }
         }
@@ -136,7 +134,6 @@ public class MatchConfig {
         FtcLogger.enter();
         allianceColor = AllianceColorEnum.RED;
         robotPosition = RobotPositionEnum.RIGHT;
-        teamPropLocation = TeamPropLocationEnum.LEFT;
         delayInSeconds = 0;
         gamePad1Connected = gamePad2Connected = false;
         configIsComplete = !configFeatureEnabled;
@@ -213,9 +210,9 @@ public class MatchConfig {
     public void showConfiguration() {
         if (configFeatureEnabled) {
             telemetry.addData("Match configuration", "");
-            telemetry.addData(">", "%s alliance, %s robot position",
+            telemetry.addData(FtcUtils.TAG, "%s alliance, %s robot position",
                     allianceColor, robotPosition);
-            telemetry.addData(">", "start delay %d seconds", delayInSeconds);
+            telemetry.addData(FtcUtils.TAG, "start delay %d seconds", delayInSeconds);
         }
     }
 

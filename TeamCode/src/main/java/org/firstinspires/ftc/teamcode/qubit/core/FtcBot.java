@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 Viktor Taylor. All rights reserved.
+/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -41,15 +41,17 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 public class FtcBot extends FtcSubSystem {
     private static final String TAG = "FtcBot";
     private boolean telemetryEnabled = true;
+    public FtcArm arm = null;
     public FtcBulkRead bulkRead = null;
+    public FtcBlinkinLed blinkinLed = null;
     public FtcDriveTrain driveTrain = null;
+    public FtcFlag flag = null;
 
     // robot sub systems
     public FtcImu imu = null;
-    public FtcIntakeM intake = null;
-    public FtcIntakeExtension intakeExtension = null;
-    public FtcOpenCvCam openCvCam = null;
-    public FtcShooter shooter = null;
+    public FtcIntake intake = null;
+    public FtcLift lift = null;
+    public FtcRnp rnp = null;
     public MatchConfig config = null;
     private Telemetry telemetry = null;
 
@@ -60,22 +62,28 @@ public class FtcBot extends FtcSubSystem {
     public void disableTelemetry() {
         FtcLogger.enter();
         telemetryEnabled = false;
+        arm.telemetryEnabled = false;
         driveTrain.telemetryEnabled = false;
+        blinkinLed.telemetryEnabled = false;
+        flag.telemetryEnabled = false;
         imu.telemetryEnabled = false;
         intake.telemetryEnabled = false;
-        intakeExtension.telemetryEnabled = false;
-        shooter.telemetryEnabled = false;
+        lift.telemetryEnabled = false;
+        rnp.telemetryEnabled = false;
         FtcLogger.exit();
     }
 
     public void enableTelemetry() {
         FtcLogger.enter();
         telemetryEnabled = true;
+        arm.telemetryEnabled = true;
         driveTrain.telemetryEnabled = true;
+        blinkinLed.telemetryEnabled = true;
+        flag.telemetryEnabled = true;
         imu.telemetryEnabled = true;
         intake.telemetryEnabled = true;
-        intakeExtension.telemetryEnabled = true;
-        shooter.telemetryEnabled = true;
+        lift.telemetryEnabled = true;
+        rnp.telemetryEnabled = true;
         FtcLogger.exit();
     }
 
@@ -92,31 +100,36 @@ public class FtcBot extends FtcSubSystem {
         FtcLogger.enter();
         this.telemetry = telemetry;
 
+        arm = new FtcArm(this);
+        arm.init(hardwareMap, telemetry);
+
         bulkRead = new FtcBulkRead();
         bulkRead.init(hardwareMap, telemetry);
+
+        blinkinLed = new FtcBlinkinLed(this);
+        blinkinLed.init(hardwareMap, telemetry);
+
         config = new MatchConfig();
         config.init(hardwareMap, telemetry);
+
         driveTrain = new FtcDriveTrain(this);
         driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
         driveTrain.init(hardwareMap, telemetry);
-        intake = new FtcIntakeM();
-        intake.init(hardwareMap, telemetry);
-        intakeExtension = new FtcIntakeExtension();
-        intakeExtension.init(hardwareMap, telemetry);
-        shooter = new FtcShooter();
-        shooter.init(hardwareMap, telemetry);
-        imu = new FtcImu();
-        if (!autoOp) {
-            // PERFORMANCE
-            imu.init(hardwareMap, telemetry);
-        }
 
-        openCvCam = new FtcOpenCvCam();
-        if (autoOp) {
-            // PERFORMANCE
-            // Don't initialize webCam in TeleOp, to save on CPU cycles and battery.
-            openCvCam.init(hardwareMap, telemetry);
-        }
+        flag = new FtcFlag();
+        flag.init(hardwareMap, telemetry);
+
+        imu = new FtcImu();
+        imu.init(hardwareMap, telemetry);
+
+        intake = new FtcIntake(this);
+        intake.init(hardwareMap, telemetry);
+
+        lift = new FtcLift(this);
+        lift.init(hardwareMap, telemetry);
+
+        rnp = new FtcRnp();
+        rnp.init(hardwareMap, telemetry);
 
         telemetry.addData(TAG, "initialized");
         FtcLogger.exit();
@@ -129,19 +142,26 @@ public class FtcBot extends FtcSubSystem {
         FtcLogger.enter();
 
         bulkRead.clearBulkCache();
+        blinkinLed.operate(gamePad1, gamePad2, runtime);
 
         // Drive operation
-        driveTrain.operate(gamePad1, gamePad2, loopTime);
-        intake.operate(gamePad1, gamePad2);
-        intakeExtension.operate(gamePad1, gamePad2);
-        shooter.operate(gamePad1, gamePad2);
+        arm.operate(gamePad1, gamePad2, runtime);
+        driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
+        flag.operate(gamePad1, gamePad2);
+
+        intake.operate(gamePad1, gamePad2, runtime);
+        lift.operate(gamePad1, gamePad2, runtime);
+        rnp.operate(gamePad1, gamePad2, runtime);
         if (telemetryEnabled) {
+            arm.showTelemetry();
+            blinkinLed.showTelemetry();
+            flag.showTelemetry();
             imu.showTelemetry();
+            intake.showTelemetry();
             showGamePadTelemetry(gamePad1);
             driveTrain.showTelemetry();
-            intake.showTelemetry();
-            intakeExtension.showTelemetry();
-            shooter.showTelemetry();
+            lift.showTelemetry();
+            rnp.showTelemetry();
         }
 
         FtcLogger.exit();
@@ -169,32 +189,60 @@ public class FtcBot extends FtcSubSystem {
      */
     public void start() {
         FtcLogger.enter();
-        intake.start();
-        intakeExtension.start();
-        shooter.start();
+        if (arm != null) {
+            arm.start();
+        }
+
+        if (flag != null) {
+            flag.start();
+        }
+
+        if (intake != null) {
+            intake.start();
+        }
+
+        if (rnp != null) {
+            rnp.start();
+        }
+
         FtcLogger.exit();
     }
 
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
     public void stop() {
         FtcLogger.enter();
-        if (imu != null) {
-            imu.stop();
+        if (arm != null) {
+            arm.stop();
+        }
+
+        if (blinkinLed != null) {
+            blinkinLed.stop();
         }
 
         if (driveTrain != null) {
             driveTrain.stop();
         }
 
+        if (flag != null) {
+            flag.stop();
+        }
+
+        if (imu != null) {
+            imu.stop();
+        }
+
+        if (lift != null) {
+            lift.stop();
+        }
+
         if (intake != null) {
             intake.stop();
         }
 
-        if (intakeExtension != null) {
-            intakeExtension.stop();
-        }
-
-        if (shooter != null) {
-            shooter.stop();
+        if (rnp != null) {
+            rnp.stop(false);
         }
 
         FtcLogger.exit();
