@@ -6,7 +6,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
-import org.firstinspires.ftc.teamcode.pedroPathing.localization.GoBildaPinpointDriver;
+import com.pedropathing.localization.GoBildaPinpointDriver;
 
 import java.util.concurrent.TimeUnit;
 
