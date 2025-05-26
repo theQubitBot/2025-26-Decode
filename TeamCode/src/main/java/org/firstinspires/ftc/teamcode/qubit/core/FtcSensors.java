@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -34,29 +34,29 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * A class to manage the sensors.
  */
 public class FtcSensors extends FtcSubSystem {
-    private static final String TAG = "FtcSensors";
-    private Telemetry telemetry = null;
-    public boolean showTelemetry = true;
+  private static final String TAG = "FtcSensors";
+  private Telemetry telemetry = null;
+  public boolean showTelemetry = true;
 
-    public FtcSensors() {
-    }
+  public FtcSensors() {
+  }
 
-    /**
-     * Initialize standard Hardware interfaces
-     *
-     * @param hardwareMap The hardware map to use for initialization.
-     * @param telemetry   The telemetry to use.
-     */
-    public void init(HardwareMap hardwareMap, Telemetry telemetry, FtcBot robot) {
-        FtcLogger.enter();
-        // Save reference to Hardware map
-        this.telemetry = telemetry;
-        showTelemetry();
-        FtcLogger.exit();
-    }
+  /**
+   * Initialize standard Hardware interfaces
+   *
+   * @param hardwareMap The hardware map to use for initialization.
+   * @param telemetry   The telemetry to use.
+   */
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, FtcBot robot) {
+    FtcLogger.enter();
+    // Save reference to Hardware map
+    this.telemetry = telemetry;
+    showTelemetry();
+    FtcLogger.exit();
+  }
 
-    public void showTelemetry() {
-        FtcLogger.enter();
-        FtcLogger.exit();
-    }
+  public void showTelemetry() {
+    FtcLogger.enter();
+    FtcLogger.exit();
+  }
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -39,122 +39,122 @@ import java.util.Locale;
  * A class to manage the flag.
  */
 public class FtcFlag extends FtcSubSystem {
-    private static final String TAG = "FtcFlag";
-    public static final String FLAG_SERVO_NAME = "flagServo";
-    public static final double FLAG_UP_POSITION = 0.5600;
-    public static final double FLAG_DOWN_POSITION = 0.5000;
-    public static final int FLAG_TRAVEL_TIME = 1200; // milliseconds
-    private final boolean flagEnabled = true;
-    public boolean telemetryEnabled = true;
-    private Telemetry telemetry = null;
-    private FtcServo flagServo = null;
+  private static final String TAG = "FtcFlag";
+  public static final String FLAG_SERVO_NAME = "flagServo";
+  public static final double FLAG_UP_POSITION = 0.5600;
+  public static final double FLAG_DOWN_POSITION = 0.5000;
+  public static final int FLAG_TRAVEL_TIME = 1200; // milliseconds
+  private final boolean flagEnabled = true;
+  public boolean telemetryEnabled = true;
+  private Telemetry telemetry = null;
+  private FtcServo flagServo = null;
 
-    /**
-     * Initialize standard Hardware interfaces.
-     *
-     * @param hardwareMap The hardware map to use for initialization.
-     * @param telemetry   The telemetry to use.
-     */
-    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
-        FtcLogger.enter();
-        this.telemetry = telemetry;
-        if (flagEnabled) {
-            flagServo = new FtcServo(hardwareMap.get(Servo.class, FLAG_SERVO_NAME));
-            flagServo.setDirection(Servo.Direction.REVERSE);
-            showTelemetry();
-            telemetry.addData(TAG, "initialized");
-        } else {
-            telemetry.addData(TAG, "not enabled");
-        }
-
-        FtcLogger.exit();
+  /**
+   * Initialize standard Hardware interfaces.
+   *
+   * @param hardwareMap The hardware map to use for initialization.
+   * @param telemetry   The telemetry to use.
+   */
+  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+    FtcLogger.enter();
+    this.telemetry = telemetry;
+    if (flagEnabled) {
+      flagServo = new FtcServo(hardwareMap.get(Servo.class, FLAG_SERVO_NAME));
+      flagServo.setDirection(Servo.Direction.REVERSE);
+      showTelemetry();
+      telemetry.addData(TAG, "initialized");
+    } else {
+      telemetry.addData(TAG, "not enabled");
     }
 
-    /**
-     * Operates the flag using the gamePads.
-     *
-     * @param gamePad1 The first gamePad to use.
-     * @param gamePad2 The second gamePad to use.
-     */
-    public void operate(Gamepad gamePad1, Gamepad gamePad2) {
-        FtcLogger.enter();
-        FtcLogger.exit();
+    FtcLogger.exit();
+  }
+
+  /**
+   * Operates the flag using the gamePads.
+   *
+   * @param gamePad1 The first gamePad to use.
+   * @param gamePad2 The second gamePad to use.
+   */
+  public void operate(Gamepad gamePad1, Gamepad gamePad2) {
+    FtcLogger.enter();
+    FtcLogger.exit();
+  }
+
+  /**
+   * Raise the flag.
+   *
+   * @param waitTillCompletion When true, waits till the flag is raised.
+   */
+  public void raise(boolean waitTillCompletion) {
+    FtcLogger.enter();
+    if (flagEnabled) {
+      flagServo.setPosition(FLAG_UP_POSITION);
+      if (waitTillCompletion) {
+        FtcUtils.sleep(FLAG_TRAVEL_TIME);
+      }
     }
 
-    /**
-     * Raise the flag.
-     *
-     * @param waitTillCompletion When true, waits till the flag is raised.
-     */
-    public void raise(boolean waitTillCompletion) {
-        FtcLogger.enter();
-        if (flagEnabled) {
-            flagServo.setPosition(FLAG_UP_POSITION);
-            if (waitTillCompletion) {
-                FtcUtils.sleep(FLAG_TRAVEL_TIME);
-            }
-        }
+    FtcLogger.exit();
+  }
 
-        FtcLogger.exit();
+  /**
+   * Lower the flag.
+   *
+   * @param waitTillCompletion When true, waits till the flag is lowered.
+   */
+  public void lower(boolean waitTillCompletion) {
+    FtcLogger.enter();
+    if (flagEnabled) {
+      flagServo.setPosition(FLAG_DOWN_POSITION);
+      if (waitTillCompletion) {
+        FtcUtils.sleep(FLAG_TRAVEL_TIME);
+      }
     }
 
-    /**
-     * Lower the flag.
-     *
-     * @param waitTillCompletion When true, waits till the flag is lowered.
-     */
-    public void lower(boolean waitTillCompletion) {
-        FtcLogger.enter();
-        if (flagEnabled) {
-            flagServo.setPosition(FLAG_DOWN_POSITION);
-            if (waitTillCompletion) {
-                FtcUtils.sleep(FLAG_TRAVEL_TIME);
-            }
-        }
+    FtcLogger.exit();
+  }
 
-        FtcLogger.exit();
+  /**
+   * Displays intake telemetry. Helps with debugging.
+   */
+  public void showTelemetry() {
+    FtcLogger.enter();
+    if (flagEnabled && telemetryEnabled && flagServo != null) {
+      telemetry.addData(TAG, String.format(Locale.US, "%.4f", flagServo.getPosition()));
     }
 
-    /**
-     * Displays intake telemetry. Helps with debugging.
-     */
-    public void showTelemetry() {
-        FtcLogger.enter();
-        if (flagEnabled && telemetryEnabled && flagServo != null) {
-            telemetry.addData(TAG, String.format(Locale.US, "%.4f", flagServo.getPosition()));
-        }
+    FtcLogger.exit();
+  }
 
-        FtcLogger.exit();
+  /**
+   * Code to run ONCE when the driver hits PLAY
+   */
+  public void start() {
+    FtcLogger.enter();
+    if (flagEnabled) {
+      if (flagServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        flagServo.getController().pwmEnable();
+      }
+
+      lower(false);
     }
 
-    /**
-     * Code to run ONCE when the driver hits PLAY
-     */
-    public void start() {
-        FtcLogger.enter();
-        if (flagEnabled) {
-            if (flagServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-                flagServo.getController().pwmEnable();
-            }
+    FtcLogger.exit();
+  }
 
-            lower(false);
-        }
-
-        FtcLogger.exit();
+  /**
+   * Stops the flag.
+   */
+  public void stop() {
+    FtcLogger.enter();
+    if (flagEnabled) {
+      if (flagServo != null &&
+          flagServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+        flagServo.getController().pwmDisable();
+      }
     }
 
-    /**
-     * Stops the flag.
-     */
-    public void stop() {
-        FtcLogger.enter();
-        if (flagEnabled) {
-            if (flagServo != null &&
-                    flagServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
-                flagServo.getController().pwmDisable();
-            }
-        }
-
-        FtcLogger.exit();
-    }
+    FtcLogger.exit();
+  }
 }

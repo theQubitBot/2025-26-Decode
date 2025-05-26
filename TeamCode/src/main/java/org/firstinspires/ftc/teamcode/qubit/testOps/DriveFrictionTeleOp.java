@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -47,118 +47,118 @@ import java.util.Locale;
 @Disabled
 @TeleOp(group = "TestOp")
 public class DriveFrictionTeleOp extends OpMode {
-    // Declare OpMode members
-    private ElapsedTime runtime = null;
-    private ElapsedTime loopTime = null;
-    private boolean lastDPadUpPressed = false, lastDPadDownPressed = false;
-    double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
-    double rampUpDownPower = 0.01;
-    double lfVelocity, lrVelocity, rfVelocity, rrVelocity, maxVelocity;
-    FtcDriveTrain driveTrain = null;
+  // Declare OpMode members
+  private ElapsedTime runtime = null;
+  private ElapsedTime loopTime = null;
+  private boolean lastDPadUpPressed = false, lastDPadDownPressed = false;
+  double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
+  double rampUpDownPower = 0.01;
+  double lfVelocity, lrVelocity, rfVelocity, rrVelocity, maxVelocity;
+  FtcDriveTrain driveTrain = null;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
-    @Override
-    public void init() {
-        FtcLogger.enter();
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        if (dashboard != null) {
-            telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        }
-
-        telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
-        telemetry.update();
-        driveTrain = new FtcDriveTrain(null);
-        driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
-        driveTrain.init(hardwareMap, telemetry);
-        driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-        FtcLogger.exit();
+  /*
+   * Code to run ONCE when the driver hits INIT
+   */
+  @Override
+  public void init() {
+    FtcLogger.enter();
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    if (dashboard != null) {
+      telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
-        telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
-        telemetry.update();
-        FtcUtils.sleep(FtcUtils.CYCLE_MS);
+    telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
+    telemetry.update();
+    driveTrain = new FtcDriveTrain(null);
+    driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
+    driveTrain.init(hardwareMap, telemetry);
+    driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+    FtcLogger.exit();
+  }
+
+  /*
+   * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+   */
+  @Override
+  public void init_loop() {
+    telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
+    telemetry.update();
+    FtcUtils.sleep(FtcUtils.CYCLE_MS);
+  }
+
+  /*
+   * Code to run ONCE when the driver hits PLAY
+   */
+  @Override
+  public void start() {
+    FtcLogger.enter();
+    telemetry.addData(FtcUtils.TAG, "Starting...");
+    telemetry.update();
+    runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    driveTrain.telemetryEnabled = FtcUtils.DEBUG;
+    FtcLogger.exit();
+  }
+
+  /*
+   * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+   */
+  @Override
+  public void loop() {
+    FtcLogger.enter();
+    // Show the elapsed game time and wheel power.
+    loopTime.reset();
+
+    telemetry.addData(FtcUtils.TAG, "dPad up/down for power up/down");
+    if (gamepad1.dpad_up || gamepad2.dpad_up) {
+      if (!lastDPadUpPressed) {
+        lastDPadUpPressed = true;
+        newMotorPower += rampUpDownPower;
+      }
+    } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+      if (!lastDPadDownPressed) {
+        lastDPadDownPressed = true;
+        newMotorPower -= rampUpDownPower;
+      }
+    } else {
+      lastDPadUpPressed = false;
+      lastDPadDownPressed = false;
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
-        FtcLogger.enter();
-        telemetry.addData(FtcUtils.TAG, "Starting...");
-        telemetry.update();
-        runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        driveTrain.telemetryEnabled = FtcUtils.DEBUG;
-        FtcLogger.exit();
+    newMotorPower = Range.clip(newMotorPower,
+        FtcMotor.ZERO_POWER, FtcDriveTrain.MAXIMUM_FORWARD_POWER);
+    if (newMotorPower != oldMotorPower) {
+      driveTrain.setDrivePower(newMotorPower, newMotorPower, newMotorPower, newMotorPower);
+      oldMotorPower = newMotorPower;
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
-    @Override
-    public void loop() {
-        FtcLogger.enter();
-        // Show the elapsed game time and wheel power.
-        loopTime.reset();
+    // Emit telemetry for graph plots in RoadRunner Dashboard
+    lfVelocity = Math.abs(driveTrain.allMotors.get(0).getVelocity());
+    lrVelocity = Math.abs(driveTrain.allMotors.get(1).getVelocity());
+    rfVelocity = Math.abs(driveTrain.allMotors.get(2).getVelocity());
+    rrVelocity = Math.abs(driveTrain.allMotors.get(3).getVelocity());
+    maxVelocity = Math.max(Math.max(lfVelocity, lrVelocity), Math.max(rfVelocity, rrVelocity));
+    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Motor power %.2f", newMotorPower));
+    telemetry.addData("LF", maxVelocity - lfVelocity);
+    telemetry.addData("LR", maxVelocity - lrVelocity);
+    telemetry.addData("RF", maxVelocity - rfVelocity);
+    telemetry.addData("RR", maxVelocity - rrVelocity);
 
-        telemetry.addData(FtcUtils.TAG, "dPad up/down for power up/down");
-        if (gamepad1.dpad_up || gamepad2.dpad_up) {
-            if (!lastDPadUpPressed) {
-                lastDPadUpPressed = true;
-                newMotorPower += rampUpDownPower;
-            }
-        } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
-            if (!lastDPadDownPressed) {
-                lastDPadDownPressed = true;
-                newMotorPower -= rampUpDownPower;
-            }
-        } else {
-            lastDPadUpPressed = false;
-            lastDPadDownPressed = false;
-        }
+    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
+        loopTime.milliseconds(), runtime.seconds());
+    telemetry.update();
+    FtcLogger.exit();
+  }
 
-        newMotorPower = Range.clip(newMotorPower,
-                FtcMotor.ZERO_POWER, FtcDriveTrain.MAXIMUM_FORWARD_POWER);
-        if (newMotorPower != oldMotorPower) {
-            driveTrain.setDrivePower(newMotorPower, newMotorPower, newMotorPower, newMotorPower);
-            oldMotorPower = newMotorPower;
-        }
-
-        // Emit telemetry for graph plots in RoadRunner Dashboard
-        lfVelocity = Math.abs(driveTrain.allMotors.get(0).getVelocity());
-        lrVelocity = Math.abs(driveTrain.allMotors.get(1).getVelocity());
-        rfVelocity = Math.abs(driveTrain.allMotors.get(2).getVelocity());
-        rrVelocity = Math.abs(driveTrain.allMotors.get(3).getVelocity());
-        maxVelocity = Math.max(Math.max(lfVelocity, lrVelocity), Math.max(rfVelocity, rrVelocity));
-        telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Motor power %.2f", newMotorPower));
-        telemetry.addData("LF", maxVelocity - lfVelocity);
-        telemetry.addData("LR", maxVelocity - lrVelocity);
-        telemetry.addData("RF", maxVelocity - rfVelocity);
-        telemetry.addData("RR", maxVelocity - rrVelocity);
-
-        telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
-                loopTime.milliseconds(), runtime.seconds());
-        telemetry.update();
-        FtcLogger.exit();
-    }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-        FtcLogger.enter();
-        driveTrain.stop();
-        this.telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
-        this.telemetry.update();
-        FtcLogger.exit();
-    }
+  /*
+   * Code to run ONCE after the driver hits STOP
+   */
+  @Override
+  public void stop() {
+    FtcLogger.enter();
+    driveTrain.stop();
+    this.telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
+    this.telemetry.update();
+    FtcLogger.exit();
+  }
 }

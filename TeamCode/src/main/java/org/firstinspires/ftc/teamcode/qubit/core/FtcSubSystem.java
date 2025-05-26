@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -32,23 +32,23 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public abstract class FtcSubSystem implements FtcSubSystemOps {
-    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
-        throw new UnsupportedOperationException();
-    }
+  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+    throw new UnsupportedOperationException();
+  }
 
-    public void start() {
-        throw new UnsupportedOperationException();
-    }
+  public void start() {
+    throw new UnsupportedOperationException();
+  }
 
-    public void operate(Gamepad gamePad1, Gamepad gamePad2) {
-        throw new UnsupportedOperationException();
-    }
+  public void operate(Gamepad gamePad1, Gamepad gamePad2) {
+    throw new UnsupportedOperationException();
+  }
 
-    public void stop() {
-        throw new UnsupportedOperationException();
-    }
+  public void stop() {
+    throw new UnsupportedOperationException();
+  }
 
-    public void showTelemetry() {
-        throw new UnsupportedOperationException();
-    }
+  public void showTelemetry() {
+    throw new UnsupportedOperationException();
+  }
 }

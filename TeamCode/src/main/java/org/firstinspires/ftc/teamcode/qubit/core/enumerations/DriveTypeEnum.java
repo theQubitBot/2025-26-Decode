@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -30,7 +30,7 @@ package org.firstinspires.ftc.teamcode.qubit.core.enumerations;
  * There are two ways to drive a robot
  */
 public enum DriveTypeEnum {
-    UNKNOWN,
-    FIELD_ORIENTED_DRIVE,
-    POINT_OF_VIEW_DRIVE
+  UNKNOWN,
+  FIELD_ORIENTED_DRIVE,
+  POINT_OF_VIEW_DRIVE
 }

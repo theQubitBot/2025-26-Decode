@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -38,134 +38,134 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  * A class to manage the built-in IMU.
  */
 public class FtcBhi260apImu extends FtcSubSystem {
-    private static final String TAG = "FtcBhi260apImu";
-    public boolean telemetryEnabled = true;
-    Telemetry telemetry = null;
-    private IMU imu = null;
-    private boolean imuIsGood = true;
-    private static final Object directionLock = new Object();
-    private double heading = 0.0; // Increases when robot turns left
-    private double pitch = 0.0;
-    private double roll = 0.0;
+  private static final String TAG = "FtcBhi260apImu";
+  public boolean telemetryEnabled = true;
+  Telemetry telemetry = null;
+  private IMU imu = null;
+  private boolean imuIsGood = true;
+  private static final Object directionLock = new Object();
+  private double heading = 0.0; // Increases when robot turns left
+  private double pitch = 0.0;
+  private double roll = 0.0;
 
-    /* Constructor */
-    public FtcBhi260apImu() {
+  /* Constructor */
+  public FtcBhi260apImu() {
+  }
+
+  /**
+   * A thread safe method to get IMU heading.
+   *
+   * @return The IMU heading.
+   */
+  public double getHeading() {
+    double currentHeading;
+    synchronized (directionLock) {
+      currentHeading = heading;
     }
 
-    /**
-     * A thread safe method to get IMU heading.
-     *
-     * @return The IMU heading.
-     */
-    public double getHeading() {
-        double currentHeading;
-        synchronized (directionLock) {
-            currentHeading = heading;
-        }
+    return currentHeading;
+  }
 
-        return currentHeading;
+  /**
+   * A thread safe method to get IMU pitch.
+   *
+   * @return The IMU pitch.
+   */
+  public double getPitch() {
+    double currentPitch;
+    synchronized (directionLock) {
+      currentPitch = pitch;
     }
 
-    /**
-     * A thread safe method to get IMU pitch.
-     *
-     * @return The IMU pitch.
-     */
-    public double getPitch() {
-        double currentPitch;
-        synchronized (directionLock) {
-            currentPitch = pitch;
-        }
+    return currentPitch;
+  }
 
-        return currentPitch;
+  /**
+   * A thread safe method to get IMU roll.
+   *
+   * @return The IMU roll.
+   */
+  public double getRoll() {
+    double currentRoll;
+    synchronized (directionLock) {
+      currentRoll = roll;
     }
 
-    /**
-     * A thread safe method to get IMU roll.
-     *
-     * @return The IMU roll.
-     */
-    public double getRoll() {
-        double currentRoll;
-        synchronized (directionLock) {
-            currentRoll = roll;
-        }
+    return currentRoll;
+  }
 
-        return currentRoll;
+  public boolean imuIsGood() {
+    boolean isGood;
+    synchronized (directionLock) {
+      isGood = imuIsGood;
     }
 
-    public boolean imuIsGood() {
-        boolean isGood;
-        synchronized (directionLock) {
-            isGood = imuIsGood;
-        }
-
-        if (!isGood) {
-            telemetry.addData(TAG, "IMU is in a bad state.");
-        }
-
-        return isGood;
+    if (!isGood) {
+      telemetry.addData(TAG, "IMU is in a bad state.");
     }
 
-    /**
-     * Initialize IMU. Robot must be still during IMU initialization (calibration).
-     * See <a href="https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html">...</a>
-     * for initialization times.
-     *
-     * @param hardwareMap The hardware map to use for initialization.
-     * @param telemetry   The telemetry object to use.
-     */
-    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
-        FtcLogger.enter();
-        this.telemetry = telemetry;
-        imu = hardwareMap.get(IMU.class, "imu");
-        if (imu != null) {
-            RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                    RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
-            imu.initialize(new IMU.Parameters(orientationOnRobot));
-            imu.resetYaw();
+    return isGood;
+  }
 
-            // Get a reading before the async reader is started.
-            read();
-            showTelemetry();
-            telemetry.addData(TAG, "initialized");
-        } else {
-            telemetry.addData(TAG, "not initialized");
-        }
+  /**
+   * Initialize IMU. Robot must be still during IMU initialization (calibration).
+   * See <a href="https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html">...</a>
+   * for initialization times.
+   *
+   * @param hardwareMap The hardware map to use for initialization.
+   * @param telemetry   The telemetry object to use.
+   */
+  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+    FtcLogger.enter();
+    this.telemetry = telemetry;
+    imu = hardwareMap.get(IMU.class, "imu");
+    if (imu != null) {
+      RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(
+          RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+          RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
+      imu.initialize(new IMU.Parameters(orientationOnRobot));
+      imu.resetYaw();
 
-        FtcLogger.exit();
+      // Get a reading before the async reader is started.
+      read();
+      showTelemetry();
+      telemetry.addData(TAG, "initialized");
+    } else {
+      telemetry.addData(TAG, "not initialized");
     }
 
-    /**
-     * Read the IMU and store information for later use.
-     */
-    public void read() {
-        FtcLogger.enter();
-        if (imu != null) {
-            YawPitchRollAngles yawPitchRollAngles = imu.getRobotYawPitchRollAngles();
-            synchronized (directionLock) {
-                heading = yawPitchRollAngles.getYaw(AngleUnit.DEGREES);
-                pitch = yawPitchRollAngles.getPitch(AngleUnit.DEGREES);
-                roll = yawPitchRollAngles.getRoll(AngleUnit.DEGREES);
-                imuIsGood = yawPitchRollAngles.getAcquisitionTime() != 0;
-            }
-        }
+    FtcLogger.exit();
+  }
 
-        FtcLogger.exit();
+  /**
+   * Read the IMU and store information for later use.
+   */
+  public void read() {
+    FtcLogger.enter();
+    if (imu != null) {
+      YawPitchRollAngles yawPitchRollAngles = imu.getRobotYawPitchRollAngles();
+      synchronized (directionLock) {
+        heading = yawPitchRollAngles.getYaw(AngleUnit.DEGREES);
+        pitch = yawPitchRollAngles.getPitch(AngleUnit.DEGREES);
+        roll = yawPitchRollAngles.getRoll(AngleUnit.DEGREES);
+        imuIsGood = yawPitchRollAngles.getAcquisitionTime() != 0;
+      }
     }
 
-    /**
-     * Display IMU (gyro) telemetry.
-     */
-    public void showTelemetry() {
-        FtcLogger.enter();
-        if (telemetryEnabled) {
-            telemetry.addData("Heading/Yaw", "%.2f", getHeading());
-            telemetry.addData("Pitch", "%.2f", getPitch());
-            telemetry.addData("Roll", "%.2f", getRoll());
-        }
+    FtcLogger.exit();
+  }
 
-        FtcLogger.exit();
+  /**
+   * Display IMU (gyro) telemetry.
+   */
+  public void showTelemetry() {
+    FtcLogger.enter();
+    if (telemetryEnabled) {
+      telemetry.addData("Heading/Yaw", "%.2f", getHeading());
+      telemetry.addData("Pitch", "%.2f", getPitch());
+      telemetry.addData("Roll", "%.2f", getRoll());
     }
+
+    FtcLogger.exit();
+  }
 }

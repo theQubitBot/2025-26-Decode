@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -44,188 +44,188 @@ import java.io.IOException;
  * auto ops, tele ops and reboots.
  */
 public class MatchConfig {
-    private static final String TAG = "MatchConfig";
-    public static final String MATCH_CONFIG_FILENAME = "matchConfig.txt";
-    private static final long MAX_START_DELAY_SECONDS = 10;
-    private boolean gamePad1Connected, gamePad2Connected;
-    public boolean configIsComplete;
-    private final boolean configFeatureEnabled = true;
-    private boolean lastDPadUpPressed = false, lastDPadDownPressed = false;
-    private HardwareMap hardwareMap = null;
-    private Telemetry telemetry = null;
+  private static final String TAG = "MatchConfig";
+  public static final String MATCH_CONFIG_FILENAME = "matchConfig.txt";
+  private static final long MAX_START_DELAY_SECONDS = 10;
+  private boolean gamePad1Connected, gamePad2Connected;
+  public boolean configIsComplete;
+  private final boolean configFeatureEnabled = true;
+  private boolean lastDPadUpPressed = false, lastDPadDownPressed = false;
+  private HardwareMap hardwareMap = null;
+  private Telemetry telemetry = null;
 
-    public AllianceColorEnum allianceColor;
-    public RobotPositionEnum robotPosition;
-    public long delayInSeconds;
+  public AllianceColorEnum allianceColor;
+  public RobotPositionEnum robotPosition;
+  public long delayInSeconds;
 
-    /**
-     * Constructor
-     */
-    public MatchConfig() {
-        if (configFeatureEnabled) {
-            reset();
-        }
+  /**
+   * Constructor
+   */
+  public MatchConfig() {
+    if (configFeatureEnabled) {
+      reset();
+    }
+  }
+
+  /**
+   * Initialize standard Hardware interfaces.
+   * Reads match configuration from the configuration file.
+   *
+   * @param hardwareMap The hardware map to use for initialization.
+   * @param telemetry   The telemetry to use.
+   */
+  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+    FtcLogger.enter();
+    this.hardwareMap = hardwareMap;
+    this.telemetry = telemetry;
+    readFromFile();
+
+    FtcLogger.exit();
+  }
+
+  /**
+   * Determines if the gamePad is connected to the driver station.
+   *
+   * @param gamePad The gamePad to evaluate.
+   * @return true, if gamePad is connected, false otherwise.
+   */
+  private boolean isGamePadConnected(Gamepad gamePad) {
+    // GamePad is assumed to be connected if any of the inputs
+    // is not a default input.
+    return gamePad.getGamepadId() != Gamepad.ID_UNASSOCIATED || gamePad.getUser() != null ||
+        gamePad.a || gamePad.b || gamePad.x || gamePad.y ||
+        gamePad.left_bumper || gamePad.left_trigger > 0.1 ||
+        gamePad.right_bumper || gamePad.right_trigger > 0.1 ||
+        gamePad.dpad_left || gamePad.dpad_right || gamePad.dpad_up || gamePad.dpad_down ||
+        Math.abs(gamePad.left_stick_x) > 0.1 || Math.abs(gamePad.left_stick_y) > 0.1 ||
+        Math.abs(gamePad.right_stick_x) > 0.1 || Math.abs(gamePad.right_stick_y) > 0.1 ||
+        gamePad.left_stick_button || gamePad.right_stick_button;
+  }
+
+  /**
+   * Reads match configuration from the saved configuration file.
+   */
+  private void readFromFile() {
+    FtcLogger.enter();
+
+    if (configFeatureEnabled) {
+      try {
+        File file = AppUtil.getInstance().getSettingsFile(MATCH_CONFIG_FILENAME);
+        String data = ReadWriteFile.readFileOrThrow(file);
+        MatchConfig savedMatchConfig = FtcUtils.deserialize(data, MatchConfig.class);
+        allianceColor = savedMatchConfig.allianceColor;
+        robotPosition = savedMatchConfig.robotPosition;
+        delayInSeconds = savedMatchConfig.delayInSeconds;
+      } catch (IOException e) {
+        reset();
+      } catch (Exception e) {
+        // First time around, config file doesn't exist. Do nothing
+        reset();
+      }
     }
 
-    /**
-     * Initialize standard Hardware interfaces.
-     * Reads match configuration from the configuration file.
-     *
-     * @param hardwareMap The hardware map to use for initialization.
-     * @param telemetry   The telemetry to use.
-     */
-    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
-        FtcLogger.enter();
-        this.hardwareMap = hardwareMap;
-        this.telemetry = telemetry;
-        readFromFile();
+    FtcLogger.exit();
+  }
 
-        FtcLogger.exit();
-    }
+  /**
+   * Resets the match configuration to default values.
+   */
+  public void reset() {
+    FtcLogger.enter();
+    allianceColor = AllianceColorEnum.RED;
+    robotPosition = RobotPositionEnum.RIGHT;
+    delayInSeconds = 0;
+    gamePad1Connected = gamePad2Connected = false;
+    configIsComplete = !configFeatureEnabled;
+    FtcLogger.exit();
+  }
 
-    /**
-     * Determines if the gamePad is connected to the driver station.
-     *
-     * @param gamePad The gamePad to evaluate.
-     * @return true, if gamePad is connected, false otherwise.
-     */
-    private boolean isGamePadConnected(Gamepad gamePad) {
-        // GamePad is assumed to be connected if any of the inputs
-        // is not a default input.
-        return gamePad.getGamepadId() != Gamepad.ID_UNASSOCIATED || gamePad.getUser() != null ||
-                gamePad.a || gamePad.b || gamePad.x || gamePad.y ||
-                gamePad.left_bumper || gamePad.left_trigger > 0.1 ||
-                gamePad.right_bumper || gamePad.right_trigger > 0.1 ||
-                gamePad.dpad_left || gamePad.dpad_right || gamePad.dpad_up || gamePad.dpad_down ||
-                Math.abs(gamePad.left_stick_x) > 0.1 || Math.abs(gamePad.left_stick_y) > 0.1 ||
-                Math.abs(gamePad.right_stick_x) > 0.1 || Math.abs(gamePad.right_stick_y) > 0.1 ||
-                gamePad.left_stick_button || gamePad.right_stick_button;
-    }
-
-    /**
-     * Reads match configuration from the saved configuration file.
-     */
-    private void readFromFile() {
-        FtcLogger.enter();
-
-        if (configFeatureEnabled) {
-            try {
-                File file = AppUtil.getInstance().getSettingsFile(MATCH_CONFIG_FILENAME);
-                String data = ReadWriteFile.readFileOrThrow(file);
-                MatchConfig savedMatchConfig = FtcUtils.deserialize(data, MatchConfig.class);
-                allianceColor = savedMatchConfig.allianceColor;
-                robotPosition = savedMatchConfig.robotPosition;
-                delayInSeconds = savedMatchConfig.delayInSeconds;
-            } catch (IOException e) {
-                reset();
-            } catch (Exception e) {
-                // First time around, config file doesn't exist. Do nothing
-                reset();
-            }
-        }
-
-        FtcLogger.exit();
-    }
-
-    /**
-     * Resets the match configuration to default values.
-     */
-    public void reset() {
-        FtcLogger.enter();
+  /**
+   * Updates match configuration based on gamPad inputs.
+   *
+   * @param gamePad1 The first gamPad to use.
+   * @param gamePad2 The second gamPad to use.
+   */
+  public void update(Gamepad gamePad1, Gamepad gamePad2) {
+    if (configFeatureEnabled) {
+      // Configure alliance color
+      if (gamePad1.right_bumper || gamePad1.left_bumper ||
+          gamePad2.right_bumper || gamePad2.left_bumper) {
+        allianceColor = AllianceColorEnum.BLUE;
+      } else if (gamePad1.right_trigger > 0.5 || gamePad1.left_trigger > 0.5 ||
+          gamePad2.right_trigger > 0.5 || gamePad2.left_trigger > 0.5) {
         allianceColor = AllianceColorEnum.RED;
+      }
+
+      // Configure robot position on the field
+      if (gamePad1.dpad_left || gamePad2.dpad_left) {
+        robotPosition = RobotPositionEnum.LEFT;
+      } else if (gamePad1.dpad_right || gamePad2.dpad_right) {
         robotPosition = RobotPositionEnum.RIGHT;
-        delayInSeconds = 0;
-        gamePad1Connected = gamePad2Connected = false;
-        configIsComplete = !configFeatureEnabled;
-        FtcLogger.exit();
-    }
+      }
 
-    /**
-     * Updates match configuration based on gamPad inputs.
-     *
-     * @param gamePad1 The first gamPad to use.
-     * @param gamePad2 The second gamPad to use.
-     */
-    public void update(Gamepad gamePad1, Gamepad gamePad2) {
-        if (configFeatureEnabled) {
-            // Configure alliance color
-            if (gamePad1.right_bumper || gamePad1.left_bumper ||
-                    gamePad2.right_bumper || gamePad2.left_bumper) {
-                allianceColor = AllianceColorEnum.BLUE;
-            } else if (gamePad1.right_trigger > 0.5 || gamePad1.left_trigger > 0.5 ||
-                    gamePad2.right_trigger > 0.5 || gamePad2.left_trigger > 0.5) {
-                allianceColor = AllianceColorEnum.RED;
-            }
-
-            // Configure robot position on the field
-            if (gamePad1.dpad_left || gamePad2.dpad_left) {
-                robotPosition = RobotPositionEnum.LEFT;
-            } else if (gamePad1.dpad_right || gamePad2.dpad_right) {
-                robotPosition = RobotPositionEnum.RIGHT;
-            }
-
-            // Configure initial delay
-            if (gamePad1.dpad_up || gamePad2.dpad_up) {
-                if (!lastDPadUpPressed) {
-                    lastDPadUpPressed = true;
-                    delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
-                }
-            } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
-                if (!lastDPadDownPressed) {
-                    lastDPadDownPressed = true;
-                    delayInSeconds = Math.max(delayInSeconds - 1, 0);
-                }
-            } else {
-                lastDPadUpPressed = false;
-                lastDPadDownPressed = false;
-            }
-
-            // Evaluate gamePad connections, if not connected.
-            if (!gamePad1Connected) {
-                gamePad1Connected = isGamePadConnected(gamePad1);
-            }
-
-            if (!gamePad2Connected) {
-                gamePad2Connected = isGamePadConnected(gamePad2);
-            }
+      // Configure initial delay
+      if (gamePad1.dpad_up || gamePad2.dpad_up) {
+        if (!lastDPadUpPressed) {
+          lastDPadUpPressed = true;
+          delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
         }
-    }
-
-    /**
-     * Saves the configuration to the configuration file.
-     */
-    public void saveToFile() {
-        FtcLogger.enter();
-        if (configFeatureEnabled) {
-            File file = AppUtil.getInstance().getSettingsFile(MATCH_CONFIG_FILENAME);
-            ReadWriteFile.writeFile(file, FtcUtils.serialize(this));
+      } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
+        if (!lastDPadDownPressed) {
+          lastDPadDownPressed = true;
+          delayInSeconds = Math.max(delayInSeconds - 1, 0);
         }
+      } else {
+        lastDPadUpPressed = false;
+        lastDPadDownPressed = false;
+      }
 
-        FtcLogger.exit();
+      // Evaluate gamePad connections, if not connected.
+      if (!gamePad1Connected) {
+        gamePad1Connected = isGamePadConnected(gamePad1);
+      }
+
+      if (!gamePad2Connected) {
+        gamePad2Connected = isGamePadConnected(gamePad2);
+      }
+    }
+  }
+
+  /**
+   * Saves the configuration to the configuration file.
+   */
+  public void saveToFile() {
+    FtcLogger.enter();
+    if (configFeatureEnabled) {
+      File file = AppUtil.getInstance().getSettingsFile(MATCH_CONFIG_FILENAME);
+      ReadWriteFile.writeFile(file, FtcUtils.serialize(this));
     }
 
-    /**
-     * Displays Match Configuration on Driver Station screen.
-     */
-    public void showConfiguration() {
-        if (configFeatureEnabled) {
-            telemetry.addData("Match configuration", "");
-            telemetry.addData(FtcUtils.TAG, "%s alliance, %s robot position",
-                    allianceColor, robotPosition);
-            telemetry.addData(FtcUtils.TAG, "start delay %d seconds", delayInSeconds);
-        }
-    }
+    FtcLogger.exit();
+  }
 
-    /**
-     * Displays Match Configuration Command Menu on Driver Station screen.
-     */
-    public void showMenu() {
-        if (configFeatureEnabled) {
-            telemetry.addData("Match Configuration Command Menu", "");
-            telemetry.addData("Bumper", "alliance color BLUE");
-            telemetry.addData("Trigger", "alliance color RED");
-            telemetry.addData("dPad", "left: LEFT position, right: RIGHT position");
-            telemetry.addData("Start delay", "dPad up: increase, down: decrease");
-        }
+  /**
+   * Displays Match Configuration on Driver Station screen.
+   */
+  public void showConfiguration() {
+    if (configFeatureEnabled) {
+      telemetry.addData("Match configuration", "");
+      telemetry.addData(FtcUtils.TAG, "%s alliance, %s robot position",
+          allianceColor, robotPosition);
+      telemetry.addData(FtcUtils.TAG, "start delay %d seconds", delayInSeconds);
     }
+  }
+
+  /**
+   * Displays Match Configuration Command Menu on Driver Station screen.
+   */
+  public void showMenu() {
+    if (configFeatureEnabled) {
+      telemetry.addData("Match Configuration Command Menu", "");
+      telemetry.addData("Bumper", "alliance color BLUE");
+      telemetry.addData("Trigger", "alliance color RED");
+      telemetry.addData("dPad", "left: LEFT position, right: RIGHT position");
+      telemetry.addData("Start delay", "dPad up: increase, down: decrease");
+    }
+  }
 }

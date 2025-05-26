@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 The Qubit Bot. All rights reserved.
+/* Copyright (c) 2025 The Qubit Bot. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -41,100 +41,100 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 @Disabled
 @TeleOp(group = "TestOp")
 public class DriveTrainTeleOp extends OpMode {
-    // Declare OpMode members
-    private ElapsedTime runtime = null;
-    private ElapsedTime loopTime = null;
-    private double lastLoopTime = 0.0;
-    FtcBot robot = null;
+  // Declare OpMode members
+  private ElapsedTime runtime = null;
+  private ElapsedTime loopTime = null;
+  private double lastLoopTime = 0.0;
+  FtcBot robot = null;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
-    @Override
-    public void init() {
-        FtcLogger.enter();
-        telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
-        telemetry.update();
-        robot = new FtcBot();
-        robot.init(hardwareMap, telemetry, false);
-        robot.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        FtcLogger.exit();
+  /*
+   * Code to run ONCE when the driver hits INIT
+   */
+  @Override
+  public void init() {
+    FtcLogger.enter();
+    telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
+    telemetry.update();
+    robot = new FtcBot();
+    robot.init(hardwareMap, telemetry, false);
+    robot.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+    FtcLogger.exit();
+  }
+
+  /*
+   * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+   */
+  @Override
+  public void init_loop() {
+    telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
+    telemetry.update();
+    FtcUtils.sleep(10);
+  }
+
+  /*
+   * Code to run ONCE when the driver hits PLAY
+   */
+  @Override
+  public void start() {
+    FtcLogger.enter();
+    telemetry.addData(FtcUtils.TAG, "Starting...");
+    telemetry.update();
+    runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    if (FtcUtils.DEBUG) {
+      robot.enableTelemetry();
+    } else {
+      robot.disableTelemetry();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
-        telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
-        telemetry.update();
-        FtcUtils.sleep(10);
+    FtcLogger.exit();
+  }
+
+  /*
+   * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+   */
+  @Override
+  public void loop() {
+    FtcLogger.enter();
+    // Show the elapsed game time and wheel power.
+    loopTime.reset();
+
+    telemetry.addData(FtcUtils.TAG, "a: FWD POV, b: RWD POV, x: MecanumDrive FOD, y: AWD POV");
+    if (gamepad1.a) {
+      robot.driveTrain.setDriveTypeAndMode(
+          DriveTrainEnum.FRONT_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
+    } else if (gamepad1.b) {
+      robot.driveTrain.setDriveTypeAndMode(
+          DriveTrainEnum.REAR_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
+    } else if (gamepad1.x) {
+      robot.driveTrain.setDriveTypeAndMode(
+          DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
+    } else if (gamepad1.y) {
+      robot.driveTrain.setDriveTypeAndMode(
+          DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
-        FtcLogger.enter();
-        telemetry.addData(FtcUtils.TAG, "Starting...");
-        telemetry.update();
-        runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        if (FtcUtils.DEBUG) {
-            robot.enableTelemetry();
-        } else {
-            robot.disableTelemetry();
-        }
+    robot.bulkRead.clearBulkCache();
+    robot.driveTrain.operate(gamepad1, gamepad2, lastLoopTime, runtime);
+    robot.driveTrain.showTelemetry();
+    robot.imu.showTelemetry();
+    robot.showGamePadTelemetry(gamepad1);
+    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
+        loopTime.milliseconds(), runtime.seconds());
+    telemetry.update();
+    lastLoopTime = loopTime.milliseconds();
+    FtcLogger.exit();
+  }
 
-        FtcLogger.exit();
-    }
-
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
-    @Override
-    public void loop() {
-        FtcLogger.enter();
-        // Show the elapsed game time and wheel power.
-        loopTime.reset();
-
-        telemetry.addData(FtcUtils.TAG, "a: FWD POV, b: RWD POV, x: MecanumDrive FOD, y: AWD POV");
-        if (gamepad1.a) {
-            robot.driveTrain.setDriveTypeAndMode(
-                    DriveTrainEnum.FRONT_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
-        } else if (gamepad1.b) {
-            robot.driveTrain.setDriveTypeAndMode(
-                    DriveTrainEnum.REAR_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
-        } else if (gamepad1.x) {
-            robot.driveTrain.setDriveTypeAndMode(
-                    DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
-        } else if (gamepad1.y) {
-            robot.driveTrain.setDriveTypeAndMode(
-                    DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
-        }
-
-        robot.bulkRead.clearBulkCache();
-        robot.driveTrain.operate(gamepad1, gamepad2, lastLoopTime, runtime);
-        robot.driveTrain.showTelemetry();
-        robot.imu.showTelemetry();
-        robot.showGamePadTelemetry(gamepad1);
-        telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
-                loopTime.milliseconds(), runtime.seconds());
-        telemetry.update();
-        lastLoopTime = loopTime.milliseconds();
-        FtcLogger.exit();
-    }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-        FtcLogger.enter();
-        robot.driveTrain.stop();
-        telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
-        telemetry.update();
-        FtcLogger.exit();
-    }
+  /*
+   * Code to run ONCE after the driver hits STOP
+   */
+  @Override
+  public void stop() {
+    FtcLogger.enter();
+    robot.driveTrain.stop();
+    telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
+    telemetry.update();
+    FtcLogger.exit();
+  }
 }
