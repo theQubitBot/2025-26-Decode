@@ -24,7 +24,7 @@ import java.util.List;
  * Motor:  Right drive motor: "rightFrontMotor"
  * Motor:  Right drive motor: "rightRearMotor"
  */
-public class FtcDriveTrain extends FtcSubSystem {
+public class FtcDriveTrain extends FtcSubSystemBase {
   private static final String TAG = "FtcDriveTrain";
   public static final double MAXIMUM_FORWARD_POWER = 0.80;
   public static final double MECANUM_POWER_BOOST_FACTOR = 1.00;

@@ -14,7 +14,7 @@ import java.util.Locale;
 /**
  * A class to manage the REV Blinkin LED strip.
  */
-public class FtcBlinkinLed extends FtcSubSystem {
+public class FtcBlinkinLed extends FtcSubSystemBase {
   private static final String TAG = "FtcBlinkinLed";
   private static final String BLINKIN_NAME = "blinkinLed";
   private final boolean blinkinLedEnabled = true;

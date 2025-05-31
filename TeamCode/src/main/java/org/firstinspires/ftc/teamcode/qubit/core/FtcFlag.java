@@ -12,7 +12,7 @@ import java.util.Locale;
 /**
  * A class to manage the flag.
  */
-public class FtcFlag extends FtcSubSystem {
+public class FtcFlag extends FtcSubSystemBase {
   private static final String TAG = "FtcFlag";
   public static final String FLAG_SERVO_NAME = "flagServo";
   public static final double FLAG_UP_POSITION = 0.5600;

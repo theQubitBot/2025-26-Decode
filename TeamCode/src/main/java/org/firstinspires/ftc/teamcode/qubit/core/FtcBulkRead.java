@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * A class to manage the bulk read operations.
  */
-public class FtcBulkRead extends FtcSubSystem {
+public class FtcBulkRead extends FtcSubSystemBase {
   private static final String TAG = "FtcBulkRead";
   private List<LynxModule> allLynxModules = null;
   private LynxModule.BulkCachingMode cachingMode;

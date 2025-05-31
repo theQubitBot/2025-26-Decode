@@ -13,7 +13,7 @@ import java.util.Locale;
 /**
  * A class to manage the robot sample/specimen delivery.
  */
-public class FtcIntake extends FtcSubSystem {
+public class FtcIntake extends FtcSubSystemBase {
   private static final String TAG = "FtcIntake";
   public static final String LEFT_SPIN_SERVO_NAME = "leftSpinServo";
   public static final String RIGHT_SPIN_SERVO_NAME = "rightSpinServo";

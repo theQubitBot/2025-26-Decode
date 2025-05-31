@@ -13,7 +13,7 @@ import java.util.Locale;
 /**
  * A class to manage the sample delivery.
  */
-public class FtcArm extends FtcSubSystem {
+public class FtcArm extends FtcSubSystemBase {
   private static final String TAG = "FtcArm";
   public static final String ARM_SERVO_NAME = "armServo";
   public static final double ARM_FORWARD_POSITION = 0.5050;

@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A class to manage the input extension/retraction.
  */
-public class FtcRnp extends FtcSubSystem {
+public class FtcRnp extends FtcSubSystemBase {
   private static final String TAG = "FtcRnp";
   public static final String RNP_SERVO_NAME = "rnpServo";
   public static final double RNP_EXTEND_POWER = 1.0;

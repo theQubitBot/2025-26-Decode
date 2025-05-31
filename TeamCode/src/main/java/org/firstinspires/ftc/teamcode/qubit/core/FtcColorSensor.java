@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 /**
  * A class to manage a color sensor.
  */
-public class FtcColorSensor extends FtcSubSystem {
+public class FtcColorSensor extends FtcSubSystemBase {
   private static final String TAG = "FtcColorSensor";
   private static final String COLOR_SENSOR_NAME = "colorSensor";
   private static final float GAIN_HIGH_THRESHOLD = 0.80F;

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
  * A class to manage the robot. This is a composite design pattern.
  * Robot level operations are simply invoked on all subsystems.
  */
-public class FtcBot extends FtcSubSystem {
+public class FtcBot extends FtcSubSystemBase {
   private static final String TAG = "FtcBot";
   private boolean telemetryEnabled = true;
   public FtcArm arm = null;

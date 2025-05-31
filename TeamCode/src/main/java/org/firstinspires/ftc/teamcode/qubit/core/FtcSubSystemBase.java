@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-public abstract class FtcSubSystem implements FtcSubSystemOps {
+public abstract class FtcSubSystemBase implements FtcSubSystemInterface {
   public void init(HardwareMap hardwareMap, Telemetry telemetry) {
     throw new UnsupportedOperationException();
   }

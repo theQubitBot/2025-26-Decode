@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 /**
  * A class to manage the built-in IMU.
  */
-public class FtcBhi260apImu extends FtcSubSystem {
+public class FtcBhi260apImu extends FtcSubSystemBase {
   private static final String TAG = "FtcBhi260apImu";
   public boolean telemetryEnabled = true;
   Telemetry telemetry = null;

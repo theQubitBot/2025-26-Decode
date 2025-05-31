@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 /**
  * A class to manage the sensors.
  */
-public class FtcSensors extends FtcSubSystem {
+public class FtcSensors extends FtcSubSystemBase {
   private static final String TAG = "FtcSensors";
   private Telemetry telemetry = null;
   public boolean showTelemetry = true;

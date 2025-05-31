@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A class to manage the robot lift.
  */
-public class FtcLift extends FtcSubSystem {
+public class FtcLift extends FtcSubSystemBase {
   private static final String TAG = "FtcLift";
   public static final String LEFT_MOTOR_NAME = "leftLiftMotor";
   public static final String RIGHT_MOTOR_NAME = "rightLiftMotor";

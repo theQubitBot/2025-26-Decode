@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 /**
  * A class to manage the built-in IMU.
  */
-public class FtcImu extends FtcSubSystem {
+public class FtcImu extends FtcSubSystemBase {
   public static final String TAG = "FtcImu";
   static final double HEADING_THRESHOLD = 0.20;
   public boolean telemetryEnabled = true;
