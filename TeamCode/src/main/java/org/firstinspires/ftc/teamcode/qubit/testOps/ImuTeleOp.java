@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -26,7 +27,7 @@ public class ImuTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-    imu = new FtcImu();
+    imu = new FtcImu(new FtcBot());
     imu.init(hardwareMap, telemetry);
     imu.telemetryEnabled = FtcUtils.DEBUG;
     FtcImu.endAutoOpHeading = 0;

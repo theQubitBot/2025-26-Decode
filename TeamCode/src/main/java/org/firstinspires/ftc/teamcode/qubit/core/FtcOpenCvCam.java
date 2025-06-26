@@ -45,136 +45,136 @@ import org.openftc.easyopencv.OpenCvWebcam;
  * A class to manage the EasyOpenCV and execute the pipeline.
  */
 public class FtcOpenCvCam extends FtcSubSystemBase {
-    static final String TAG = "FtcOpenCvCam";
-    public static final String WEBCAM_1_NAME = "Webcam 1";
-    public static final String WEBCAM_2_NAME = "Webcam 2";
+  static final String TAG = "FtcOpenCvCam";
+  public static final String WEBCAM_1_NAME = "Webcam 1";
+  public static final String WEBCAM_2_NAME = "Webcam 2";
 
-    public static final int CAMERA_WIDTH = 640; // width  of wanted camera resolution
-    public static final int CAMERA_HEIGHT = 480; // height of wanted camera resolution
-    public static final double CAMERA_ASPECT_RATIO = (double) CAMERA_HEIGHT / (double) CAMERA_WIDTH;
-    public static final Rect cameraRect = new Rect(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-    private HardwareMap hardwareMap;
-    private Telemetry telemetry;
-    public OpenCvWebcam openCvWebcam = null;
-    private Boolean initializationIsSuccessful;
-    public boolean showTelemetry = true;
-    public MultipleObjectDetectionPipeline modPipeline = null;
+  public static final int CAMERA_WIDTH = 640; // width  of wanted camera resolution
+  public static final int CAMERA_HEIGHT = 480; // height of wanted camera resolution
+  public static final double CAMERA_ASPECT_RATIO = (double) CAMERA_HEIGHT / (double) CAMERA_WIDTH;
+  public static final Rect cameraRect = new Rect(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+  private HardwareMap hardwareMap;
+  private Telemetry telemetry;
+  public OpenCvWebcam openCvWebcam = null;
+  private Boolean initializationIsSuccessful;
+  public boolean showTelemetry = true;
+  public MultipleObjectDetectionPipeline modPipeline = null;
 
-    /**
-     * Initialize standard Hardware interfaces
-     *
-     * @param hardwareMap The hardware map to use for initialization.
-     * @param telemetry   The telemetry to use.
-     */
-    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
-        FtcLogger.enter();
-        this.hardwareMap = hardwareMap;
-        this.telemetry = telemetry;
+  /**
+   * Initialize standard Hardware interfaces
+   *
+   * @param hardwareMap The hardware map to use for initialization.
+   * @param telemetry   The telemetry to use.
+   */
+  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+    FtcLogger.enter();
+    this.hardwareMap = hardwareMap;
+    this.telemetry = telemetry;
 
-        initializationIsSuccessful = true;
+    initializationIsSuccessful = true;
 
-        // Initialize frontWebcam
-        openCvWebcam = createWebcam(hardwareMap, WEBCAM_1_NAME);
+    // Initialize frontWebcam
+    openCvWebcam = createWebcam(hardwareMap, WEBCAM_1_NAME);
 
-        if (openCvWebcam == null) {
-            initializationIsSuccessful = false;
-            showCameraFailure();
-        } else {
-            // Initialize OpenCV pipeline
-            modPipeline = new MultipleObjectDetectionPipeline(openCvWebcam);
-            openCvWebcam.setPipeline(modPipeline);
+    if (openCvWebcam == null) {
+      initializationIsSuccessful = false;
+      showCameraFailure();
+    } else {
+      // Initialize OpenCV pipeline
+      modPipeline = new MultipleObjectDetectionPipeline(openCvWebcam);
+      openCvWebcam.setPipeline(modPipeline);
 
-            // Start frontWebcam streaming
-            openCvWebcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                @Override
-                public void onOpened() {
-                    openCvWebcam.startStreaming(
-                            CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
-                }
-
-                @Override
-                public void onError(int errorCode) {
-                    /*
-                     * This will be called if the camera could not be opened
-                     */
-                }
-            });
+      // Start frontWebcam streaming
+      openCvWebcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        @Override
+        public void onOpened() {
+          openCvWebcam.startStreaming(
+              CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
         }
 
-        if (FtcUtils.DEBUG) {
-            FtcDashboard dashboard = FtcDashboard.getInstance();
-            if (dashboard != null) {
-                telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-                dashboard.startCameraStream(openCvWebcam, 0);
+        @Override
+        public void onError(int errorCode) {
+          /*
+           * This will be called if the camera could not be opened
+           */
+        }
+      });
+    }
+
+    if (FtcUtils.DEBUG) {
+      FtcDashboard dashboard = FtcDashboard.getInstance();
+      if (dashboard != null) {
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        dashboard.startCameraStream(openCvWebcam, 0);
+      }
+    }
+
+    telemetry.addData(TAG,
+        "Camera initialization process is complete. Check logs for success/failure.");
+    FtcLogger.exit();
+  }
+
+  public static OpenCvWebcam createWebcam(HardwareMap hardwareMap, String cameraName) {
+    int cameraMonitorViewId = hardwareMap.appContext.getResources()
+        .getIdentifier("cameraMonitorViewId", "id",
+            hardwareMap.appContext.getPackageName());
+    return OpenCvCameraFactory.getInstance()
+        .createWebcam(hardwareMap.get(WebcamName.class, cameraName),
+            cameraMonitorViewId);
+  }
+
+  /**
+   * Get the team prop location as determined by the pipeline.
+   *
+   * @param allianceColor Given alliance color. Only team props that match alliance color are evaluated.
+   * @return The team prop location (left, center or right).
+   */
+  public TeamPropLocationEnum getTeamPropPosition(AllianceColorEnum allianceColor) {
+    TeamPropLocationEnum teamPropLocation = TeamPropLocationEnum.LEFT;
+    try {
+      if (webcamIsWorking(openCvWebcam) && modPipeline != null) {
+        for (GameElement ge : modPipeline.gameElements) {
+          Point midPoint;
+          synchronized (ge) {
+            if (ge.elementFound() && ge.elementConsistentlyPresent()) {
+              if ((allianceColor == AllianceColorEnum.BLUE && ge.tag.equals(FtcColorUtils.TAG_BLUE)) ||
+                  (allianceColor == AllianceColorEnum.RED && (ge.tag.equals(FtcColorUtils.TAG_RED1) || ge.tag.equals(FtcColorUtils.TAG_RED2)))) {
+                midPoint = FtcUtils.getMidpoint(ge.boundingRect);
+
+                if (midPoint.x < 300) {
+                  teamPropLocation = TeamPropLocationEnum.CENTER;
+                  break;
+                } else if (midPoint.x > 400) {
+                  teamPropLocation = TeamPropLocationEnum.RIGHT;
+                  break;
+                }
+              }
             }
+          }
         }
-
-        telemetry.addData(TAG,
-                "Camera initialization process is complete. Check logs for success/failure.");
-        FtcLogger.exit();
+      }
+    } catch (Exception ignored) {
     }
 
-    public static OpenCvWebcam createWebcam(HardwareMap hardwareMap, String cameraName) {
-        int cameraMonitorViewId = hardwareMap.appContext.getResources()
-                .getIdentifier("cameraMonitorViewId", "id",
-                        hardwareMap.appContext.getPackageName());
-        return OpenCvCameraFactory.getInstance()
-                .createWebcam(hardwareMap.get(WebcamName.class, cameraName),
-                        cameraMonitorViewId);
+    return teamPropLocation;
+  }
+
+  public void showCameraFailure() {
+    if (!initializationIsSuccessful) {
+      telemetry.addLine();
+      telemetry.addData(TAG, "Webcam failed to start. STOP and RE-INITIALIZE.");
+      telemetry.addLine();
     }
+  }
 
-    /**
-     * Get the team prop location as determined by the pipeline.
-     *
-     * @param allianceColor Given alliance color. Only team props that match alliance color are evaluated.
-     * @return The team prop location (left, center or right).
-     */
-    public TeamPropLocationEnum getTeamPropPosition(AllianceColorEnum allianceColor) {
-        TeamPropLocationEnum teamPropLocation = TeamPropLocationEnum.LEFT;
-        try {
-            if (webcamIsWorking(openCvWebcam) && modPipeline != null) {
-                for (GameElement ge : modPipeline.gameElements) {
-                    Point midPoint;
-                    synchronized (ge) {
-                        if (ge.elementFound() && ge.elementConsistentlyPresent()) {
-                            if ((allianceColor == AllianceColorEnum.BLUE && ge.tag.equals(FtcColorUtils.TAG_BLUE)) ||
-                                (allianceColor == AllianceColorEnum.RED && (ge.tag.equals(FtcColorUtils.TAG_RED1) || ge.tag.equals(FtcColorUtils.TAG_RED2)))) {
-                                midPoint = FtcUtils.getMidpoint(ge.boundingRect);
-
-                                if (midPoint.x < 300) {
-                                    teamPropLocation = TeamPropLocationEnum.CENTER;
-                                    break;
-                                } else if (midPoint.x > 400) {
-                                    teamPropLocation = TeamPropLocationEnum.RIGHT;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-
-        return teamPropLocation;
+  public void stop() {
+    if (initializationIsSuccessful && webcamIsWorking(openCvWebcam)) {
+      openCvWebcam.stopStreaming();
+      openCvWebcam.closeCameraDevice();
     }
+  }
 
-    public void showCameraFailure() {
-        if (!initializationIsSuccessful) {
-            telemetry.addLine();
-            telemetry.addData(TAG, "Webcam failed to start. STOP and RE-INITIALIZE.");
-            telemetry.addLine();
-        }
-    }
-
-    public void stop() {
-        if (initializationIsSuccessful && webcamIsWorking(openCvWebcam)) {
-            openCvWebcam.stopStreaming();
-            openCvWebcam.closeCameraDevice();
-        }
-    }
-
-    private Boolean webcamIsWorking(OpenCvWebcam openCvWebcam) {
-        return openCvWebcam != null && openCvWebcam.getFrameCount() > 0 && openCvWebcam.getFps() > 0;
-    }
+  private Boolean webcamIsWorking(OpenCvWebcam openCvWebcam) {
+    return openCvWebcam != null && openCvWebcam.getFrameCount() > 0 && openCvWebcam.getFps() > 0;
+  }
 }

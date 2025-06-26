@@ -7,8 +7,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public interface FtcSubSystemInterface {
   void init(HardwareMap hardwareMap, Telemetry telemetry);
+
   void start();
+
   void operate(Gamepad gamePad1, Gamepad gamePad2);
+
   void stop();
+
   void showTelemetry();
 }

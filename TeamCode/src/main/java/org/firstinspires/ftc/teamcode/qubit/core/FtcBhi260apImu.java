@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 
 /**
  * A class to manage the built-in IMU.
@@ -15,6 +16,7 @@ public class FtcBhi260apImu extends FtcSubSystemBase {
   private static final String TAG = "FtcBhi260apImu";
   public boolean telemetryEnabled = true;
   Telemetry telemetry = null;
+  private final FtcBot parent;
   private IMU imu = null;
   private boolean imuIsGood = true;
   private static final Object directionLock = new Object();
@@ -23,7 +25,8 @@ public class FtcBhi260apImu extends FtcSubSystemBase {
   private double roll = 0.0;
 
   /* Constructor */
-  public FtcBhi260apImu() {
+  public FtcBhi260apImu(FtcBot robot) {
+    parent = robot;
   }
 
   /**
@@ -94,9 +97,25 @@ public class FtcBhi260apImu extends FtcSubSystemBase {
     this.telemetry = telemetry;
     imu = hardwareMap.get(IMU.class, "imu");
     if (imu != null) {
+      RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection;
+      RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
+
+      if (parent.trollBot == TrollBotEnum.TrollBotA) {
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+      } else if (parent.trollBot == TrollBotEnum.TrollBotB) {
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+      } else if (parent.trollBot == TrollBotEnum.TrollBotC) {
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+      } else {
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+      }
+
       RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(
-          RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-          RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
+          logoFacingDirection, usbFacingDirection);
       imu.initialize(new IMU.Parameters(orientationOnRobot));
       imu.resetYaw();
 

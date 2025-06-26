@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 
 /**
  * A class to manage the built-in IMU.
@@ -13,6 +14,7 @@ public class FtcImu extends FtcSubSystemBase {
   static final double HEADING_THRESHOLD = 0.20;
   public boolean telemetryEnabled = true;
   Telemetry telemetry = null;
+  private final FtcBot parent;
 
   private FtcBhi260apImu bhi260apImu = null;
   private FtcGoBoDriver ftcGoBoDriver = null;
@@ -39,7 +41,8 @@ public class FtcImu extends FtcSubSystemBase {
   private boolean gyroAlreadyRead = false;
 
   /* Constructor */
-  public FtcImu() {
+  public FtcImu(FtcBot robot) {
+    parent = robot;
   }
 
   /**
@@ -139,11 +142,11 @@ public class FtcImu extends FtcSubSystemBase {
     // Save reference to Hardware map
     this.telemetry = telemetry;
     if (useBhi260apImu) {
-      bhi260apImu = new FtcBhi260apImu();
+      bhi260apImu = new FtcBhi260apImu(parent);
       bhi260apImu.init(hardwareMap, telemetry);
     }
 
-    if (useGoBoDriver) {
+    if (useGoBoDriver && parent.trollBot == TrollBotEnum.TrollBotA) {
       ftcGoBoDriver = new FtcGoBoDriver();
       ftcGoBoDriver.init(hardwareMap, telemetry);
     }

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,7 @@ import java.util.List;
  */
 public class FtcDriveTrain extends FtcSubSystemBase {
   private static final String TAG = "FtcDriveTrain";
-  public static final double MAXIMUM_FORWARD_POWER = 0.80;
+  public static final double MAXIMUM_FORWARD_POWER = 1.00;
   public static final double MECANUM_POWER_BOOST_FACTOR = 1.00;
   public static final double MINIMUM_FORWARD_TELE_OP_POWER = 0.25;
 
@@ -34,7 +35,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   // and noting the min power at which the robot begins to move/turn.
   // Robot weight distribution would impact rotational inertia, which would impact
   // the turn value most.
-  public static final double MAXIMUM_TURN_POWER = 0.80;
+  public static final double MAXIMUM_TURN_POWER = 1.00;
   public static final double MINIMUM_TURN_POWER = 0.25;
   public static final double FORWARD_SLO_MO_POWER = 0.25;
   public static final double STRAFE_SLO_MO_POWER = 0.40;
@@ -69,6 +70,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   private FtcMotor rightRearMotor = null;
   public List<FtcMotor> frontMotors = null, rearMotors = null;
   public List<FtcMotor> allMotors = null, activeMotors = null;
+  public List<DcMotorSimple.Direction> motorDirections,
+      botADirections, botBDirections, botCDirections;
 
   // These default drive train and drive type are overridden in FtcBot.init()
   public DriveTrainEnum driveTrainEnum = DriveTrainEnum.UNKNOWN;
@@ -83,6 +86,19 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
   public FtcDriveTrain(FtcBot robot) {
     parent = robot;
+    // leftFront, leftRear, rightFront, rightRear
+    botADirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
+        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
+    botBDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
+        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
+    botCDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD,
+        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
+    if (parent.trollBot == TrollBotEnum.TrollBotA)
+      motorDirections = botADirections;
+    else if (parent.trollBot == TrollBotEnum.TrollBotB)
+      motorDirections = botBDirections;
+    else if (parent.trollBot == TrollBotEnum.TrollBotC)
+      motorDirections = botCDirections;
   }
 
   /**
@@ -91,13 +107,13 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    *
    * @return True if feature is enabled, false otherwise
    */
-  private boolean AutomaticallyCorrectUnbalancedRobotHeading(Gamepad gamepad1, Gamepad gamepad2) {
+  private boolean AutomaticallyCorrectUnbalancedRobotHeading(Gamepad gamePad1, Gamepad gamePad2) {
     // Correction is off if list is higher than lower basket, on otherwise.
     boolean enableCorrectionForLowLiftPosition = parent == null || parent.lift == null ||
         parent.lift.getLeftPosition() < FtcLift.POSITION_LOW_BASKET;
 
     // Grant wants correction to be off when samples are being intook.
-    boolean enableCorrectionForIntake = !(gamepad1.right_trigger >= 0.5) && !(gamepad2.right_trigger >= 0.5);
+    boolean enableCorrectionForIntake = !(gamePad1.right_trigger >= 0.5) && !(gamePad2.right_trigger >= 0.5);
 
     return enableUnbalancedRobotHeadingCorrection && enableCorrectionForLowLiftPosition &&
         enableCorrectionForIntake;
@@ -119,7 +135,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
           driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
         leftFrontMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "leftFrontMotor"));
         rightFrontMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "rightFrontMotor"));
-        leftFrontMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFrontMotor.setDirection(motorDirections.get(0));
+        rightFrontMotor.setDirection(motorDirections.get(2));
         frontMotors = Arrays.asList(leftFrontMotor, rightFrontMotor);
         activeMotors = frontMotors;
       }
@@ -129,7 +146,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
           driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
         leftRearMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "leftRearMotor"));
         rightRearMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "rightRearMotor"));
-        leftRearMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRearMotor.setDirection(motorDirections.get(1));
+        rightRearMotor.setDirection(motorDirections.get(3));
         rearMotors = Arrays.asList(leftRearMotor, rightRearMotor);
         activeMotors = rearMotors;
       }

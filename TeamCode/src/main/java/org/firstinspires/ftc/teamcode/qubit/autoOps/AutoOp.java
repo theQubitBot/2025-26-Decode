@@ -5,6 +5,7 @@ import com.pedropathing.constants.LConstants;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 
+@Disabled
 @Autonomous(group = "Official", preselectTeleOp = "DriverTeleOp")
 public class AutoOp extends LinearOpMode {
   private ElapsedTime runtime = null;

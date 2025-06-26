@@ -33,23 +33,22 @@ import org.opencv.core.Rect;
  * Rectangle class that exposes additional functionality.
  */
 public class FtcRect extends Rect {
-    public double aspectRatio() {
-        if (height == 0)
-            return Double.MAX_VALUE;
-        else
-            return (double) width / (double) height;
-    }
+  public double aspectRatio() {
+    if (height == 0)
+      return Double.MAX_VALUE;
+    else
+      return (double) width / (double) height;
+  }
 
-    public Point tr() {
-        return new Point(x + width, y);
-    }
+  public Point tr() {
+    return new Point(x + width, y);
+  }
 
-    public Point bl() {
-        return new Point(x, y + height);
-    }
+  public Point bl() {
+    return new Point(x, y + height);
+  }
 
-    public Point center() {
-        return new Point(x + width / 2.0, y + height / 2.0);
-    }
+  public Point center() {
+    return new Point(x + width / 2.0, y + height / 2.0);
+  }
 }
-

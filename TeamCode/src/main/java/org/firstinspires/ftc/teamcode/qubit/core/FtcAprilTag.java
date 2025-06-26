@@ -21,146 +21,146 @@ import java.util.List;
  * A class to identify and make available April Tags using the Vision Portal.
  */
 public class FtcAprilTag {
-    // True for webcam, false for phone camera
-    private static final boolean USE_WEBCAM = true;
-    private AprilTagProcessor aprilTag;
-    private VisionPortal visionPortal;
-    public boolean telemetryEnabled = true;
-    private Telemetry telemetry;
+  // True for webcam, false for phone camera
+  private static final boolean USE_WEBCAM = true;
+  private AprilTagProcessor aprilTag;
+  private VisionPortal visionPortal;
+  public boolean telemetryEnabled = true;
+  private Telemetry telemetry;
 
-    public List<AprilTagDetection> getAllDetections() {
-        List<AprilTagDetection> detections = null;
-        if (aprilTag != null) {
-            detections = aprilTag.getDetections();
-        }
-
-        return detections;
+  public List<AprilTagDetection> getAllDetections() {
+    List<AprilTagDetection> detections = null;
+    if (aprilTag != null) {
+      detections = aprilTag.getDetections();
     }
 
-    public double getBackPropDistance() {
-        double range = Double.MAX_VALUE;
-        List<AprilTagDetection> detections = getAllDetections();
-        if (detections != null && !detections.isEmpty()) {
-            for (AprilTagDetection detection : detections) {
-                if (detection.metadata != null && detection.id >= 1 && detection.id <= 6) {
-                    // Get the closest April tag range.
-                    if (detection.ftcPose.range < range) {
-                        range = detection.ftcPose.range;
-                    }
-                }
-            }
-        }
+    return detections;
+  }
 
-        return range;
+  public double getBackPropDistance() {
+    double range = Double.MAX_VALUE;
+    List<AprilTagDetection> detections = getAllDetections();
+    if (detections != null && !detections.isEmpty()) {
+      for (AprilTagDetection detection : detections) {
+        if (detection.metadata != null && detection.id >= 1 && detection.id <= 6) {
+          // Get the closest April tag range.
+          if (detection.ftcPose.range < range) {
+            range = detection.ftcPose.range;
+          }
+        }
+      }
     }
 
-    public AprilTagDetection getFirstDetection() {
-        AprilTagDetection detection = null;
-        List<AprilTagDetection> detections = getAllDetections();
-        if (detections != null && !detections.isEmpty()) {
-            detection = detections.get(0);
-        }
+    return range;
+  }
 
-        return detection;
+  public AprilTagDetection getFirstDetection() {
+    AprilTagDetection detection = null;
+    List<AprilTagDetection> detections = getAllDetections();
+    if (detections != null && !detections.isEmpty()) {
+      detection = detections.get(0);
     }
 
-    /**
-     * Initialize the object detection processor.
-     */
-    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
-        FtcLogger.enter();
-        this.telemetry = telemetry;
+    return detection;
+  }
 
-        // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder()
-                .setDrawAxes(false)
-                .setDrawCubeProjection(false)
-                .setDrawTagOutline(false)
-                .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
-                .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-                .setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
-                .build();
+  /**
+   * Initialize the object detection processor.
+   */
+  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+    FtcLogger.enter();
+    this.telemetry = telemetry;
 
-        // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
+    // Create the AprilTag processor.
+    aprilTag = new AprilTagProcessor.Builder()
+        .setDrawAxes(false)
+        .setDrawCubeProjection(false)
+        .setDrawTagOutline(false)
+        .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+        .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+        .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+        .setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+        .build();
 
-        // Set the camera (webcam vs. built-in RC phone camera).
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME));
+    // Create the vision portal by using a builder.
+    VisionPortal.Builder builder = new VisionPortal.Builder();
+
+    // Set the camera (webcam vs. built-in RC phone camera).
+    if (USE_WEBCAM) {
+      builder.setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME));
+    } else {
+      builder.setCamera(BuiltinCameraDirection.BACK);
+    }
+
+    // Choose a camera resolution. Not all cameras support all resolutions.
+    builder.setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT));
+
+    // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+    builder.enableLiveView(FtcUtils.DEBUG);
+
+    // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+    builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+
+    // Choose whether or not LiveView stops if no processors are enabled.
+    // If set "true", monitor shows solid orange screen if no processors enabled.
+    // If set "false", monitor shows camera view without annotations.
+    builder.setAutoStopLiveView(true);
+
+    // Set and enable the processor.
+    builder.addProcessor(aprilTag);
+
+    // Build the Vision Portal, using the above settings.
+    visionPortal = builder.build();
+    FtcLogger.exit();
+  }
+
+  /**
+   * Function to add telemetry about AprilTag detections.
+   */
+  @SuppressLint("DefaultLocale")
+  public void showTelemetry() {
+    FtcLogger.enter();
+    if (telemetryEnabled && aprilTag != null) {
+      List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+      telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+      // Step through the list of detections and set info for each one.
+      for (AprilTagDetection detection : currentDetections) {
+        if (detection.metadata != null) {
+          telemetry.addLine(String.format("\n==== (ID %d) %s",
+              detection.id, detection.metadata.name));
+          telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f (inch)",
+              detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+          telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f (deg)",
+              detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
         } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
+          telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
         }
 
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        builder.setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT));
+        telemetry.addLine(String.format("Center %6.0f %6.0f (pixels)",
+            detection.center.x, detection.center.y));
+      }
 
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        builder.enableLiveView(FtcUtils.DEBUG);
-
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        builder.setAutoStopLiveView(true);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
-        FtcLogger.exit();
+      // Add "key" information to telemetry
+      telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+      telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+      telemetry.addLine("RBE = Range, Bearing & Elevation");
     }
 
-    /**
-     * Function to add telemetry about AprilTag detections.
-     */
-    @SuppressLint("DefaultLocale")
-    public void showTelemetry() {
-        FtcLogger.enter();
-        if (telemetryEnabled && aprilTag != null) {
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            telemetry.addData("# AprilTags Detected", currentDetections.size());
+    FtcLogger.exit();
+  }
 
-            // Step through the list of detections and set info for each one.
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    telemetry.addLine(String.format("\n==== (ID %d) %s",
-                            detection.id, detection.metadata.name));
-                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f (inch)",
-                            detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f (deg)",
-                            detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                } else {
-                    telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                }
-
-                telemetry.addLine(String.format("Center %6.0f %6.0f (pixels)",
-                        detection.center.x, detection.center.y));
-            }
-
-            // Add "key" information to telemetry
-            telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-            telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-            telemetry.addLine("RBE = Range, Bearing & Elevation");
-        }
-
-        FtcLogger.exit();
+  /**
+   * Stops the object detection processing.
+   */
+  public void stop() {
+    FtcLogger.enter();
+    if (visionPortal != null) {
+      visionPortal.setProcessorEnabled(aprilTag, false);
+      visionPortal.close();
+      visionPortal = null;
     }
 
-    /**
-     * Stops the object detection processing.
-     */
-    public void stop() {
-        FtcLogger.enter();
-        if (visionPortal != null) {
-            visionPortal.setProcessorEnabled(aprilTag, false);
-            visionPortal.close();
-            visionPortal = null;
-        }
-
-        FtcLogger.exit();
-    }
+    FtcLogger.exit();
+  }
 }

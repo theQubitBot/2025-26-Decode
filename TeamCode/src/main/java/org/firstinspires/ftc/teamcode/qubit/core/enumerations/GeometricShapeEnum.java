@@ -11,24 +11,24 @@ package org.firstinspires.ftc.teamcode.qubit.core.enumerations;
  * CIRCLE >= 7 sides
  */
 public enum GeometricShapeEnum {
-    UNKNOWN(0, "Unknown"),
-    TRIANGLE(3, "Triangle"),
-    SQUARE(4, "Square"),
-    RECTANGLE(4, "Rectangle"),
-    PENTAGON(5, "Pentagon"),
-    HEXAGON(6, "Hexagon"),
-    CIRCLE(7, "Circle");
+  UNKNOWN(0, "Unknown"),
+  TRIANGLE(3, "Triangle"),
+  SQUARE(4, "Square"),
+  RECTANGLE(4, "Rectangle"),
+  PENTAGON(5, "Pentagon"),
+  HEXAGON(6, "Hexagon"),
+  CIRCLE(7, "Circle");
 
-    public final int sides;
-    public final String name;
+  public final int sides;
+  public final String name;
 
-    GeometricShapeEnum(int sides, String name) {
-        this.sides = sides;
-        this.name = name;
-    }
+  GeometricShapeEnum(int sides, String name) {
+    this.sides = sides;
+    this.name = name;
+  }
 
-    public boolean match(long sides) {
-        if (this.sides == 6) return sides >= this.sides;
-        return sides == this.sides;
-    }
+  public boolean match(long sides) {
+    if (this.sides == 6) return sides >= this.sides;
+    return sides == this.sides;
+  }
 }
