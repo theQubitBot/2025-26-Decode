@@ -101,7 +101,7 @@ public class FtcBhi260apImu extends FtcSubSystemBase {
       RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
 
       if (parent.trollBot == TrollBotEnum.TrollBotA) {
-        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
         usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
       } else if (parent.trollBot == TrollBotEnum.TrollBotB) {
         logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
@@ -109,6 +109,9 @@ public class FtcBhi260apImu extends FtcSubSystemBase {
       } else if (parent.trollBot == TrollBotEnum.TrollBotC) {
         logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
         usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+      } else if (parent.trollBot == TrollBotEnum.TrollBotD) {
+        logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
       } else {
         logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
         usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;

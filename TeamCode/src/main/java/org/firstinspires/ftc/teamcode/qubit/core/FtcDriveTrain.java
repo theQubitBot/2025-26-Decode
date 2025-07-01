@@ -71,7 +71,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   public List<FtcMotor> frontMotors = null, rearMotors = null;
   public List<FtcMotor> allMotors = null, activeMotors = null;
   public List<DcMotorSimple.Direction> motorDirections,
-      botADirections, botBDirections, botCDirections;
+      botADirections, botBDirections, botCDirections, botDDirections;
 
   // These default drive train and drive type are overridden in FtcBot.init()
   public DriveTrainEnum driveTrainEnum = DriveTrainEnum.UNKNOWN;
@@ -93,12 +93,16 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
     botCDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD,
         DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
+    botDDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
+        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
     if (parent.trollBot == TrollBotEnum.TrollBotA)
       motorDirections = botADirections;
     else if (parent.trollBot == TrollBotEnum.TrollBotB)
       motorDirections = botBDirections;
     else if (parent.trollBot == TrollBotEnum.TrollBotC)
       motorDirections = botCDirections;
+    else if (parent.trollBot == TrollBotEnum.TrollBotD)
+      motorDirections = botDDirections;
   }
 
   /**

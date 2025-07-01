@@ -6,6 +6,9 @@ package org.firstinspires.ftc.teamcode.qubit.core.enumerations;
 public enum TrollBotEnum {
   Unknown,
   TrollBotA, // CompetitionBot
-  TrollBotB,
-  TrollBotC
+  TrollBotB, // Vision processing
+  TrollBotC, // Orange bot
+  TrollBotD, // Rookie bot
+  TrollBotK, // Kylie's bot
+  TrollBotL, // Lucas's bot
 }
