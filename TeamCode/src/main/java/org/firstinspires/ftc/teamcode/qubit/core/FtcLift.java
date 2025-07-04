@@ -213,16 +213,16 @@ public class FtcLift extends FtcSubSystemBase {
       int leftTargetPosition = leftCurrentPosition;
       int rightTargetPosition = rightCurrentPosition;
 
-      if (gamePad1.a || gamePad2.a) {
+      if (gamePad1.aWasPressed() || gamePad2.aWasPressed()) {
         leftTargetPosition = FtcLift.POSITION_FLOOR - endAutoOpLeftLiftPosition;
         rightTargetPosition = FtcLift.POSITION_FLOOR - endAutoOpRightLiftPosition;
-      } else if (gamePad1.b || gamePad2.b) {
+      } else if (gamePad1.bWasPressed() || gamePad2.bWasPressed()) {
         leftTargetPosition = FtcLift.POSITION_HIGH_CHAMBER - endAutoOpLeftLiftPosition;
         rightTargetPosition = FtcLift.POSITION_HIGH_CHAMBER - endAutoOpRightLiftPosition;
-      } else if (gamePad1.x || gamePad2.x) {
+      } else if (gamePad1.xWasPressed() || gamePad2.xWasPressed()) {
         leftTargetPosition = FtcLift.POSITION_LOW_BASKET - endAutoOpLeftLiftPosition;
         rightTargetPosition = FtcLift.POSITION_LOW_BASKET - endAutoOpRightLiftPosition;
-      } else if (gamePad1.y || gamePad2.y) {
+      } else if (gamePad1.yWasPressed() || gamePad2.yWasPressed()) {
         leftTargetPosition = FtcLift.POSITION_HIGH_BASKET - endAutoOpLeftLiftPosition;
         rightTargetPosition = FtcLift.POSITION_HIGH_BASKET - endAutoOpRightLiftPosition;
       } else if (FtcUtils.hangInitiated(gamePad1, gamePad2, runtime)) {

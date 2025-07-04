@@ -52,7 +52,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
     if (blinkinLedEnabled) {
       if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
         stop();
-      } else if (gamePad1.right_bumper || gamePad2.right_bumper) {
+      } else if (gamePad1.rightBumperWasPressed() || gamePad2.rightBumperWasPressed()) {
         if (parent != null) {
           if (!parent.rnp.isRetracted() ||
               !parent.lift.atPosition(FtcLift.POSITION_FLOOR) ||
@@ -62,7 +62,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
             stop();
           }
         }
-      } else if (gamePad1.left_bumper || gamePad2.left_bumper) {
+      } else if (gamePad1.leftBumperWasPressed() || gamePad2.leftBumperWasPressed()) {
         if (parent != null) {
           if (parent.intake.isDelivering()) {
             parent.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.FIRE_LARGE);

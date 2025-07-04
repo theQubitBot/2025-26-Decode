@@ -55,7 +55,7 @@ public class FtcIntake2 extends FtcSubSystemBase {
    */
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     FtcLogger.enter();
-    if (gamePad1.left_bumper || gamePad2.left_bumper) {
+    if (gamePad1.leftBumperWasPressed() || gamePad2.leftBumperWasPressed()) {
       rotateOut();
     } else if (gamePad1.left_trigger >= 0.5 || gamePad2.left_trigger >= 0.5) {
       rotateIn();

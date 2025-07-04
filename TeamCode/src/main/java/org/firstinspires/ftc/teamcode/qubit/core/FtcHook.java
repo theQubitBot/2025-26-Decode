@@ -78,14 +78,14 @@ public class FtcHook extends FtcSubSystemBase {
             (gamePad1.dpad_down && gamePad2.dpad_down) ||
             (gamePad1.share && gamePad2.share))) {
 
-      if (gamePad1.share || gamePad2.share) {
+      if (gamePad1.shareWasPressed() || gamePad2.shareWasPressed()) {
         setHorizontal(false);
       }
 
-      if (gamePad1.dpad_up || gamePad2.dpad_up) {
+      if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
         setVertical(true);
         raise();
-      } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
+      } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
         lower();
       }
     }

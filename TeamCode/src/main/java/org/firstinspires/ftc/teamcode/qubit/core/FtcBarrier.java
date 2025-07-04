@@ -88,7 +88,7 @@ public class FtcBarrier extends FtcSubSystemBase {
    * @param gamePad2 The second gamePad to use.
    */
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
-    if (gamePad1.left_bumper || gamePad2.left_bumper) {
+    if (gamePad1.leftBumperWasPressed() || gamePad2.leftBumperWasPressed()) {
       moveUp(false);
     } else if (gamePad1.left_trigger >= 0.5 || gamePad2.left_trigger >= 0.5) {
       moveDown(false);

@@ -35,10 +35,13 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   // and noting the min power at which the robot begins to move/turn.
   // Robot weight distribution would impact rotational inertia, which would impact
   // the turn value most.
-  public static final double MAXIMUM_TURN_POWER = 1.00;
+  public static final double MAXIMUM_TURN_POWER = 0.70;
   public static final double MINIMUM_TURN_POWER = 0.25;
   public static final double FORWARD_SLO_MO_POWER = 0.25;
   public static final double STRAFE_SLO_MO_POWER = 0.40;
+
+  public static final double STEP1_FORWARD_POWER = FORWARD_SLO_MO_POWER;
+  public static final double STEP2_FORWARD_POWER = 0.90;
 
   // JITTER is ideally the minimum motor power to move a wheel when the robot is jacked up.
   // Empirically, the minimum power would be the one to overcome internal friction.
@@ -84,6 +87,9 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   private final boolean enableMecanumPowerBoost = true;
   private final boolean useLiftPositionForSpeedAdjustment = true;
 
+  // When true, joystick position is mapped to (0, slo mode power, max power)
+  private final boolean useStepPowerFunction = true;
+
   public FtcDriveTrain(FtcBot robot) {
     parent = robot;
     // leftFront, leftRear, rightFront, rightRear
@@ -95,6 +101,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
     botDDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
         DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
+
     if (parent.trollBot == TrollBotEnum.TrollBotA)
       motorDirections = botADirections;
     else if (parent.trollBot == TrollBotEnum.TrollBotB)
@@ -121,6 +128,12 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
     return enableUnbalancedRobotHeadingCorrection && enableCorrectionForLowLiftPosition &&
         enableCorrectionForIntake;
+  }
+
+  public double GetMaxWheelPower(double leftFrontPower, double leftRearPower,
+                                 double rightFrontPower, double rightRearPower) {
+    return Math.max(Math.max(Math.abs(leftFrontPower), Math.abs(leftRearPower)),
+        Math.max(Math.abs(rightFrontPower), Math.abs(rightRearPower)));
   }
 
   /**
@@ -276,9 +289,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
         if (enableMecanumPowerBoost) {
           // Boost power up to the powerMagnitude
-          maxWheelPower = Math.max(Math.abs(leftFrontPower), Math.abs(leftRearPower));
-          maxWheelPower = Math.max(maxWheelPower, Math.abs(rightFrontPower));
-          maxWheelPower = Math.max(maxWheelPower, Math.abs(rightRearPower));
+          maxWheelPower = GetMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
           if (maxWheelPower < powerMagnitude) {
             powerMagnitude *= MECANUM_POWER_BOOST_FACTOR;
             leftFrontPower = powerMagnitude * leftFrontPower / maxWheelPower;
@@ -341,10 +352,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
     // Constrain powers in the range of [-MAXIMUM_FORWARD_POWER,MAXIMUM_FORWARD_POWER]
     // Not checking may cause the robot to drive at full speed
-    maxWheelPower = Math.max(Math.abs(leftFrontPower), Math.abs(leftRearPower));
-    maxWheelPower = Math.max(maxWheelPower, Math.abs(rightFrontPower));
-    maxWheelPower = Math.max(maxWheelPower, Math.abs(rightRearPower));
-
+    maxWheelPower = GetMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
     if (maxWheelPower > MAXIMUM_FORWARD_POWER) {
       // Normalize drive power by dividing everything by max power.
       // It's positive so we don't need to worry about sign.
@@ -355,23 +363,21 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     }
 
     // Handle precision drive mode
-    if (gamePad1.dpad_left) {
+    if (gamePad1.dpadLeftWasPressed()) {
       // set global precision drive variable
       precisionDriveMode = true;
-    } else if (gamePad1.dpad_right) {
+    } else if (gamePad1.dpadRightWasPressed()) {
       // set global precision drive variable
       precisionDriveMode = false;
     } else {
       // Maintain last precision drive mode.
     }
 
-    if (precisionDriveMode) {
+    if (precisionDriveMode ||
+        (useStepPowerFunction && maxWheelPower > STEP1_FORWARD_POWER && maxWheelPower <= STEP2_FORWARD_POWER)) {
       // E.g. Robot is turning with minimum power
       // Precision mode should not make it turn using lower than minimum power
-      maxWheelPower = Math.max(Math.abs(leftFrontPower), Math.abs(leftRearPower));
-      maxWheelPower = Math.max(maxWheelPower, Math.abs(rightFrontPower));
-      maxWheelPower = Math.max(maxWheelPower, Math.abs(rightRearPower));
-
+      maxWheelPower = GetMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
       if (maxWheelPower > JITTER) {
         // No matter the joystick magnitude, the max power will be
         // FORWARD_SLO_MO_POWER or STRAFE_SLO_MO_POWER for at least one wheel.

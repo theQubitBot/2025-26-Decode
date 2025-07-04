@@ -194,7 +194,7 @@ public class FtcHand extends FtcSubSystemBase {
         } else {
           FtcLogger.error(TAG, "Hand is neither up nor down");
         }
-      } else if (gamePad1.left_bumper || gamePad2.left_bumper) {
+      } else if (gamePad1.leftBumperWasPressed() || gamePad2.leftBumperWasPressed()) {
         if (handAsyncExecutor.handIsUp()) {
           handAsyncExecutor.setOperation(FtcHandAsyncExecutor.HandOperation.RotateDown, false);
         } else if (handAsyncExecutor.handIsDown()) {

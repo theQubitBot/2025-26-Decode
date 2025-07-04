@@ -24,7 +24,6 @@ public class MatchConfig {
   private boolean gamePad1Connected, gamePad2Connected;
   public boolean configIsComplete;
   private final boolean configFeatureEnabled = true;
-  private boolean lastDPadUpPressed = false, lastDPadDownPressed = false;
   private HardwareMap hardwareMap = null;
   private Telemetry telemetry = null;
 
@@ -123,8 +122,8 @@ public class MatchConfig {
   public void update(Gamepad gamePad1, Gamepad gamePad2) {
     if (configFeatureEnabled) {
       // Configure alliance color
-      if (gamePad1.right_bumper || gamePad1.left_bumper ||
-          gamePad2.right_bumper || gamePad2.left_bumper) {
+      if (gamePad1.rightBumperWasPressed() || gamePad1.leftBumperWasPressed() ||
+          gamePad2.rightBumperWasPressed() || gamePad2.leftBumperWasPressed()) {
         allianceColor = AllianceColorEnum.BLUE;
       } else if (gamePad1.right_trigger > 0.5 || gamePad1.left_trigger > 0.5 ||
           gamePad2.right_trigger > 0.5 || gamePad2.left_trigger > 0.5) {
@@ -132,26 +131,17 @@ public class MatchConfig {
       }
 
       // Configure robot position on the field
-      if (gamePad1.dpad_left || gamePad2.dpad_left) {
+      if (gamePad1.dpadLeftWasPressed() || gamePad2.dpadLeftWasPressed()) {
         robotPosition = RobotPositionEnum.LEFT;
-      } else if (gamePad1.dpad_right || gamePad2.dpad_right) {
+      } else if (gamePad1.dpadRightWasPressed() || gamePad2.dpadRightWasPressed()) {
         robotPosition = RobotPositionEnum.RIGHT;
       }
 
       // Configure initial delay
-      if (gamePad1.dpad_up || gamePad2.dpad_up) {
-        if (!lastDPadUpPressed) {
-          lastDPadUpPressed = true;
+      if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
           delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
-        }
-      } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
-        if (!lastDPadDownPressed) {
-          lastDPadDownPressed = true;
+      } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
           delayInSeconds = Math.max(delayInSeconds - 1, 0);
-        }
-      } else {
-        lastDPadUpPressed = false;
-        lastDPadDownPressed = false;
       }
 
       // Evaluate gamePad connections, if not connected.

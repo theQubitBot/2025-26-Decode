@@ -58,7 +58,7 @@ public class FtcCatapult extends FtcSubSystemBase {
     if (catapultEnabled &&
         // Debug mode OR end game or both controllers are used
         (FtcUtils.DEBUG || runtime.seconds() > 90 || (gamePad1.start && gamePad2.start))) {
-      if (gamePad1.start || gamePad2.start) {
+      if (gamePad1.startWasPressed() || gamePad2.startWasPressed()) {
         release(true);
       }
     }

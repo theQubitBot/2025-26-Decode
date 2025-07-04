@@ -219,6 +219,7 @@ public class OptionLeft extends OptionBase {
 
     // Deliver preloaded sample
     if (!saveAndTest()) return;
+
     if (PARAMS.executeRobotActions) intakeFlipDown.run();
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, true, 2200);
