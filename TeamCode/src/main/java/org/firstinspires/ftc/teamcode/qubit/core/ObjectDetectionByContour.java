@@ -101,13 +101,85 @@ public class ObjectDetectionByContour extends ObjectDetectionBase {
 
     if (gameElement.elementFound()) {
       if (FtcUtils.DEBUG || annotateFrame) {
-        Imgproc.rectangle(frame, gameElement.boundingRect, FtcColorUtils.RGB_YELLOW, gameElement.borderSize);
+        Imgproc.rectangle(frame, gameElement.boundingRect, gameElement.elementColor, gameElement.borderSize);
 
         // Display Data
         Imgproc.putText(frame, String.format("%s: A%.0f AR%.2f",
                 gameElement.tag, gameElement.area, gameElement.aspectRatio),
             new Point(gameElement.boundingRect.x, gameElement.boundingRect.y - 20),
             Imgproc.FONT_HERSHEY_SIMPLEX, 0.6, gameElement.elementColor, gameElement.borderSize);
+      }
+    }
+  }
+  @SuppressLint("DefaultLocale")
+  public void processFrame(Mat frame, SampleElement sampleElement, boolean annotateFrame) {
+    Imgproc.cvtColor(frame, alternativeColorMat, sampleElement.colorConversionCode);
+    Core.inRange(alternativeColorMat, sampleElement.lowerColorThreshold,
+        sampleElement.upperColorThreshold, processedMat);
+
+    // Remove Noise
+    Imgproc.morphologyEx(processedMat, processedMat, Imgproc.MORPH_OPEN, new Mat());
+    Imgproc.morphologyEx(processedMat, processedMat, Imgproc.MORPH_CLOSE, new Mat());
+
+    // Find Contours within the color thresholds
+    List<MatOfPoint> contours = new ArrayList<>();
+    Imgproc.findContours(processedMat, contours, new Mat(), Imgproc.RETR_LIST,
+        Imgproc.CHAIN_APPROX_SIMPLE);
+
+    if (FtcUtils.DEBUG || annotateFrame) {
+      for (int i = 0; i < contours.size(); i++) {
+        double contourArea = Imgproc.contourArea(contours.get(i));
+        if (contourArea >= sampleElement.minSize.area()
+            && contourArea <= sampleElement.maxSize.area()) {
+          Imgproc.drawContours(frame, contours, i, sampleElement.elementColor,
+              sampleElement.borderSize);
+        }
+      }
+    }
+
+    sampleElement.invalidate();
+
+    // Loop Through Contours
+    for (MatOfPoint contour : contours) {
+      boolean geometricShapeMatched = true;
+      if (sampleElement.geometricShapeEnum != GeometricShapeEnum.UNKNOWN) {
+        MatOfPoint2f curve = new MatOfPoint2f();
+        MatOfPoint2f approxCurve = new MatOfPoint2f();
+        contour.convertTo(curve, CvType.CV_32F);
+        Imgproc.approxPolyDP(curve, approxCurve, 0.01 * Imgproc.arcLength(curve, true), true);
+        geometricShapeMatched = sampleElement.geometricShapeEnum.match(approxCurve.total());
+        curve.release();
+        approxCurve.release();
+      }
+
+      double contourArea = Imgproc.contourArea(contour);
+      if (geometricShapeMatched && contourArea >= sampleElement.minSize.area()
+          && contourArea > sampleElement.area
+          && contourArea <= sampleElement.maxSize.area()) {
+        // Found contour within the area thresholds
+        Point[] contourArray = contour.toArray();
+        MatOfPoint2f areaPoints = new MatOfPoint2f(contourArray);
+        RotatedRect tempRect = Imgproc.minAreaRect(areaPoints);
+        areaPoints.release();
+        double aspectRatio = FtcUtils.getAspectRatio(tempRect);
+        if (aspectRatio >= sampleElement.minAspectRatio && aspectRatio <= sampleElement.maxAspectRatio) {
+          // Found contour within the aspect ratio thresholds
+          sampleElement.validate(tempRect, aspectRatio, contourArea);
+        }
+      }
+
+      contour.release();
+    }
+
+    if (sampleElement.elementFound()) {
+      if (FtcUtils.DEBUG || annotateFrame) {
+        Imgproc.rectangle(frame, sampleElement.boundingRect, sampleElement.elementColor, sampleElement.borderSize);
+
+        // Display Data
+        Imgproc.putText(frame, String.format("%s: A %.0f AR %.2f",
+                sampleElement.tag, sampleElement.area, sampleElement.aspectRatio),
+            new Point(sampleElement.boundingRect.x, sampleElement.boundingRect.y - 20),
+            Imgproc.FONT_HERSHEY_SIMPLEX, 0.6, sampleElement.elementColor, sampleElement.borderSize);
       }
     }
   }

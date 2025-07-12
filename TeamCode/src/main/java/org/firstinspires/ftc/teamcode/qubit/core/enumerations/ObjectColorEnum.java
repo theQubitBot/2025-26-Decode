@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.qubit.core.enumerations;
 
 /**
- * Different types of game elements based on their colors.
+ * Different colors of the game objects.
  */
-public enum GameElementTypeEnum {
+public enum ObjectColorEnum {
   BLACK,
   BLUE,
   GRAY,

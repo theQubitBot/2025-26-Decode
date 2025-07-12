@@ -10,10 +10,10 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 /**
- * A class to manage the Team Game Element (TGE).
+ * A class to manage the Sample
  */
-public class GameElement {
-  private static final String TAG = "GameElement";
+public class SampleElement {
+  private static final String TAG = "SampleElement";
   public static final int ATTENDANCE_MAX = 30;
   public static final int ATTENDANCE_THRESHOLD = 15;
   public double minAspectRatio, maxAspectRatio;
@@ -38,7 +38,7 @@ public class GameElement {
   /**
    * Constructor. Sets the defaults for the TGE.
    */
-  public GameElement() {
+  public SampleElement() {
     // OpenCV processes about 6 FPS
     // Look back 5 seconds of processed frames
     attendanceRegister = new int[ATTENDANCE_MAX];
@@ -47,31 +47,31 @@ public class GameElement {
     boundingRect = new Rect();
     rotatedRect = new RotatedRect();
     borderSize = 4;
-    colorConversionCode = Imgproc.COLOR_RGB2YCrCb;
+    colorConversionCode = Imgproc.COLOR_RGB2HSV;
     geometricShapeEnum = GeometricShapeEnum.UNKNOWN;
     elementColor = FtcColorUtils.RGB_WHITE;
-    tgeDetectionAlgorithm = ObjectDetectionAlgorithmEnum.CONTOUR_AND_CHANNEL;
+    tgeDetectionAlgorithm = ObjectDetectionAlgorithmEnum.CONTOUR;
     found = false;
     lowerColorThreshold = new Scalar(0.0, 0.0, 0.0);
     upperColorThreshold = new Scalar(255.0, 255.0, 255.0);
     tag = FtcColorUtils.TAG_UNKNOWN;
-    minSize = new Rect(0, 0, 80, 80);
-    maxSize = new Rect(0, 0, 400, 400);
+    minSize = new Rect(0, 0, 70, 70);
+    maxSize = new Rect(0, 0, 300, 300);
 
     // Team prop merges with spike mark, aspect ratio can be 3!
     minAspectRatio = 0.25;
-    maxAspectRatio = 3.5;
+    maxAspectRatio = 4.00;
   }
 
   public int attendanceCount() {
-    int sum = 0;
+    int count = 0;
     synchronized (attendanceRegister) {
       for (int i = 0; i < attendanceRegister.length; i++) {
-        sum += attendanceRegister[i];
+        count += attendanceRegister[i];
       }
     }
 
-    return sum;
+    return count;
   }
 
   public boolean elementConsistentlyPresent() {
@@ -82,8 +82,8 @@ public class GameElement {
     return found;
   }
 
-  public static GameElement getGE(ObjectColorEnum gameElementType) {
-    GameElement gameElement = new GameElement();
+  public static SampleElement getSample(ObjectColorEnum gameElementType) {
+    SampleElement gameElement = new SampleElement();
     switch (gameElementType) {
       case BLUE:
         gameElement.elementColor = FtcColorUtils.RGB_BLUE;
@@ -91,53 +91,6 @@ public class GameElement {
         gameElement.lowerColorThreshold = new Scalar(110.0, 20.0, 50.0);
         gameElement.upperColorThreshold = new Scalar(130.0, 255.0, 255.0);
         gameElement.tag = FtcColorUtils.TAG_BLUE;
-        break;
-      case BLACK:
-        gameElement.elementColor = FtcColorUtils.RGB_BLACK;
-        gameElement.lowerColorThreshold = new Scalar(0.0, 63.0, 63.0);
-        gameElement.upperColorThreshold = new Scalar(31.0, 191.0, 191.0);
-        gameElement.tag = FtcColorUtils.TAG_BLACK;
-        break;
-      case GRAY:
-        gameElement.elementColor = FtcColorUtils.RGB_GRAY;
-        gameElement.lowerColorThreshold = new Scalar(63.0, 63.0, 63.0);
-        gameElement.upperColorThreshold = new Scalar(191.0, 191.0, 191.0);
-        gameElement.tag = FtcColorUtils.TAG_GRAY;
-        break;
-      case GREEN:
-        gameElement.elementColor = FtcColorUtils.RGB_GREEN;
-                /* YCbCr
-                gameElement.lowerColorThreshold = new Scalar(63.0, 0.0, 0.0);
-                gameElement.upperColorThreshold = new Scalar(255.0, 120.0, 120.0);
-                */
-
-        //* HSV
-        gameElement.colorConversionCode = Imgproc.COLOR_RGB2HSV;
-        gameElement.lowerColorThreshold = new Scalar(45.0, 20.0, 50.0);
-        gameElement.upperColorThreshold = new Scalar(86.0, 255.0, 255.0);
-        //*/
-        gameElement.tag = FtcColorUtils.TAG_GREEN;
-        break;
-      case ORANGE:
-        gameElement.elementColor = FtcColorUtils.RGB_ORANGE;
-        gameElement.colorConversionCode = Imgproc.COLOR_RGB2HSV;
-        gameElement.lowerColorThreshold = new Scalar(11.0, 10.0, 10.0);
-        gameElement.upperColorThreshold = new Scalar(24.0, 255.0, 255.0);
-        gameElement.tag = FtcColorUtils.TAG_ORANGE;
-        break;
-      case PINK:
-        gameElement.elementColor = FtcColorUtils.RGB_PINK;
-        gameElement.colorConversionCode = Imgproc.COLOR_RGB2HSV;
-        gameElement.lowerColorThreshold = new Scalar(150.0, 10.0, 10.0);
-        gameElement.upperColorThreshold = new Scalar(170.0, 255.0, 255.0);
-        gameElement.tag = FtcColorUtils.TAG_PINK;
-        break;
-      case PURPLE:
-        gameElement.elementColor = FtcColorUtils.RGB_PURPLE;
-        gameElement.colorConversionCode = Imgproc.COLOR_RGB2HSV;
-        gameElement.lowerColorThreshold = new Scalar(140.0, 10.0, 10.0);
-        gameElement.upperColorThreshold = new Scalar(160.0, 255.0, 255.0);
-        gameElement.tag = FtcColorUtils.TAG_PURPLE;
         break;
       case RED1:
         gameElement.elementColor = FtcColorUtils.RGB_RED;
@@ -160,12 +113,6 @@ public class GameElement {
         gameElement.lowerColorThreshold = new Scalar(20.0, 100.0, 100.0);
         gameElement.upperColorThreshold = new Scalar(40.0, 255.0, 255.0);
         gameElement.tag = FtcColorUtils.TAG_YELLOW;
-        break;
-      case WHITE:
-        gameElement.elementColor = FtcColorUtils.RGB_WHITE;
-        gameElement.lowerColorThreshold = new Scalar(191.0, 63.0, 63.0);
-        gameElement.upperColorThreshold = new Scalar(255.0, 191.0, 191.0);
-        gameElement.tag = FtcColorUtils.TAG_WHITE;
         break;
     }
 

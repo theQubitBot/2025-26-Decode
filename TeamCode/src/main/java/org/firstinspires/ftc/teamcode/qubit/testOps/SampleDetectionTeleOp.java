@@ -8,54 +8,61 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.qubit.core.DrawRectPipeline;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcOpenCvCam;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.GameElement;
+import org.firstinspires.ftc.teamcode.qubit.core.SampleDetectionPipeline;
+import org.firstinspires.ftc.teamcode.qubit.core.SampleElement;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.GeometricShapeEnum;
+import org.opencv.core.Point;
+import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 //@Disabled
 @TeleOp(group = "TestOp")
-public class DrawRectPipelineTeleOp extends OpMode {
-  OpenCvWebcam webcam;
-  DrawRectPipeline drawRectPipeline;
+public class SampleDetectionTeleOp extends OpMode {
+  private OpenCvWebcam openCvWebcam;
+  SampleDetectionPipeline sdPipeline;
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
+  private Point midPoint;
 
   @Override
   public void init() {
     FtcLogger.enter();
-    telemetry.addData(">", "Initializing, please wait...");
+    telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
 
-    // OpenCV webcam
-    webcam = FtcOpenCvCam.createWebcam(hardwareMap, FtcOpenCvCam.WEBCAM_1_NAME);
+    // OpenCV openCvWebcam
+    openCvWebcam = FtcOpenCvCam.createWebcam(hardwareMap, FtcOpenCvCam.WEBCAM_1_NAME);
 
     //OpenCV Pipeline
-    drawRectPipeline = new DrawRectPipeline();
-    webcam.setPipeline(drawRectPipeline);
+    sdPipeline = new SampleDetectionPipeline(openCvWebcam);
+    openCvWebcam.setPipeline(sdPipeline);
 
     // Timeout for obtaining permission is configurable. Set before opening.
-    webcam.setMillisecondsPermissionTimeout(2500);
-    webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+    openCvWebcam.setMillisecondsPermissionTimeout(2500);
+    openCvWebcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
       @Override
       public void onOpened() {
-        webcam.startStreaming(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
+        openCvWebcam.startStreaming(
+            FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
       }
 
       @Override
       public void onError(int errorCode) {
         /*
-         * This will be called if the webcam could not be opened
+         * This will be called if the openCvWebcam could not be opened
          */
       }
     });
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-    dashboard.startCameraStream(webcam, 0);
+    dashboard.startCameraStream(openCvWebcam, 0);
 
     FtcLogger.exit();
   }
@@ -65,7 +72,7 @@ public class DrawRectPipelineTeleOp extends OpMode {
    */
   @Override
   public void init_loop() {
-    telemetry.addData(">", "Waiting for driver to press play");
+    telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
     telemetry.update();
     FtcUtils.sleep(50);
   }
@@ -76,7 +83,7 @@ public class DrawRectPipelineTeleOp extends OpMode {
   @Override
   public void start() {
     FtcLogger.enter();
-    telemetry.addData(">", "Starting...");
+    telemetry.addData(FtcUtils.TAG, "Starting...");
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -91,15 +98,24 @@ public class DrawRectPipelineTeleOp extends OpMode {
   public void loop() {
     FtcLogger.enter();
     loopTime.reset();
-    drawRectPipeline.adjustRect(gamepad1);
 
-    telemetry.addData(">", "Use left and right joysticks to reposition rectangle.");
+    if (sdPipeline.error) {
+      telemetry.addData("Exception: ", sdPipeline.lastException);
+    } else {
+      for (SampleElement sampleElement : sdPipeline.sampleElements) {
+        if (sampleElement.elementFound()) {
+          midPoint = sampleElement.getMidPoint();
+          telemetry.addData(FtcUtils.TAG, "%s (%f, %f)",
+              sampleElement.tag, midPoint.x, midPoint.y);
+        }
+      }
+    }
 
     // Show the elapsed game time.
-    telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
+    telemetry.addLine("");
+    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
-    FtcUtils.sleep(100);
     FtcLogger.exit();
   }
 
@@ -109,7 +125,12 @@ public class DrawRectPipelineTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
-    telemetry.addData(">", "Tele Op stopped.");
+    if (openCvWebcam != null) {
+      openCvWebcam.stopStreaming();
+      openCvWebcam.closeCameraDevice();
+    }
+
+    telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     telemetry.update();
     FtcLogger.exit();
   }

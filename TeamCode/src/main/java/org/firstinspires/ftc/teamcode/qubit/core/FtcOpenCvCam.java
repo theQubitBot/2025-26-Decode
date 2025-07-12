@@ -59,6 +59,7 @@ public class FtcOpenCvCam extends FtcSubSystemBase {
   private Boolean initializationIsSuccessful;
   public boolean showTelemetry = true;
   public MultipleObjectDetectionPipeline modPipeline = null;
+  public SampleDetectionPipeline sdPipeLine = null;
 
   /**
    * Initialize standard Hardware interfaces
@@ -82,7 +83,11 @@ public class FtcOpenCvCam extends FtcSubSystemBase {
     } else {
       // Initialize OpenCV pipeline
       modPipeline = new MultipleObjectDetectionPipeline(openCvWebcam);
-      openCvWebcam.setPipeline(modPipeline);
+      sdPipeLine = new SampleDetectionPipeline(openCvWebcam);
+      openCvWebcam.setPipeline(sdPipeLine);
+
+      // Timeout for obtaining permission is configurable. Set before opening.
+      openCvWebcam.setMillisecondsPermissionTimeout(2500);
 
       // Start frontWebcam streaming
       openCvWebcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {

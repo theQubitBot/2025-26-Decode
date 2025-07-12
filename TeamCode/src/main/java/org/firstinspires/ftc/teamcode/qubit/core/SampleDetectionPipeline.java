@@ -10,27 +10,25 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-public class MultipleObjectDetectionPipeline extends OpenCvPipeline {
-  private static final String TAG = "ModPipeline";
+public class SampleDetectionPipeline extends OpenCvPipeline {
+  private static final String TAG = "MsdPipeline";
   private OpenCvWebcam openCvWebcam = null;
-  private boolean annotateFrame = false;
+  private boolean annotateFrame = true;
 
   // Volatile because accessed by OpMode without syncObject
   public volatile boolean error = false;
   public volatile Exception lastException = null;
-  private final ObjectDetectionByChannel odbChn;
   private final ObjectDetectionByContour odbCon;
 
-  public final GameElement[] gameElements = new GameElement[]{
-      GameElement.getGE(ObjectColorEnum.BLUE),
-      GameElement.getGE(ObjectColorEnum.RED1),
-      GameElement.getGE(ObjectColorEnum.RED2),
-      GameElement.getGE(ObjectColorEnum.YELLOW)
+  public final SampleElement[] sampleElements = new SampleElement[]{
+      SampleElement.getSample(ObjectColorEnum.BLUE),
+      SampleElement.getSample(ObjectColorEnum.RED1),
+      SampleElement.getSample(ObjectColorEnum.RED2),
+      SampleElement.getSample(ObjectColorEnum.YELLOW)
   };
 
-  public MultipleObjectDetectionPipeline(OpenCvWebcam openCvWebcam) {
+  public SampleDetectionPipeline(OpenCvWebcam openCvWebcam) {
     this.openCvWebcam = openCvWebcam;
-    odbChn = new ObjectDetectionByChannel();
     odbCon = new ObjectDetectionByContour();
   }
 
@@ -50,7 +48,6 @@ public class MultipleObjectDetectionPipeline extends OpenCvPipeline {
 
   @Override
   public void init(Mat firstFrame) {
-    odbChn.init(firstFrame);
     odbCon.init(firstFrame);
   }
 
@@ -59,23 +56,10 @@ public class MultipleObjectDetectionPipeline extends OpenCvPipeline {
     error = false;
     lastException = null;
     try {
-      odbChn.blotFrame(frame);
-      for (GameElement gameElement : gameElements) {
-        if (gameElement.tgeDetectionAlgorithm == ObjectDetectionAlgorithmEnum.CONTOUR_AND_CHANNEL) {
-          boolean foundChn, foundCon;
-          odbChn.processFrame(frame, gameElement, annotateFrame);
-          foundChn = gameElement.elementFound();
-          odbCon.processFrame(frame, gameElement, annotateFrame);
-          foundCon = gameElement.elementFound();
-          if (foundChn == foundCon) {
-            gameElement.takeAttendance();
-          }
-        } else if (gameElement.tgeDetectionAlgorithm == ObjectDetectionAlgorithmEnum.CHANNEL) {
-          odbChn.processFrame(frame, gameElement, annotateFrame);
-          gameElement.takeAttendance();
-        } else if (gameElement.tgeDetectionAlgorithm == ObjectDetectionAlgorithmEnum.CONTOUR) {
-          odbCon.processFrame(frame, gameElement, annotateFrame);
-          gameElement.takeAttendance();
+      for (SampleElement sampleElement : sampleElements) {
+       if (sampleElement.tgeDetectionAlgorithm == ObjectDetectionAlgorithmEnum.CONTOUR) {
+          odbCon.processFrame(frame, sampleElement, annotateFrame);
+          sampleElement.takeAttendance();
         }
       }
     } catch (Exception exception) {

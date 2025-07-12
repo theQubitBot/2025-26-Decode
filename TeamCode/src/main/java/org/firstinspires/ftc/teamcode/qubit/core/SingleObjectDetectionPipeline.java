@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.GameElementTypeEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObjectColorEnum;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SingleObjectDetectionPipeline extends OpenCvPipeline {
-  private static final String TAG = "SodPipeline";
+  private static final String TAG = "sodPipeline";
 
   // Pink, the default color                         Y  Cr     Cb    (Do not change Y)
   public static Scalar scalarLowerYCrCb = new Scalar(0, 160.0, 100.0);
@@ -41,7 +41,7 @@ public class SingleObjectDetectionPipeline extends OpenCvPipeline {
   private boolean first = false;
 
   private final GameElement[] gameElements = new GameElement[]{
-      GameElement.getGE(GameElementTypeEnum.PINK)
+      GameElement.getGE(ObjectColorEnum.PINK)
   };
 
   public SingleObjectDetectionPipeline(double borderLeftX, double borderRightX,

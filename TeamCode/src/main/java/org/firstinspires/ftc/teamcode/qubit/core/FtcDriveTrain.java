@@ -82,7 +82,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
   // This data is used for heading correction for an unbalanced robot.
   private double lastTheta = 0, lastHeading = 0;
-  private final boolean useMotorEncoders = false;
   private final boolean enableUnbalancedRobotHeadingCorrection = false;
   private final boolean enableMecanumPowerBoost = true;
   private final boolean useLiftPositionForSpeedAdjustment = true;
@@ -178,22 +177,11 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
       // Reset motor encoders
       for (FtcMotor motor : activeMotors) {
-        if (useMotorEncoders) {
-          // Resetting encoders is important. If the RC is not reset, encoder counts keep
-          // going up/down as team practices on the robot.
-          motor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-
-          // After STOP_AND_RESET_ENCODER, must specify the runMode
-          // Otherwise motor power may stay off indefinitely.
-          motor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        } else {
-          motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        }
+        motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
       }
 
       showTelemetry();
       telemetry.addData(TAG, "initialized");
-
     } else {
       telemetry.addData(TAG, "not enabled");
     }
