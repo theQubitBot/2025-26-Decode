@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcGoBoDriver;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcPinPointDriver;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -22,7 +22,7 @@ public class GoBoDriverTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
-  FtcGoBoDriver ftcGoBoDriver = null;
+  FtcPinPointDriver ftcPinPointDriver = null;
   double oldTime = 0;
 
   /*
@@ -37,8 +37,8 @@ public class GoBoDriverTeleOp extends OpMode {
     }
 
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
-    ftcGoBoDriver = new FtcGoBoDriver();
-    ftcGoBoDriver.init(hardwareMap, telemetry);
+    ftcPinPointDriver = new FtcPinPointDriver();
+    ftcPinPointDriver.init(hardwareMap, telemetry);
     FtcImu.endAutoOpHeading = 0;
     telemetry.update();
     FtcLogger.exit();
@@ -76,19 +76,19 @@ public class GoBoDriverTeleOp extends OpMode {
     loopTime.reset();
 
     String position = String.format(Locale.US, "X: %.3f, Y: %.3f, H: %.3f",
-        ftcGoBoDriver.getPositionX(DistanceUnit.INCH),
-        ftcGoBoDriver.getPositionY(DistanceUnit.INCH),
-        ftcGoBoDriver.getHeading(AngleUnit.DEGREES));
+        ftcPinPointDriver.getPositionX(DistanceUnit.INCH),
+        ftcPinPointDriver.getPositionY(DistanceUnit.INCH),
+        ftcPinPointDriver.getHeading(AngleUnit.DEGREES));
     telemetry.addData("Position", position);
 
     String velocity = String.format(Locale.US, "XVel: %.3f, YVel: %.3f, HVel: %.3f",
-        ftcGoBoDriver.getVelocityX(DistanceUnit.INCH),
-        ftcGoBoDriver.getVelocityY(DistanceUnit.INCH),
-        ftcGoBoDriver.getHeadingVelocity(AngleUnit.DEGREES));
+        ftcPinPointDriver.getVelocityX(DistanceUnit.INCH),
+        ftcPinPointDriver.getVelocityY(DistanceUnit.INCH),
+        ftcPinPointDriver.getHeadingVelocity(AngleUnit.DEGREES));
     telemetry.addData("Velocity", velocity);
 
     telemetry.addData("Encoders", String.format(Locale.US, "X: %d, Y: %d",
-        ftcGoBoDriver.getEncoderX(), ftcGoBoDriver.getEncoderY()));
+        ftcPinPointDriver.getEncoderX(), ftcPinPointDriver.getEncoderY()));
 
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());

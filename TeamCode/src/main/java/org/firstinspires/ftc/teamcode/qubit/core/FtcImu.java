@@ -17,9 +17,9 @@ public class FtcImu extends FtcSubSystemBase {
   private final FtcBot parent;
 
   private FtcBhi260apImu bhi260apImu = null;
-  private FtcGoBoDriver ftcGoBoDriver = null;
+  private FtcPinPointDriver ftcPinPointDriver = null;
   private final boolean useBhi260apImu = true;
-  private final boolean useGoBoDriver = true;
+  private final boolean usePinPointDriver = true;
   public static double endAutoOpHeading = 0;
   private double initialTeleOpHeading = 0.0;
   private double initialGyroHeadingToDetermineDrift = 0.0;
@@ -146,12 +146,12 @@ public class FtcImu extends FtcSubSystemBase {
       bhi260apImu.init(hardwareMap, telemetry);
     }
 
-    if (useGoBoDriver && parent.trollBot == TrollBotEnum.TrollBotA) {
-      ftcGoBoDriver = new FtcGoBoDriver();
-      ftcGoBoDriver.init(hardwareMap, telemetry);
+    if (usePinPointDriver && parent.trollBot == TrollBotEnum.TrollBotA) {
+      ftcPinPointDriver = new FtcPinPointDriver();
+      ftcPinPointDriver.init(hardwareMap, telemetry);
     }
 
-    if (useBhi260apImu || useGoBoDriver) {
+    if (useBhi260apImu || usePinPointDriver) {
       // Get a reading before the async reader is started.
       readAsync();
       if (asyncUpdaterEnabled) {
@@ -237,9 +237,9 @@ public class FtcImu extends FtcSubSystemBase {
         roll = normalize(bhi260apImu.getRoll(), AngleUnit.DEGREES);
         pitch = normalize(bhi260apImu.getPitch(), AngleUnit.DEGREES);
       }
-    } else if (useGoBoDriver && ftcGoBoDriver != null) {
+    } else if (usePinPointDriver && ftcPinPointDriver != null) {
       synchronized (directionLock) {
-        heading = normalize(ftcGoBoDriver.getHeading(AngleUnit.DEGREES), AngleUnit.DEGREES);
+        heading = normalize(ftcPinPointDriver.getHeading(AngleUnit.DEGREES), AngleUnit.DEGREES);
       }
     } else {
       // All IMUs are bad or not enabled
@@ -276,8 +276,8 @@ public class FtcImu extends FtcSubSystemBase {
         bhi260apImu.showTelemetry();
       }
 
-      if (useGoBoDriver && ftcGoBoDriver != null) {
-        ftcGoBoDriver.showTelemetry();
+      if (usePinPointDriver && ftcPinPointDriver != null) {
+        ftcPinPointDriver.showTelemetry();
       }
     }
 

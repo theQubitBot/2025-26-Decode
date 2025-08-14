@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 public class FtcBot extends FtcSubSystemBase {
   private static final String TAG = "FtcBot";
   private boolean telemetryEnabled = true;
-  public final TrollBotEnum trollBot = TrollBotEnum.TrollBotD;
+  public final TrollBotEnum trollBot = TrollBotEnum.TrollBotL;
   public FtcArm arm = null;
   public FtcBulkRead bulkRead = null;
   public FtcBlinkinLed blinkinLed = null;
@@ -54,6 +54,11 @@ public class FtcBot extends FtcSubSystemBase {
     } else if (trollBot == TrollBotEnum.TrollBotD) {
       driveTrain.telemetryEnabled = false;
       imu.telemetryEnabled = false;
+    } else if (trollBot == TrollBotEnum.TrollBotL) {
+      driveTrain.telemetryEnabled = false;
+      imu.telemetryEnabled = false;
+    } else {
+      throw new UnsupportedOperationException("Invalid trollBot");
     }
 
     FtcLogger.exit();
@@ -72,11 +77,16 @@ public class FtcBot extends FtcSubSystemBase {
       lift.telemetryEnabled = true;
       rnp.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotC) {
-      driveTrain.telemetryEnabled = false;
-      imu.telemetryEnabled = false;
+      driveTrain.telemetryEnabled = true;
+      imu.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotD) {
-      driveTrain.telemetryEnabled = false;
-      imu.telemetryEnabled = false;
+      driveTrain.telemetryEnabled = true;
+      imu.telemetryEnabled = true;
+    } else if (trollBot == TrollBotEnum.TrollBotL) {
+      driveTrain.telemetryEnabled = true;
+      imu.telemetryEnabled = true;
+    } else {
+      throw new UnsupportedOperationException("Invalid trollBot");
     }
 
     FtcLogger.exit();
@@ -152,6 +162,21 @@ public class FtcBot extends FtcSubSystemBase {
 
       imu = new FtcImu(this);
       imu.init(hardwareMap, telemetry);
+    } else if (trollBot == TrollBotEnum.TrollBotL) {
+      bulkRead = new FtcBulkRead();
+      bulkRead.init(hardwareMap, telemetry);
+
+      config = new MatchConfig();
+      config.init(hardwareMap, telemetry);
+
+      driveTrain = new FtcDriveTrain(this);
+      driveTrain.setDriveTypeAndMode(DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
+      driveTrain.init(hardwareMap, telemetry);
+
+      imu = new FtcImu(this);
+      imu.init(hardwareMap, telemetry);
+    } else {
+      throw new UnsupportedOperationException("Invalid trollBot");
     }
 
     telemetry.addData(TAG, "initialized");
@@ -178,6 +203,10 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
     } else if (trollBot == TrollBotEnum.TrollBotD) {
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
+    } else if (trollBot == TrollBotEnum.TrollBotL) {
+      driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
+    } else {
+      throw new UnsupportedOperationException("Invalid trollBot");
     }
 
     if (telemetryEnabled) {
@@ -202,6 +231,12 @@ public class FtcBot extends FtcSubSystemBase {
         imu.showTelemetry();
         showGamePadTelemetry(gamePad1);
         driveTrain.showTelemetry();
+      } else if (trollBot == TrollBotEnum.TrollBotL) {
+        imu.showTelemetry();
+        showGamePadTelemetry(gamePad1);
+        driveTrain.showTelemetry();
+      } else {
+        throw new UnsupportedOperationException("Invalid trollBot");
       }
     }
 
@@ -249,6 +284,7 @@ public class FtcBot extends FtcSubSystemBase {
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
     } else if (trollBot == TrollBotEnum.TrollBotD) {
+    } else if (trollBot == TrollBotEnum.TrollBotL) {
 
     }
 
@@ -302,6 +338,14 @@ public class FtcBot extends FtcSubSystemBase {
         imu.stop();
       }
     } else if (trollBot == TrollBotEnum.TrollBotD) {
+      if (driveTrain != null) {
+        driveTrain.stop();
+      }
+
+      if (imu != null) {
+        imu.stop();
+      }
+    } else if (trollBot == TrollBotEnum.TrollBotL) {
       if (driveTrain != null) {
         driveTrain.stop();
       }

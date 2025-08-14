@@ -10,8 +10,8 @@ import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 
 import java.util.concurrent.TimeUnit;
 
-public class FtcGoBoDriver extends FtcSubSystemBase {
-  private static final String TAG = "FtcGoBoDriver";
+public class FtcPinPointDriver extends FtcSubSystemBase {
+  private static final String TAG = "FtcPinPointDriver";
   public boolean telemetryEnabled = true;
   Telemetry telemetry = null;
   private GoBildaPinpointDriver goboDriver;
