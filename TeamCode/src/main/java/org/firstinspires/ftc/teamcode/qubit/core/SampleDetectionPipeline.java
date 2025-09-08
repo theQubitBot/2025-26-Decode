@@ -57,7 +57,7 @@ public class SampleDetectionPipeline extends OpenCvPipeline {
     lastException = null;
     try {
       for (SampleElement sampleElement : sampleElements) {
-       if (sampleElement.tgeDetectionAlgorithm == ObjectDetectionAlgorithmEnum.CONTOUR) {
+        if (sampleElement.tgeDetectionAlgorithm == ObjectDetectionAlgorithmEnum.CONTOUR) {
           odbCon.processFrame(frame, sampleElement, annotateFrame);
           sampleElement.takeAttendance();
         }

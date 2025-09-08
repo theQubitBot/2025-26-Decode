@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObjectColorEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.GeometricShapeEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObjectColorEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObjectDetectionAlgorithmEnum;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;

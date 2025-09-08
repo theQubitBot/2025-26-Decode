@@ -1,9 +1,8 @@
 package org.firstinspires.ftc.teamcode.qubit.autoOps;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.PathCallback;
-import com.pedropathing.pathgen.PathChain;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -117,8 +116,7 @@ public class OptionBase {
       follower.update();
     } while (autoOpMode.opModeIsActive() && !d.hasExpired() && follower.isBusy());
     if (follower.isBusy()) follower.breakFollowing();
-    String message = String.format(Locale.US, "%s execution: %.0f ms",
-        pathChain.name, runtime.milliseconds());
+    String message = String.format(Locale.US, "execution: %.0f ms", runtime.milliseconds());
     FtcLogger.info(FtcUtils.TAG, message);
     autoOpMode.telemetry.addData(FtcUtils.TAG, message);
     autoOpMode.telemetry.update();
@@ -151,14 +149,5 @@ public class OptionBase {
 
     FtcLogger.exit();
     return opModeIsActive;
-  }
-
-  public void runCallbacks(PathChain pathChain, ElapsedTime pathChainElapsedTime) {
-    for (PathCallback callback : pathChain.getCallbacks()) {
-      if (!callback.hasBeenRun() && callback.getType() == PathCallback.TIME &&
-          pathChainElapsedTime.milliseconds() >= callback.getStartCondition()) {
-        callback.run();
-      }
-    }
   }
 }

@@ -139,9 +139,9 @@ public class MatchConfig {
 
       // Configure initial delay
       if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
-          delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
+        delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
       } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
-          delayInSeconds = Math.max(delayInSeconds - 1, 0);
+        delayInSeconds = Math.max(delayInSeconds - 1, 0);
       }
 
       // Evaluate gamePad connections, if not connected.

@@ -9,9 +9,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcPinPointDriver;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcPinPointDriver;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
 import java.util.Locale;
@@ -84,7 +85,7 @@ public class GoBoDriverTeleOp extends OpMode {
     String velocity = String.format(Locale.US, "XVel: %.3f, YVel: %.3f, HVel: %.3f",
         ftcPinPointDriver.getVelocityX(DistanceUnit.INCH),
         ftcPinPointDriver.getVelocityY(DistanceUnit.INCH),
-        ftcPinPointDriver.getHeadingVelocity(AngleUnit.DEGREES));
+        ftcPinPointDriver.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
     telemetry.addData("Velocity", velocity);
 
     telemetry.addData("Encoders", String.format(Locale.US, "X: %d, Y: %d",

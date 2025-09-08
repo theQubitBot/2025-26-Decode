@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.qubit.autoOps;
 
-import com.pedropathing.constants.FConstants;
-import com.pedropathing.constants.LConstants;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -9,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLift;
@@ -72,7 +71,7 @@ public class AutoOp extends LinearOpMode {
     // Initialize Pedro for robot paths and trajectories
     // Must initialize this after robot.driveTrain initialization since driveTrain
     // sets the motors to run without encoders.
-    follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
+    follower = Constants.createFollower(hardwareMap);
     if (robot.config.robotPosition == RobotPositionEnum.LEFT) {
       optionLeft = new OptionLeft(this, robot, follower).init();
       optionBase = optionLeft;

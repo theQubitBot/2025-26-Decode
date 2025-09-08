@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import com.pedropathing.localization.GoBildaPinpointDriver;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 
 import java.util.concurrent.TimeUnit;
@@ -48,23 +49,15 @@ public class FtcPinPointDriver extends FtcSubSystemBase {
    */
   public double getHeading(AngleUnit angleUnit) {
     refreshData();
-    if (angleUnit == AngleUnit.DEGREES) {
-      return FtcImu.normalize(Math.toDegrees(goboDriver.getHeading()), AngleUnit.DEGREES);
-    } else {
-      return FtcImu.normalize(goboDriver.getHeading(), AngleUnit.RADIANS);
-    }
+    return FtcImu.normalize(goboDriver.getHeading(angleUnit), angleUnit);
   }
 
   /**
    * @return Heading velocity in requested units / second
    */
-  public double getHeadingVelocity(AngleUnit angleUnit) {
+  public double getHeadingVelocity(UnnormalizedAngleUnit angleUnit) {
     refreshData();
-    if (angleUnit == AngleUnit.DEGREES) {
-      return Math.toDegrees(goboDriver.getHeadingVelocity());
-    } else {
-      return goboDriver.getHeadingVelocity();
-    }
+    return goboDriver.getHeadingVelocity(angleUnit);
   }
 
   /**
@@ -72,11 +65,7 @@ public class FtcPinPointDriver extends FtcSubSystemBase {
    */
   public double getPositionX(DistanceUnit distanceUnit) {
     refreshData();
-    if (distanceUnit == DistanceUnit.MM) {
-      return goboDriver.getPosX();
-    } else {
-      return DistanceUnit.MM.toInches(goboDriver.getPosX());
-    }
+    return goboDriver.getPosX(distanceUnit);
   }
 
   /**
@@ -84,11 +73,7 @@ public class FtcPinPointDriver extends FtcSubSystemBase {
    */
   public double getPositionY(DistanceUnit distanceUnit) {
     refreshData();
-    if (distanceUnit == DistanceUnit.MM) {
-      return goboDriver.getPosY();
-    } else {
-      return DistanceUnit.MM.toInches(goboDriver.getPosY());
-    }
+    return goboDriver.getPosY(distanceUnit);
   }
 
   /**
@@ -96,11 +81,7 @@ public class FtcPinPointDriver extends FtcSubSystemBase {
    */
   public double getVelocityX(DistanceUnit distanceUnit) {
     refreshData();
-    if (distanceUnit == DistanceUnit.MM) {
-      return goboDriver.getVelX();
-    } else {
-      return DistanceUnit.MM.toInches(goboDriver.getVelX());
-    }
+    return goboDriver.getVelX(distanceUnit);
   }
 
   /**
@@ -108,11 +89,7 @@ public class FtcPinPointDriver extends FtcSubSystemBase {
    */
   public double getVelocityY(DistanceUnit distanceUnit) {
     refreshData();
-    if (distanceUnit == DistanceUnit.MM) {
-      return goboDriver.getVelY();
-    } else {
-      return DistanceUnit.MM.toInches(goboDriver.getVelY());
-    }
+    return goboDriver.getVelY(distanceUnit);
   }
 
   public void refreshData() {

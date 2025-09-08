@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.qubit.autoOps;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.PathChain;
-import com.pedropathing.pathgen.Point;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
@@ -46,14 +46,13 @@ public class OptionRight extends OptionBase {
   public OptionRight init() {
     // first specimen
     specimen1DeliveryPath = follower.pathBuilder()
-        .addBezierLine(new Point(startPose), new Point(specimen1DeliverFinalPose))
+        .addPath(new BezierLine(startPose, specimen1DeliverFinalPose))
         .setConstantHeadingInterpolation(startPose.getHeading())
         .build();
-    specimen1DeliveryPath.name = "specimen1DeliveryPath";
 
     // pick specimen 2
     specimen2PickPath = follower.pathBuilder()
-        .addBezierLine(new Point(specimen1DeliverFinalPose), new Point(specimen2PickFinal))
+        .addPath(new BezierLine(specimen1DeliverFinalPose, specimen2PickFinal))
         .setConstantHeadingInterpolation(startPose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) releaseLeftSpecimen.run();
@@ -62,18 +61,16 @@ public class OptionRight extends OptionBase {
           if (PARAMS.executeRobotActions) lift2Low.run();
         })
         .build();
-    specimen2PickPath.name = "specimen2PickPath";
 
     // deliver specimen 2
     specimen2DeliveryPath = follower.pathBuilder()
-        .addBezierLine(new Point(specimen2PickFinal), new Point(specimen2DeliverFinal))
+        .addPath(new BezierLine(specimen2PickFinal, specimen2DeliverFinal))
         .setLinearHeadingInterpolation(specimen2PickFinal.getHeading(), specimen2DeliverFinal.getHeading())
         .build();
-    specimen2DeliveryPath.name = "specimen2DeliveryPath";
 
     // park
     parkPath = follower.pathBuilder()
-        .addBezierLine(new Point(specimen2DeliverFinal), new Point(parkFinalPose))
+        .addPath(new BezierLine(specimen2DeliverFinal, parkFinalPose))
         .setConstantHeadingInterpolation(parkFinalPose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) releaseRightSpecimen.run();
@@ -82,7 +79,6 @@ public class OptionRight extends OptionBase {
           if (PARAMS.executeRobotActions) lift2Low.run();
         })
         .build();
-    parkPath.name = "parkPath";
 
     return this;
   }

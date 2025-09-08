@@ -111,6 +111,7 @@ public class ObjectDetectionByContour extends ObjectDetectionBase {
       }
     }
   }
+
   @SuppressLint("DefaultLocale")
   public void processFrame(Mat frame, SampleElement sampleElement, boolean annotateFrame) {
     Imgproc.cvtColor(frame, alternativeColorMat, sampleElement.colorConversionCode);

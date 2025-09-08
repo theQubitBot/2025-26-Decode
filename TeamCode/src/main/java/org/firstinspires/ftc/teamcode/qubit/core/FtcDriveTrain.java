@@ -75,7 +75,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   public List<FtcMotor> allMotors = null, activeMotors = null;
   public List<DcMotorSimple.Direction> motorDirections,
       botADirections, botBDirections, botCDirections, botDDirections,
-  botKDirections, botLDirections;
+      botKDirections, botLDirections;
 
   // These default drive train and drive type are overridden in FtcBot.init()
   public DriveTrainEnum driveTrainEnum = DriveTrainEnum.UNKNOWN;

@@ -2,9 +2,10 @@ package org.firstinspires.ftc.teamcode.qubit.autoOps;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.PathChain;
-import com.pedropathing.pathgen.Point;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
@@ -53,7 +54,7 @@ public class OptionLeft extends OptionBase {
   public OptionLeft init() {
     // preloaded sample
     scorePreloadPath = follower.pathBuilder()
-        .addBezierLine(new Point(startPose), new Point(scorePose))
+        .addPath(new BezierLine(startPose, scorePose))
         .setConstantHeadingInterpolation(startPose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) intakeFlipDown.run();
@@ -65,11 +66,10 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) lift2HighBasket.run();
         })
         .build();
-    scorePreloadPath.name = "scorePreloadPath";
 
     // first yellow
     pickup1 = follower.pathBuilder()
-        .addBezierLine(new Point(scorePose), new Point(pickup1Pose))
+        .addPath(new BezierLine(scorePose, pickup1Pose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
         .addTemporalCallback(100, () -> {
           if (PARAMS.executeRobotActions) lift2Low.run();
@@ -84,10 +84,9 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) resetLift.run();
         })
         .build();
-    pickup1.name = "pickup1";
 
     score1 = follower.pathBuilder()
-        .addBezierLine(new Point(pickup1Pose), new Point(scorePose))
+        .addPath(new BezierLine(pickup1Pose, scorePose))
         .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) intakeFlipDelivery.run();
@@ -106,11 +105,10 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) intakeSpinOut.run();
         })
         .build();
-    score1.name = "score1";
 
     // second yellow
     pickup2 = follower.pathBuilder()
-        .addBezierLine(new Point(scorePose), new Point(pickup2Pose))
+        .addPath(new BezierLine(scorePose, pickup2Pose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) lift2Low.run();
@@ -125,10 +123,9 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) resetLift.run();
         })
         .build();
-    pickup2.name = "pickup2";
 
     score2 = follower.pathBuilder()
-        .addBezierLine(new Point(pickup2Pose), new Point(scorePose))
+        .addPath(new BezierLine(pickup2Pose, scorePose))
         .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) intakeFlipDelivery.run();
@@ -147,12 +144,10 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) intakeSpinOut.run();
         })
         .build();
-    score2.name = "score2";
 
     // third yellow
     pickup3 = follower.pathBuilder()
-        .addBezierLine(new Point(scorePose),
-            new Point(pickup3Pose))
+        .addPath(new BezierLine(scorePose, pickup3Pose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) lift2Low.run();
@@ -167,10 +162,9 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) resetLift.run();
         })
         .build();
-    pickup3.name = "pickup3";
 
     score3 = follower.pathBuilder()
-        .addBezierLine(new Point(pickup3Pose), new Point(scorePose))
+        .addPath(new BezierLine(pickup3Pose, scorePose))
         .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) intakeFlipDelivery.run();
@@ -185,13 +179,10 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) lift2HighBasket.run();
         })
         .build();
-    score3.name = "score3";
 
     // park
     parkPath = follower.pathBuilder()
-        .addBezierCurve(new Point(scorePose),
-            new Point(parkControlPose),
-            new Point(parkPose))
+        .addPath(new BezierCurve(scorePose, parkControlPose, parkPose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) lift2Low.run();
@@ -206,7 +197,6 @@ public class OptionLeft extends OptionBase {
           if (PARAMS.executeRobotActions) resetLift.run();
         })
         .build();
-    parkPath.name = "parkPath";
 
     return this;
   }
