@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcLift;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
@@ -40,12 +39,7 @@ public class OptionBase {
   protected Follower follower;
   protected final Pose startPose = new Pose(0, 0, 0);
 
-  protected Runnable lift2HighBasket, lift2HighBasketBlocking,
-      lift2HighChamber, lift2HighChamberBlocking, lift2HighChamberDeliveryBlocking,
-      lift2Low, resetLift;
   protected Runnable intakeSpinIn, intakeSpinOut, intakeSpinStop;
-  protected Runnable intakeFlipDown, intakeFlipDelivery, intakeFlipHorizontal;
-  protected Runnable grabLeftSpecimen, releaseLeftSpecimen, grabRightSpecimen, releaseRightSpecimen;
 
   static {
     RADIAN0 = Math.toRadians(0);
@@ -75,26 +69,9 @@ public class OptionBase {
     this.robot = robot;
     this.follower = follower;
 
-    lift2HighBasket = () -> robot.lift.move(FtcLift.POSITION_HIGH_BASKET, FtcLift.POSITION_HIGH_BASKET, false);
-    lift2HighBasketBlocking = () -> robot.lift.move(FtcLift.POSITION_HIGH_BASKET, FtcLift.POSITION_HIGH_BASKET, true);
-    lift2HighChamber = () -> robot.lift.move(FtcLift.POSITION_HIGH_CHAMBER, FtcLift.POSITION_HIGH_CHAMBER, false);
-    lift2HighChamberBlocking = () -> robot.lift.move(FtcLift.POSITION_HIGH_CHAMBER, FtcLift.POSITION_HIGH_CHAMBER, true);
-    lift2HighChamberDeliveryBlocking = () -> robot.lift.move(FtcLift.POSITION_HIGH_CHAMBER_DELIVERY, FtcLift.POSITION_HIGH_CHAMBER_DELIVERY, true);
-    lift2Low = () -> robot.lift.move(FtcLift.POSITION_FLOOR, FtcLift.POSITION_FLOOR, false);
-    resetLift = () -> robot.lift.resetLiftIfTouchPressed();
-
     intakeSpinIn = () -> robot.intake.spinIn(false);
     intakeSpinOut = () -> robot.intake.spinOut(false);
     intakeSpinStop = () -> robot.intake.spinStop();
-
-    intakeFlipDown = () -> robot.intake.flipDown(false);
-    intakeFlipDelivery = () -> robot.intake.flipDelivery(false);
-    intakeFlipHorizontal = () -> robot.intake.flipHorizontal(false);
-
-    grabLeftSpecimen = () -> robot.intake.leftSpecimenGrab(true);
-    releaseLeftSpecimen = () -> robot.intake.leftSpecimenRelease();
-    grabRightSpecimen = () -> robot.intake.rightSpecimenGrab(true);
-    releaseRightSpecimen = () -> robot.intake.rightSpecimenRelease();
   }
 
   /**
@@ -136,8 +113,6 @@ public class OptionBase {
       opModeIsActive = true;
     } else {
       // Save settings for use by TeleOp
-      FtcLift.endAutoOpLeftLiftPosition = robot.lift.getLeftPosition();
-      FtcLift.endAutoOpRightLiftPosition = robot.lift.getRightPosition();
       if (robot.driveTrain.driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE &&
           robot.driveTrain.driveTypeEnum == DriveTypeEnum.FIELD_ORIENTED_DRIVE) {
         robot.imu.read();

@@ -17,17 +17,13 @@ public class FtcBot extends FtcSubSystemBase {
   private static final String TAG = "FtcBot";
   private boolean telemetryEnabled = true;
   public final TrollBotEnum trollBot = TrollBotEnum.TrollBotL;
-  public FtcArm arm = null;
   public FtcBulkRead bulkRead = null;
   public FtcBlinkinLed blinkinLed = null;
   public FtcDriveTrain driveTrain = null;
-  public FtcFlag flag = null;
 
   // robot sub systems
   public FtcImu imu = null;
   public FtcIntake intake = null;
-  public FtcLift lift = null;
-  public FtcRnp rnp = null;
   public MatchConfig config = null;
   private Telemetry telemetry = null;
 
@@ -39,14 +35,10 @@ public class FtcBot extends FtcSubSystemBase {
     FtcLogger.enter();
     telemetryEnabled = false;
     if (trollBot == TrollBotEnum.TrollBotA) {
-      arm.telemetryEnabled = false;
       driveTrain.telemetryEnabled = false;
       blinkinLed.telemetryEnabled = false;
-      flag.telemetryEnabled = false;
       imu.telemetryEnabled = false;
       intake.telemetryEnabled = false;
-      lift.telemetryEnabled = false;
-      rnp.telemetryEnabled = false;
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = false;
@@ -68,14 +60,10 @@ public class FtcBot extends FtcSubSystemBase {
     FtcLogger.enter();
     telemetryEnabled = true;
     if (trollBot == TrollBotEnum.TrollBotA) {
-      arm.telemetryEnabled = true;
       driveTrain.telemetryEnabled = true;
       blinkinLed.telemetryEnabled = true;
-      flag.telemetryEnabled = true;
       imu.telemetryEnabled = true;
       intake.telemetryEnabled = true;
-      lift.telemetryEnabled = true;
-      rnp.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = true;
       imu.telemetryEnabled = true;
@@ -106,9 +94,6 @@ public class FtcBot extends FtcSubSystemBase {
     this.telemetry = telemetry;
 
     if (trollBot == TrollBotEnum.TrollBotA) {
-      arm = new FtcArm(this);
-      arm.init(hardwareMap, telemetry);
-
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);
 
@@ -122,20 +107,11 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
       driveTrain.init(hardwareMap, telemetry);
 
-      flag = new FtcFlag();
-      flag.init(hardwareMap, telemetry);
-
       imu = new FtcImu(this);
       imu.init(hardwareMap, telemetry);
 
       intake = new FtcIntake(this);
       intake.init(hardwareMap, telemetry);
-
-      lift = new FtcLift(this);
-      lift.init(hardwareMap, telemetry);
-
-      rnp = new FtcRnp();
-      rnp.init(hardwareMap, telemetry);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);
@@ -192,13 +168,9 @@ public class FtcBot extends FtcSubSystemBase {
     bulkRead.clearBulkCache();
     if (trollBot == TrollBotEnum.TrollBotA) {
       blinkinLed.operate(gamePad1, gamePad2, runtime);
-      arm.operate(gamePad1, gamePad2, runtime);
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
-      flag.operate(gamePad1, gamePad2);
 
       intake.operate(gamePad1, gamePad2, runtime);
-      lift.operate(gamePad1, gamePad2, runtime);
-      rnp.operate(gamePad1, gamePad2, runtime);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
     } else if (trollBot == TrollBotEnum.TrollBotD) {
@@ -211,15 +183,11 @@ public class FtcBot extends FtcSubSystemBase {
 
     if (telemetryEnabled) {
       if (trollBot == TrollBotEnum.TrollBotA) {
-        arm.showTelemetry();
         blinkinLed.showTelemetry();
-        flag.showTelemetry();
         imu.showTelemetry();
         intake.showTelemetry();
         showGamePadTelemetry(gamePad1);
         driveTrain.showTelemetry();
-        lift.showTelemetry();
-        rnp.showTelemetry();
       } else if (trollBot == TrollBotEnum.TrollBotB) {
         imu.showTelemetry();
         showGamePadTelemetry(gamePad1);
@@ -266,20 +234,8 @@ public class FtcBot extends FtcSubSystemBase {
   public void start() {
     FtcLogger.enter();
     if (trollBot == TrollBotEnum.TrollBotA) {
-      if (arm != null) {
-        arm.start();
-      }
-
-      if (flag != null) {
-        flag.start();
-      }
-
       if (intake != null) {
         intake.start();
-      }
-
-      if (rnp != null) {
-        rnp.start();
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
@@ -297,10 +253,6 @@ public class FtcBot extends FtcSubSystemBase {
   public void stop() {
     FtcLogger.enter();
     if (trollBot == TrollBotEnum.TrollBotA) {
-      if (arm != null) {
-        arm.stop();
-      }
-
       if (blinkinLed != null) {
         blinkinLed.stop();
       }
@@ -309,24 +261,12 @@ public class FtcBot extends FtcSubSystemBase {
         driveTrain.stop();
       }
 
-      if (flag != null) {
-        flag.stop();
-      }
-
       if (imu != null) {
         imu.stop();
       }
 
-      if (lift != null) {
-        lift.stop();
-      }
-
       if (intake != null) {
         intake.stop();
-      }
-
-      if (rnp != null) {
-        rnp.stop(false);
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {

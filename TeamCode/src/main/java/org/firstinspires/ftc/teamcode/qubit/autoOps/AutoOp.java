@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcLift;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
@@ -45,15 +44,12 @@ public class AutoOp extends LinearOpMode {
 
     // Clear out any previous end heading of the robot.
     FtcImu.endAutoOpHeading = 0;
-    FtcLift.endAutoOpLeftLiftPosition = FtcLift.POSITION_MINIMUM;
-    FtcLift.endAutoOpRightLiftPosition = FtcLift.POSITION_MINIMUM;
 
     // Initialize robot.
     robot = new FtcBot();
     robot.init(hardwareMap, telemetry, true);
     robot.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.BLACK);
     robot.intake.spinStop();
-    robot.rnp.stop(false);
     robot.intake.rightSpecimenRelease();
     if (robot.config.robotPosition == RobotPositionEnum.RIGHT) {
       robot.intake.leftSpecimenGrab(false);
@@ -152,8 +148,8 @@ public class AutoOp extends LinearOpMode {
     }
 
     while (optionBase != null && optionBase.saveAndTest()) {
-      telemetry.addData(FtcUtils.TAG, "endGyro=%.1f, endLeftLift=%d, endRightLift=%d",
-          FtcImu.endAutoOpHeading, FtcLift.endAutoOpLeftLiftPosition, FtcLift.endAutoOpRightLiftPosition);
+      telemetry.addData(FtcUtils.TAG, "endGyro=%.1f",
+          FtcImu.endAutoOpHeading);
       telemetry.addData(FtcUtils.TAG, "Auto Op took %.0f seconds.", autoOpExecutionDuration);
       telemetry.addData(FtcUtils.TAG, "Waiting for auto Op to end.");
       telemetry.update();

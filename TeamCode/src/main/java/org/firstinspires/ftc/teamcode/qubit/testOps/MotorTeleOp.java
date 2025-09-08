@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcHook;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -23,7 +22,7 @@ public class MotorTeleOp extends OpMode {
 
   static final int DELTA_SMALL = 1;
   static final int DELTA_LARGE = 10;
-  static final String MOTOR_NAME = FtcHook.HOOK_MOTOR_NAME;
+  static final String MOTOR_NAME = "";
 
   DcMotorEx motor;
   int position;
@@ -86,13 +85,13 @@ public class MotorTeleOp extends OpMode {
     double power = 0;
     if (gamepad1.dpad_up) {
       power = 0.2;
-      position = FtcHook.HOOK_MOTOR_HIGH_POSITION;
+      position = 0;
     } else if (gamepad1.dpad_down) {
       power = -0.2;
-      position = FtcHook.HOOK_MOTOR_LOW_POSITION;
+      position = 0;
     }
 
-    position = Range.clip(position, FtcHook.HOOK_MOTOR_LOW_POSITION, FtcHook.HOOK_MOTOR_HIGH_POSITION);
+    position = Range.clip(position, 0, 0);
     power = Range.clip(power, FtcMotor.MIN_POWER, FtcMotor.MAX_POWER);
 
     motor.setTargetPosition(position);

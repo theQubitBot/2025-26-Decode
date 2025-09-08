@@ -128,12 +128,6 @@ public class FtcIntake extends FtcSubSystemBase {
                 parent == null) {
           spinIn(false);
           flipDelivery(false);
-        } else if (parent.lift.atPosition(FtcLift.POSITION_FLOOR) &&
-            parent.arm.isForward() &&
-            parent.rnp.isRetracted()) {
-          // Flip to delivery when lift is Low, bucket is forward and rnp is retracted
-          spinIn(false);
-          flipDelivery(false);
         }
 
         specimenRelease();

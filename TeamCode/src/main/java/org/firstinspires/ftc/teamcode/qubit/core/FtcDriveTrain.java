@@ -85,7 +85,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   private double lastTheta = 0, lastHeading = 0;
   private final boolean enableUnbalancedRobotHeadingCorrection = false;
   private final boolean enableMecanumPowerBoost = true;
-  private final boolean useLiftPositionForSpeedAdjustment = true;
 
   // When true, joystick position is mapped to (0, slo mode power, max power)
   private final boolean useStepPowerFunction = true;
@@ -123,15 +122,10 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    * @return True if feature is enabled, false otherwise
    */
   private boolean AutomaticallyCorrectUnbalancedRobotHeading(Gamepad gamePad1, Gamepad gamePad2) {
-    // Correction is off if list is higher than lower basket, on otherwise.
-    boolean enableCorrectionForLowLiftPosition = parent == null || parent.lift == null ||
-        parent.lift.getLeftPosition() < FtcLift.POSITION_LOW_BASKET;
-
     // Grant wants correction to be off when samples are being intook.
     boolean enableCorrectionForIntake = !(gamePad1.right_trigger >= 0.5) && !(gamePad2.right_trigger >= 0.5);
 
-    return enableUnbalancedRobotHeadingCorrection && enableCorrectionForLowLiftPosition &&
-        enableCorrectionForIntake;
+    return enableUnbalancedRobotHeadingCorrection  &&  enableCorrectionForIntake;
   }
 
   public double GetMaxWheelPower(double leftFrontPower, double leftRearPower,
@@ -388,26 +382,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         rightFrontPower /= crawlFactor;
         rightRearPower /= crawlFactor;
       }
-    } else if (useLiftPositionForSpeedAdjustment && parent != null && parent.lift != null) {
-      int liftPosition = Math.max(parent.lift.getLeftPosition(), parent.lift.getRightPosition());
-      liftPosition = Range.clip(liftPosition, FtcLift.POSITION_MINIMUM, FtcLift.POSITION_HIGH_BASKET);
-
-      // Scale reduces as lift rises
-      double scaleFactor = (FtcLift.POSITION_HIGH_BASKET - liftPosition) *
-          (MAXIMUM_FORWARD_POWER - MINIMUM_FORWARD_TELE_OP_POWER) /
-          (FtcLift.POSITION_HIGH_BASKET - FtcLift.POSITION_FLOOR);
-
-      // Scale can't be outside the wheel power limits.
-      scaleFactor = Range.clip(scaleFactor, MINIMUM_FORWARD_TELE_OP_POWER, MAXIMUM_FORWARD_POWER);
-
-      // Power factor goes down with scale, but we need minimum power to strafe.
-      scaleFactor = STRAFE_SLO_MO_POWER + scaleFactor;
-
-      // Scale power for all wheels
-      leftFrontPower *= scaleFactor;
-      leftRearPower *= scaleFactor;
-      rightFrontPower *= scaleFactor;
-      rightRearPower *= scaleFactor;
     }
 
     setDrivePowerSmooth(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower, loopTime);

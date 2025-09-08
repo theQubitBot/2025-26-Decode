@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcArm;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -33,7 +32,7 @@ public class ControlledSpeedServoTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(">", "Initializing, please wait...");
     telemetry.update();
-    servo = new FtcServo(hardwareMap.get(Servo.class, FtcArm.ARM_SERVO_NAME));
+    servo = new FtcServo(hardwareMap.get(Servo.class, ""));
     servo.getController().pwmEnable();
     FtcLogger.exit();
   }
@@ -58,7 +57,7 @@ public class ControlledSpeedServoTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    servo.setPosition(FtcArm.ARM_FORWARD_POSITION);
+    servo.setPosition(0);
     FtcLogger.exit();
   }
 
@@ -79,9 +78,9 @@ public class ControlledSpeedServoTeleOp extends OpMode {
 
     moveTime = (long) Range.clip(moveTime, MOVE_TIME_MIN, MOVE_TIME_MAX);
     if (gamepad1.right_bumper) {
-      servo.controlledMove(FtcArm.ARM_BACKWARD_POSITION);
+      servo.controlledMove(0);
     } else if (gamepad1.right_trigger > 0.5) {
-      servo.setPosition(FtcArm.ARM_FORWARD_POSITION);
+      servo.setPosition(0);
     }
 
     telemetry.addData(">", "moveTime %d", moveTime);

@@ -8,7 +8,6 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcLift;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
@@ -54,12 +53,6 @@ public class OptionRight extends OptionBase {
     specimen2PickPath = follower.pathBuilder()
         .addPath(new BezierLine(specimen1DeliverFinalPose, specimen2PickFinal))
         .setConstantHeadingInterpolation(startPose.getHeading())
-        .addTemporalCallback(1, () -> {
-          if (PARAMS.executeRobotActions) releaseLeftSpecimen.run();
-        })
-        .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) lift2Low.run();
-        })
         .build();
 
     // deliver specimen 2
@@ -72,12 +65,6 @@ public class OptionRight extends OptionBase {
     parkPath = follower.pathBuilder()
         .addPath(new BezierLine(specimen2DeliverFinal, parkFinalPose))
         .setConstantHeadingInterpolation(parkFinalPose.getHeading())
-        .addTemporalCallback(1, () -> {
-          if (PARAMS.executeRobotActions) releaseRightSpecimen.run();
-        })
-        .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) lift2Low.run();
-        })
         .build();
 
     return this;
@@ -91,50 +78,21 @@ public class OptionRight extends OptionBase {
 
     // Deliver specimen1
     if (!saveAndTest()) return;
-    if (PARAMS.executeRobotActions) intakeFlipHorizontal.run();
     if (PARAMS.deliverSpecimen1) {
-      if (PARAMS.executeRobotActions) {
-        intakeFlipHorizontal.run();
-        grabLeftSpecimen.run();
-        lift2HighChamber.run();
-      }
-
       if (PARAMS.executeTrajectories) runFollower(specimen1DeliveryPath, true, 3000);
-
-      // Ensure lift has reached correct height
-      if (PARAMS.executeRobotActions) lift2HighChamberBlocking.run();
-
-      // Wait till lift stops swaying
-      FtcUtils.sleep(FtcLift.LIFT_STOP_SWAYING_TIME);
-
-      // Deliver
-      if (PARAMS.executeRobotActions) lift2HighChamberDeliveryBlocking.run();
     }
 
     // Deliver specimen2
     if (!saveAndTest()) return;
     if (PARAMS.deliverSpecimen2) {
       if (PARAMS.executeTrajectories) runFollower(specimen2PickPath, true, 30000);
-
-      if (PARAMS.executeRobotActions) grabRightSpecimen.run();
-      if (PARAMS.executeRobotActions) lift2HighChamber.run();
       if (PARAMS.executeTrajectories) runFollower(specimen2DeliveryPath, true, 3000);
-
-      // Ensure lift has reached correct height
-      if (PARAMS.executeRobotActions) lift2HighChamberBlocking.run();
-
-      // Wait till lift stops swaying
-      FtcUtils.sleep(FtcLift.LIFT_STOP_SWAYING_TIME);
-
-      // Deliver
-      if (PARAMS.executeRobotActions) lift2HighChamberDeliveryBlocking.run();
     }
 
     // Park
     if (!saveAndTest()) return;
     if (PARAMS.park) {
       if (PARAMS.executeTrajectories) runFollower(parkPath, false, 3000);
-      if (PARAMS.executeRobotActions) robot.lift.resetLiftIfTouchPressed();
     }
 
     FtcLogger.exit();

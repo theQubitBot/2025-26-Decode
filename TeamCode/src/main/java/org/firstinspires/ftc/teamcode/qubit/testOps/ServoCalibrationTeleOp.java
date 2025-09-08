@@ -7,9 +7,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcArm;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcCatapult;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcHand;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -21,14 +18,10 @@ public class ServoCalibrationTeleOp extends OpMode {
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
   static final int CYCLE_MS = 50;           // period of each cycle
-  static final String SERVO_NAME = FtcCatapult.CATAPULT_SERVO_NAME;
+  static final String SERVO_NAME = "";
 
-  Servo handServo;
-  double handPosition;
   Servo deliveryServo;
   double deliveryPosition;
-  Servo armServo;
-  double armPosition;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -38,15 +31,9 @@ public class ServoCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(">", "Initializing, please wait...");
     telemetry.update();
-    handServo = hardwareMap.get(Servo.class, FtcHand.HAND_SERVO_NAME);
-    deliveryServo = hardwareMap.get(Servo.class, FtcHand.DELIVERY_SERVO_NAME);
-    armServo = hardwareMap.get(Servo.class, FtcArm.ARM_SERVO_NAME);
-    handPosition = FtcHand.HAND_OPEN_POSITION;
-    deliveryPosition = FtcHand.HAND_DOWN_POSITION;
-    armPosition = FtcArm.ARM_FORWARD_POSITION;
-    handServo.setPosition(handPosition);
+    deliveryServo = hardwareMap.get(Servo.class, "");
+    deliveryPosition = 0;
     deliveryServo.setPosition(deliveryPosition);
-    armServo.setPosition(armPosition);
     FtcLogger.exit();
   }
 
@@ -92,22 +79,6 @@ public class ServoCalibrationTeleOp extends OpMode {
       deliveryPosition -= FtcServo.LARGE_INCREMENT;
       servo = deliveryServo;
       position = deliveryPosition;
-    } else if (gamepad1.dpad_left) {
-      handPosition += FtcServo.LARGE_INCREMENT;
-      servo = handServo;
-      position = handPosition;
-    } else if (gamepad1.dpad_right) {
-      handPosition -= FtcServo.LARGE_INCREMENT;
-      servo = handServo;
-      position = handPosition;
-    } else if (gamepad1.right_trigger > 0.5) {
-      armPosition += FtcServo.LARGE_INCREMENT;
-      servo = armServo;
-      position = armPosition;
-    } else if (gamepad1.right_bumper) {
-      armPosition -= FtcServo.LARGE_INCREMENT;
-      servo = armServo;
-      position = armPosition;
     }
 
     if (servo != null) {
@@ -118,8 +89,8 @@ public class ServoCalibrationTeleOp extends OpMode {
     telemetry.addData("hand delivery", "dPad up/down");
     telemetry.addData("hand fingers", "dPad left/right");
     telemetry.addData("arm", "right trigger/bumper");
-    telemetry.addData("Position", "hand %5.4f wrist %5.4f arm %5.4f",
-        handPosition, deliveryPosition, armPosition);
+    telemetry.addData("Position", "delivery %5.4f",
+        deliveryPosition);
     telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();

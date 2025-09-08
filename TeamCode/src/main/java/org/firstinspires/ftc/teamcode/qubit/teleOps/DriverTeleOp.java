@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcLift;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
@@ -97,8 +96,6 @@ public class DriverTeleOp extends OpMode {
     // This may be an issue if the Control Hub needs a reboot
     // in the middle of the match and FOD is enabled.
     FtcImu.endAutoOpHeading = 0;
-    FtcLift.endAutoOpLeftLiftPosition = FtcLift.POSITION_MINIMUM;
-    FtcLift.endAutoOpRightLiftPosition = FtcLift.POSITION_MINIMUM;
     telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     telemetry.update();
     FtcLogger.exit();

@@ -54,13 +54,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
         stop();
       } else if (gamePad1.rightBumperWasPressed() || gamePad2.rightBumperWasPressed()) {
         if (parent != null) {
-          if (!parent.rnp.isRetracted() ||
-              !parent.lift.atPosition(FtcLift.POSITION_FLOOR) ||
-              !parent.arm.isForward()) {
             parent.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.FIRE_LARGE);
-          } else {
-            stop();
-          }
         }
       } else if (gamePad1.leftBumperWasPressed() || gamePad2.leftBumperWasPressed()) {
         if (parent != null) {
