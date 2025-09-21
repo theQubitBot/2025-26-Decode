@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.collections.SimpleGson;
@@ -115,18 +114,6 @@ public final class FtcUtils {
 
   public static boolean endGame(ElapsedTime runtime) {
     return runtime.seconds() >= (TELE_OP_DURATION - END_GAME_DURATION);
-  }
-
-  public static boolean hangInitiated(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
-    return
-        // Either option button is pressed
-        ((gamePad1.options || gamePad2.options) &&
-            ( // Debug mode
-                DEBUG ||
-                    // End game
-                    endGame(runtime) ||
-                    // both drivers initiate hang
-                    (gamePad1.options && gamePad2.options)));
   }
 
   public static boolean gameOver(ElapsedTime runtime) {

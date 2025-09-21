@@ -9,7 +9,6 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcIntake;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 
 /**
@@ -72,7 +71,7 @@ public class OptionLeft extends OptionBase {
     score1 = follower.pathBuilder()
         .addPath(new BezierLine(pickup1Pose, scorePose))
         .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
-        .addTemporalCallback(FtcIntake.FLIP_TRAVEL_TIME + 200, () -> {
+        .addTemporalCallback(200, () -> {
           // In case sample is stuck, evict it.
           if (PARAMS.executeRobotActions) intakeSpinOut.run();
         })
@@ -90,7 +89,7 @@ public class OptionLeft extends OptionBase {
     score2 = follower.pathBuilder()
         .addPath(new BezierLine(pickup2Pose, scorePose))
         .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
-        .addTemporalCallback(FtcIntake.FLIP_TRAVEL_TIME + 200, () -> {
+        .addTemporalCallback(200, () -> {
           // In case sample is stuck, evict it.
           if (PARAMS.executeRobotActions) intakeSpinOut.run();
         })

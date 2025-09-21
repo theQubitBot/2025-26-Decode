@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.ReadWriteFile;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 
 import java.io.File;
@@ -30,6 +31,7 @@ public class MatchConfig {
   public AllianceColorEnum allianceColor;
   public RobotPositionEnum robotPosition;
   public long delayInSeconds;
+  public ObeliskTagEnum obeliskTagEnum;
 
   /**
    * Constructor
@@ -106,8 +108,9 @@ public class MatchConfig {
   public void reset() {
     FtcLogger.enter();
     allianceColor = AllianceColorEnum.RED;
-    robotPosition = RobotPositionEnum.RIGHT;
+    robotPosition = RobotPositionEnum.SMALL_TRIANGLE;
     delayInSeconds = 0;
+    obeliskTagEnum = ObeliskTagEnum.GPP;
     gamePad1Connected = gamePad2Connected = false;
     configIsComplete = !configFeatureEnabled;
     FtcLogger.exit();
@@ -132,9 +135,9 @@ public class MatchConfig {
 
       // Configure robot position on the field
       if (gamePad1.dpadLeftWasPressed() || gamePad2.dpadLeftWasPressed()) {
-        robotPosition = RobotPositionEnum.LEFT;
+        robotPosition = RobotPositionEnum.LARGE_TRIANGLE;
       } else if (gamePad1.dpadRightWasPressed() || gamePad2.dpadRightWasPressed()) {
-        robotPosition = RobotPositionEnum.RIGHT;
+        robotPosition = RobotPositionEnum.SMALL_TRIANGLE;
       }
 
       // Configure initial delay
@@ -188,7 +191,7 @@ public class MatchConfig {
       telemetry.addData("Match Configuration Command Menu", "");
       telemetry.addData("Bumper", "alliance color BLUE");
       telemetry.addData("Trigger", "alliance color RED");
-      telemetry.addData("dPad", "left: LEFT position, right: RIGHT position");
+      telemetry.addData("dPad", "left: LARGE_TRIANGLE position, right: SMALL_TRIANGLE position");
       telemetry.addData("Start delay", "dPad up: increase, down: decrease");
     }
   }

@@ -16,14 +16,16 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 public class FtcBot extends FtcSubSystemBase {
   private static final String TAG = "FtcBot";
   private boolean telemetryEnabled = true;
-  public final TrollBotEnum trollBot = TrollBotEnum.TrollBotL;
+  public final TrollBotEnum trollBot = TrollBotEnum.TrollBotA;
   public FtcBulkRead bulkRead = null;
   public FtcBlinkinLed blinkinLed = null;
   public FtcDriveTrain driveTrain = null;
 
   // robot sub systems
-  public FtcImu imu = null;
+  public FtcAprilTag aprilTag = null;
   public FtcIntake intake = null;
+  public FtcSorter sorter = null;
+  public FtcShooter shooter = null;
   public MatchConfig config = null;
   private Telemetry telemetry = null;
 
@@ -37,18 +39,17 @@ public class FtcBot extends FtcSubSystemBase {
     if (trollBot == TrollBotEnum.TrollBotA) {
       driveTrain.telemetryEnabled = false;
       blinkinLed.telemetryEnabled = false;
-      imu.telemetryEnabled = false;
+      aprilTag.telemetryEnabled = false;
       intake.telemetryEnabled = false;
+      sorter.telemetryEnabled = false;
+      shooter.telemetryEnabled = false;
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = false;
-      imu.telemetryEnabled = false;
     } else if (trollBot == TrollBotEnum.TrollBotD) {
       driveTrain.telemetryEnabled = false;
-      imu.telemetryEnabled = false;
     } else if (trollBot == TrollBotEnum.TrollBotL) {
       driveTrain.telemetryEnabled = false;
-      imu.telemetryEnabled = false;
     } else {
       throw new UnsupportedOperationException("Invalid trollBot");
     }
@@ -62,17 +63,16 @@ public class FtcBot extends FtcSubSystemBase {
     if (trollBot == TrollBotEnum.TrollBotA) {
       driveTrain.telemetryEnabled = true;
       blinkinLed.telemetryEnabled = true;
-      imu.telemetryEnabled = true;
+      aprilTag.telemetryEnabled = true;
       intake.telemetryEnabled = true;
+      sorter.telemetryEnabled = true;
+      shooter.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = true;
-      imu.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotD) {
       driveTrain.telemetryEnabled = true;
-      imu.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotL) {
       driveTrain.telemetryEnabled = true;
-      imu.telemetryEnabled = true;
     } else {
       throw new UnsupportedOperationException("Invalid trollBot");
     }
@@ -107,11 +107,14 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
       driveTrain.init(hardwareMap, telemetry);
 
-      imu = new FtcImu(this);
-      imu.init(hardwareMap, telemetry);
+      aprilTag = new FtcAprilTag(this);
+      aprilTag.init(hardwareMap, telemetry);
 
       intake = new FtcIntake(this);
       intake.init(hardwareMap, telemetry);
+
+      sorter = new FtcSorter(this);
+      sorter.init(hardwareMap, telemetry);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);
@@ -122,9 +125,6 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain = new FtcDriveTrain(this);
       driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
       driveTrain.init(hardwareMap, telemetry);
-
-      imu = new FtcImu(this);
-      imu.init(hardwareMap, telemetry);
     } else if (trollBot == TrollBotEnum.TrollBotD) {
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);
@@ -135,9 +135,6 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain = new FtcDriveTrain(this);
       driveTrain.setDriveTypeAndMode(DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
       driveTrain.init(hardwareMap, telemetry);
-
-      imu = new FtcImu(this);
-      imu.init(hardwareMap, telemetry);
     } else if (trollBot == TrollBotEnum.TrollBotL) {
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);
@@ -148,9 +145,6 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain = new FtcDriveTrain(this);
       driveTrain.setDriveTypeAndMode(DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
       driveTrain.init(hardwareMap, telemetry);
-
-      imu = new FtcImu(this);
-      imu.init(hardwareMap, telemetry);
     } else {
       throw new UnsupportedOperationException("Invalid trollBot");
     }
@@ -169,8 +163,9 @@ public class FtcBot extends FtcSubSystemBase {
     if (trollBot == TrollBotEnum.TrollBotA) {
       blinkinLed.operate(gamePad1, gamePad2, runtime);
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
-
       intake.operate(gamePad1, gamePad2, runtime);
+      sorter.operate(gamePad1, gamePad2);
+      shooter.operate(gamePad1, gamePad2);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
     } else if (trollBot == TrollBotEnum.TrollBotD) {
@@ -184,23 +179,20 @@ public class FtcBot extends FtcSubSystemBase {
     if (telemetryEnabled) {
       if (trollBot == TrollBotEnum.TrollBotA) {
         blinkinLed.showTelemetry();
-        imu.showTelemetry();
         intake.showTelemetry();
+        sorter.showTelemetry();
+        shooter.showTelemetry();
         showGamePadTelemetry(gamePad1);
         driveTrain.showTelemetry();
       } else if (trollBot == TrollBotEnum.TrollBotB) {
-        imu.showTelemetry();
         showGamePadTelemetry(gamePad1);
       } else if (trollBot == TrollBotEnum.TrollBotC) {
-        imu.showTelemetry();
         showGamePadTelemetry(gamePad1);
         driveTrain.showTelemetry();
       } else if (trollBot == TrollBotEnum.TrollBotD) {
-        imu.showTelemetry();
         showGamePadTelemetry(gamePad1);
         driveTrain.showTelemetry();
       } else if (trollBot == TrollBotEnum.TrollBotL) {
-        imu.showTelemetry();
         showGamePadTelemetry(gamePad1);
         driveTrain.showTelemetry();
       } else {
@@ -234,14 +226,25 @@ public class FtcBot extends FtcSubSystemBase {
   public void start() {
     FtcLogger.enter();
     if (trollBot == TrollBotEnum.TrollBotA) {
+      if (aprilTag != null) {
+        aprilTag.start();
+      }
+
       if (intake != null) {
         intake.start();
+      }
+
+      if (sorter != null) {
+        sorter.start();
+      }
+
+      if (shooter != null) {
+        shooter.start();
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
     } else if (trollBot == TrollBotEnum.TrollBotD) {
     } else if (trollBot == TrollBotEnum.TrollBotL) {
-
     }
 
     FtcLogger.exit();
@@ -261,37 +264,33 @@ public class FtcBot extends FtcSubSystemBase {
         driveTrain.stop();
       }
 
-      if (imu != null) {
-        imu.stop();
+      if (aprilTag != null) {
+        aprilTag.stop();
       }
 
       if (intake != null) {
         intake.stop();
+      }
+
+      if (sorter != null) {
+        sorter.stop();
+      }
+
+      if (shooter != null) {
+        shooter.stop();
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       if (driveTrain != null) {
         driveTrain.stop();
       }
-
-      if (imu != null) {
-        imu.stop();
-      }
     } else if (trollBot == TrollBotEnum.TrollBotD) {
       if (driveTrain != null) {
         driveTrain.stop();
       }
-
-      if (imu != null) {
-        imu.stop();
-      }
     } else if (trollBot == TrollBotEnum.TrollBotL) {
       if (driveTrain != null) {
         driveTrain.stop();
-      }
-
-      if (imu != null) {
-        imu.stop();
       }
     }
 

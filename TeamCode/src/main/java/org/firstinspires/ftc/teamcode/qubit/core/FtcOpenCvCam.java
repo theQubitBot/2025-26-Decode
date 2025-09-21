@@ -33,7 +33,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TeamPropLocationEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -134,8 +134,8 @@ public class FtcOpenCvCam extends FtcSubSystemBase {
    * @param allianceColor Given alliance color. Only team props that match alliance color are evaluated.
    * @return The team prop location (left, center or right).
    */
-  public TeamPropLocationEnum getTeamPropPosition(AllianceColorEnum allianceColor) {
-    TeamPropLocationEnum teamPropLocation = TeamPropLocationEnum.LEFT;
+  public ObeliskTagEnum getTeamPropPosition(AllianceColorEnum allianceColor) {
+    ObeliskTagEnum teamPropLocation = ObeliskTagEnum.GPP;
     try {
       if (webcamIsWorking(openCvWebcam) && modPipeline != null) {
         for (GameElement ge : modPipeline.gameElements) {
@@ -147,10 +147,10 @@ public class FtcOpenCvCam extends FtcSubSystemBase {
                 midPoint = FtcUtils.getMidpoint(ge.boundingRect);
 
                 if (midPoint.x < 300) {
-                  teamPropLocation = TeamPropLocationEnum.CENTER;
+                  teamPropLocation = ObeliskTagEnum.PGP;
                   break;
                 } else if (midPoint.x > 400) {
-                  teamPropLocation = TeamPropLocationEnum.RIGHT;
+                  teamPropLocation = ObeliskTagEnum.PPG;
                   break;
                 }
               }

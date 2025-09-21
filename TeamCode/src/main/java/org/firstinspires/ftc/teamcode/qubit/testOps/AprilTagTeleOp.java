@@ -1,39 +1,33 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
-public class ControlledSpeedServoTeleOp extends OpMode {
-
-  private static final long MOVE_TIME_MIN = 500;
-  private static final long MOVE_TIME_MAX = 5000;
-  private static final long MOVE_TIME_STEP = 100;
+public class AprilTagTeleOp extends OpMode {
+  private FtcAprilTag aprilTag;
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
-  private long moveTime = 0;
 
-  FtcServo servo;
-
-  /*
-   * Code to run ONCE when the driver hits INIT
-   */
   @Override
   public void init() {
     FtcLogger.enter();
     telemetry.addData(">", "Initializing, please wait...");
     telemetry.update();
-    servo = new FtcServo(hardwareMap.get(Servo.class, ""));
-    servo.getController().pwmEnable();
+    aprilTag = new FtcAprilTag(null);
+    aprilTag.init(hardwareMap, telemetry);
+
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
     FtcLogger.exit();
   }
 
@@ -57,7 +51,6 @@ public class ControlledSpeedServoTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    servo.setPosition(0);
     FtcLogger.exit();
   }
 
@@ -67,27 +60,14 @@ public class ControlledSpeedServoTeleOp extends OpMode {
   @Override
   public void loop() {
     FtcLogger.enter();
-    // Show the elapsed game time and wheel power.
     loopTime.reset();
 
-    if (gamepad1.dpad_up) {
-      moveTime += MOVE_TIME_STEP;
-    } else if (gamepad1.dpad_down) {
-      moveTime -= MOVE_TIME_STEP;
-    }
+    aprilTag.showTelemetry();
 
-    moveTime = (long) Range.clip(moveTime, MOVE_TIME_MIN, MOVE_TIME_MAX);
-    if (gamepad1.right_bumper) {
-      servo.controlledMove(0);
-    } else if (gamepad1.right_trigger > 0.5) {
-      servo.setPosition(0);
-    }
-
-    telemetry.addData(">", "moveTime %d", moveTime);
+    // Show the elapsed game time.
     telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
-    FtcUtils.sleep(500);
     FtcLogger.exit();
   }
 
@@ -97,7 +77,7 @@ public class ControlledSpeedServoTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
-    servo.getController().pwmDisable();
+
     telemetry.addData(">", "Tele Op stopped.");
     telemetry.update();
     FtcLogger.exit();

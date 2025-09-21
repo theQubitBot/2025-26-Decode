@@ -5,10 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
@@ -20,10 +18,10 @@ import java.util.List;
  * A class to manage the robot drive train.
  * Note:  All hardware element names are camel case and have no spaces between words.
  * <p>
- * Motor:  Left  drive motor: "leftFrontMotor"
- * Motor:  Left  drive motor: "leftRearMotor"
- * Motor:  Right drive motor: "rightFrontMotor"
- * Motor:  Right drive motor: "rightRearMotor"
+ * Motor:  Left  drive greenShooterMotor: "leftFrontMotor"
+ * Motor:  Left  drive greenShooterMotor: "leftRearMotor"
+ * Motor:  Right drive greenShooterMotor: "rightFrontMotor"
+ * Motor:  Right drive greenShooterMotor: "rightRearMotor"
  */
 public class FtcDriveTrain extends FtcSubSystemBase {
   private static final String TAG = "FtcDriveTrain";
@@ -31,7 +29,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   public static final double MECANUM_POWER_BOOST_FACTOR = 1.00;
   public static final double MINIMUM_FORWARD_TELE_OP_POWER = 0.25;
 
-  // Ideally, you would find the min power value by incrementing motor power by 0.01
+  // Ideally, you would find the min power value by incrementing greenShooterMotor power by 0.01
   // and noting the min power at which the robot begins to move/turn.
   // Robot weight distribution would impact rotational inertia, which would impact
   // the turn value most.
@@ -43,7 +41,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   public static final double STEP1_FORWARD_POWER = FORWARD_SLO_MO_POWER;
   public static final double STEP2_FORWARD_POWER = 0.90;
 
-  // JITTER is ideally the minimum motor power to move a wheel when the robot is jacked up.
+  // JITTER is ideally the minimum greenShooterMotor power to move a wheel when the robot is jacked up.
   // Empirically, the minimum power would be the one to overcome internal friction.
   // So, if the joystick is jittery, we can safely ignore joystick values below this.
   // Must set this to at least 0.01 for trigonometry to work.
@@ -115,19 +113,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
       motorDirections = botLDirections;
   }
 
-  /**
-   * Evaluates if unbalanced robot heading should be automatically corrected
-   * by the software.
-   *
-   * @return True if feature is enabled, false otherwise
-   */
-  private boolean AutomaticallyCorrectUnbalancedRobotHeading(Gamepad gamePad1, Gamepad gamePad2) {
-    // Grant wants correction to be off when samples are being intook.
-    boolean enableCorrectionForIntake = !(gamePad1.right_trigger >= 0.5) && !(gamePad2.right_trigger >= 0.5);
-
-    return enableUnbalancedRobotHeadingCorrection  &&  enableCorrectionForIntake;
-  }
-
   public double GetMaxWheelPower(double leftFrontPower, double leftRearPower,
                                  double rightFrontPower, double rightRearPower) {
     return Math.max(Math.max(Math.abs(leftFrontPower), Math.abs(leftRearPower)),
@@ -174,7 +159,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         activeMotors = allMotors;
       }
 
-      // Reset motor encoders
+      // Reset greenShooterMotor encoders
       for (FtcMotor motor : activeMotors) {
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
       }
@@ -186,38 +171,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     }
 
     FtcLogger.exit();
-  }
-
-  /**
-   * Strafing is meaningful only for MECANUM Drive.
-   * Robot is considered strafing if it moves in the 90 degree cones
-   * perpendicular to its forward direction.
-   * <p>
-   * \     |      /
-   * \   |   /
-   * strafing \ | /  strafing
-   * -----------------------------------
-   * strafing / | \  strafing
-   * /   |   \
-   * /     |     \
-   *
-   * @param robotHeading    Robot heading as per the Gyro (Degrees)
-   * @param joystickHeading Joystick heading (Degrees)
-   * @return True, if the robot is strafing.
-   */
-  private boolean isBotStrafing(double robotHeading, double joystickHeading) {
-    double rH = FtcImu.normalize(robotHeading, AngleUnit.DEGREES);
-    double jH = FtcImu.normalize(joystickHeading, AngleUnit.DEGREES);
-    double delta = Math.abs(rH - jH);
-
-    // Robot's zero heading is forward, joy stick's zero heading is towards right.
-    boolean strafing = !(delta >= 45 && delta <= 135);
-    if (FtcUtils.DEBUG && driveTrainEnabled && telemetryEnabled) {
-      telemetry.addData("Strafing data", "rH %.2f jH %.2f strafing %b", +
-          rH, jH, strafing);
-    }
-
-    return strafing;
   }
 
   /**
@@ -258,17 +211,11 @@ public class FtcDriveTrain extends FtcSubSystemBase {
       return;
     }
 
-    parent.imu.resetReadOnce();
     if (powerMagnitude > JITTER) {
       if (driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE) {
         // All angles are in radians, except for Gyro reading
-        parent.imu.readOnce();
         joyStickHeading = Math.atan2(y, x);
         double finalBotHeading = joyStickHeading;
-        if (driveTypeEnum == DriveTypeEnum.FIELD_ORIENTED_DRIVE) {
-          // Account for current Heading and Auto Op end heading.
-          finalBotHeading -= Math.toRadians(parent.imu.getHeading() + FtcImu.endAutoOpHeading);
-        }
 
         // Calculate  formulaic wheel power.
         leftFrontPower = rightRearPower = Math.sin(finalBotHeading + Math.PI / 4.0) * powerMagnitude;
@@ -300,35 +247,10 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     double turnMagnitude = Math.abs(turn);
     if (turnMagnitude <= JITTER) {
       turn = FtcMotor.ZERO_POWER;
-      if (AutomaticallyCorrectUnbalancedRobotHeading(gamePad1, gamePad2)) {
-        // Correction for left/right pull for an unbalanced robot.
-        // Apply correction only if driver is not explicitly turning the robot.
-        // Tangent comparison will maintain orientation when driver changes power
-        // proportionally to slow-down/speed-up AND wants to maintain orientation.
-        // Theta is the direction in which the driver wants to go.
-        double theta = Math.atan2(y, x);
-        if (powerMagnitude > JITTER && FtcUtils.areEqual(lastTheta, theta, FtcUtils.EPSILON2)) {
-          // Driver is changing power only, not orientation
-          // maintain last heading by turning the robot slightly, if needed.
-          parent.imu.readOnce();
-          double headingOffset = parent.imu.getHeadingOffset(lastHeading);
-          turn = parent.imu.getSteeringCorrection(headingOffset, KP_DRIVE);
-        } else {
-          // Driver is changing robot orientation explicitly.
-          // Store orientation only, not the power or Gyro Heading.
-          lastTheta = theta;
-        }
-      }
     } else {
       int turnDirection = (int) Math.signum(turn);
       turn = MINIMUM_TURN_POWER + (turnMagnitude * (MAXIMUM_TURN_POWER - MINIMUM_TURN_POWER));
       turn *= turnDirection;
-      if (AutomaticallyCorrectUnbalancedRobotHeading(gamePad1, gamePad2)) {
-        // Driver is changing robot orientation explicitly.
-        // Store new heading
-        parent.imu.readOnce();
-        lastHeading = parent.imu.getHeading();
-      }
     }
 
     // Add turn power to drive power
@@ -369,13 +291,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         // No matter the joystick magnitude, the max power will be
         // FORWARD_SLO_MO_POWER or STRAFE_SLO_MO_POWER for at least one wheel.
         double crawlFactor;
-        parent.imu.readOnce();
-        if (driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE &&
-            isBotStrafing(parent.imu.getHeading(), Math.toDegrees(joyStickHeading))) {
-          crawlFactor = maxWheelPower / STRAFE_SLO_MO_POWER;
-        } else {
-          crawlFactor = maxWheelPower / FORWARD_SLO_MO_POWER;
-        }
+        crawlFactor = maxWheelPower / FORWARD_SLO_MO_POWER;
 
         leftFrontPower /= crawlFactor;
         leftRearPower /= crawlFactor;
@@ -414,13 +330,13 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   }
 
   /**
-   * Increase/decrease motor power incrementally for a smooth acceleration/deceleration.
+   * Increase/decrease greenShooterMotor power incrementally for a smooth acceleration/deceleration.
    * Must call the method repeatedly (e.g. via tele Op).
    *
-   * @param leftFrontPower  Left front motor power
-   * @param leftRearPower   Left rear motor power
-   * @param rightFrontPower Right front motor power
-   * @param rightRearPower  Right rear motor power
+   * @param leftFrontPower  Left front greenShooterMotor power
+   * @param leftRearPower   Left rear greenShooterMotor power
+   * @param rightFrontPower Right front greenShooterMotor power
+   * @param rightRearPower  Right rear greenShooterMotor power
    * @param loopTime        The loopTime passed in by TeleOp that determines how fast the TeleOp
    *                        loop is executing. Shorter the loopTime, smaller the braking power step.
    */
@@ -446,8 +362,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    * Increases or decreases the power incrementally for a smooth acceleration/deceleration.
    * Must call the method repeatedly (e.g. via tele Op).
    *
-   * @param motor    The motor to set the power to.
-   * @param power    The power to set to the motor to.
+   * @param motor    The greenShooterMotor to set the power to.
+   * @param power    The power to set to the greenShooterMotor to.
    * @param loopTime The loopTime passed in by TeleOp that determines how fast the TeleOp loop
    *                 is executing. Shorter the loopTime, shorter the braking power step.
    */

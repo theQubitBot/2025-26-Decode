@@ -20,7 +20,7 @@ public class FtcMotor implements DcMotorEx {
 
   // PERFORMANCE
   // Motor power writes takes about 4.1 ms.
-  // Use a simple and effective motor power caching mechanism.
+  // Use a simple and effective greenShooterMotor power caching mechanism.
   private double currentPower = 0;
 
   public FtcMotor(DcMotorEx motor) {
