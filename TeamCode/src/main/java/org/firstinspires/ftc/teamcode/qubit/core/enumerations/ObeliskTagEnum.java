@@ -3,9 +3,9 @@ package org.firstinspires.ftc.teamcode.qubit.core.enumerations;
 /**
  * The team prop location.
  */
-public enum TeamPropLocationEnum {
-  LEFT,
-  CENTER,
-  RIGHT,
+public enum ObeliskTagEnum {
+  GPP,
+  PGP,
+  PPG,
   UNKNOWN,
 }

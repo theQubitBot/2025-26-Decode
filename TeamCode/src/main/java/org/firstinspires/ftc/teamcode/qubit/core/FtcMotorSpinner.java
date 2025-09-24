@@ -19,7 +19,7 @@ public class FtcMotorSpinner extends FtcSubSystemBase {
   public static final double MIN_POWER = -1.0;
   public static final double ZERO_POWER = 0.0;
 
-  private final boolean spinnerEnabled = false;
+  private final boolean spinnerEnabled = true;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
   public FtcMotor motor = null;
@@ -56,19 +56,19 @@ public class FtcMotorSpinner extends FtcSubSystemBase {
    */
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     if (spinnerEnabled && motor != null) {
-      double currentMotorPower = motor.getPower();
-      double newMotorPower = currentMotorPower;
-      double distanceFromCenter = Math.abs(currentMotorPower);
+      double newMotorPower = motor.getPower();
 
-      // Ensure a min increment of 0.01 if motor is at rest.
-      double delta = Math.max(0.01, distanceFromCenter * 0.01);
-      if (gamePad1.dpad_up) {
-        newMotorPower += delta;
-      } else if (gamePad1.dpad_down) {
-        newMotorPower -= delta;
+      if (gamePad1.dpadUpWasPressed()) {
+        newMotorPower += 0.10;
+      } else if (gamePad1.dpadLeftWasPressed()) {
+        newMotorPower += 0.01;
+      } else if (gamePad1.dpadDownWasPressed()) {
+        newMotorPower -= 0.10;
+      } else if (gamePad1.dpadRightWasPressed()) {
+        newMotorPower -= 0.01;
       }
 
-      newMotorPower = Range.clip(newMotorPower, MIN_POWER, MAX_POWER);
+      newMotorPower = Range.clip(newMotorPower, ZERO_POWER, MAX_POWER);
       motor.setPower(newMotorPower);
     }
   }

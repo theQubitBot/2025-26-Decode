@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcOpenCvCam;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcWebcam;
 import org.firstinspires.ftc.teamcode.qubit.core.SingleObjectDetectionPipeline;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -45,7 +44,7 @@ public class SingleObjectDetectionAutoOp extends LinearOpMode {
     //OpenCV Pipeline
     SingleObjectDetectionPipeline openCvPipeline;
     openCvWebcam.setPipeline(openCvPipeline = new SingleObjectDetectionPipeline(
-        FtcWebcam.borderLeftX, FtcWebcam.borderRightX, FtcWebcam.borderTopY, FtcWebcam.borderBottomY));
+        0, 0, 0, 0));
 
     // Configuration of Pipeline
     openCvPipeline.configureScalarLower(
@@ -84,7 +83,7 @@ public class SingleObjectDetectionAutoOp extends LinearOpMode {
 
     while (opModeIsActive()) {
       openCvPipeline.configureBorders(
-          FtcWebcam.borderLeftX, FtcWebcam.borderRightX, FtcWebcam.borderTopY, FtcWebcam.borderBottomY);
+          0, 0, 0, 0);
       if (openCvPipeline.error) {
         telemetry.addData("Exception: ", openCvPipeline.debug);
       } else {

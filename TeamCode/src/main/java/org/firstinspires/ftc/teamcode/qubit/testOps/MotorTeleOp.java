@@ -98,7 +98,7 @@ public class MotorTeleOp extends OpMode {
     motor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
     motor.setPower(power);
 
-    telemetry.addData(">", "Use dPad up/down to positive/negative motor power");
+    telemetry.addData(">", "Use dPad up/down to positive/negative greenShooterMotor power");
     telemetry.addData("Motor", "Position %d, power %.2f",
         motor.getCurrentPosition(), power);
     telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",

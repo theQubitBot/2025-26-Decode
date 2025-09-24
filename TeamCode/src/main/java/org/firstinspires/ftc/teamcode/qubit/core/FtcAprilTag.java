@@ -6,7 +6,6 @@ import android.util.Size;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -23,26 +22,32 @@ import java.util.List;
 public class FtcAprilTag {
   // True for webcam, false for phone camera
   private static final boolean USE_WEBCAM = true;
-  private AprilTagProcessor aprilTag;
+  private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry;
+  private FtcBot parent = null;
+
+  public FtcAprilTag(FtcBot robot) {
+    parent = robot;
+  }
 
   public List<AprilTagDetection> getAllDetections() {
     List<AprilTagDetection> detections = null;
-    if (aprilTag != null) {
-      detections = aprilTag.getDetections();
+    if (aprilTagProcessor != null) {
+      detections = aprilTagProcessor.getDetections();
     }
 
     return detections;
   }
 
-  public double getBackPropDistance() {
+  public double getGoalDistance() {
     double range = Double.MAX_VALUE;
     List<AprilTagDetection> detections = getAllDetections();
     if (detections != null && !detections.isEmpty()) {
       for (AprilTagDetection detection : detections) {
-        if (detection.metadata != null && detection.id >= 1 && detection.id <= 6) {
+        if (detection.metadata != null &&
+            detection.id == 21 || detection.id == 22 || detection.id == 23) {
           // Get the closest April tag range.
           if (detection.ftcPose.range < range) {
             range = detection.ftcPose.range;
@@ -72,25 +77,21 @@ public class FtcAprilTag {
     this.telemetry = telemetry;
 
     // Create the AprilTag processor.
-    aprilTag = new AprilTagProcessor.Builder()
-        .setDrawAxes(false)
-        .setDrawCubeProjection(false)
-        .setDrawTagOutline(false)
+    aprilTagProcessor = new AprilTagProcessor.Builder()
+        .setDrawAxes(FtcUtils.DEBUG)
+        .setDrawCubeProjection(FtcUtils.DEBUG)
+        .setDrawTagOutline(FtcUtils.DEBUG)
         .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-        .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+        .setTagLibrary(AprilTagGameDatabase.getDecodeTagLibrary())
         .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-        .setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+        //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
         .build();
 
     // Create the vision portal by using a builder.
     VisionPortal.Builder builder = new VisionPortal.Builder();
 
-    // Set the camera (webcam vs. built-in RC phone camera).
-    if (USE_WEBCAM) {
-      builder.setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME));
-    } else {
-      builder.setCamera(BuiltinCameraDirection.BACK);
-    }
+    // Set the camera to webcam
+    builder.setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME));
 
     // Choose a camera resolution. Not all cameras support all resolutions.
     builder.setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT));
@@ -107,10 +108,11 @@ public class FtcAprilTag {
     builder.setAutoStopLiveView(true);
 
     // Set and enable the processor.
-    builder.addProcessor(aprilTag);
+    builder.addProcessor(aprilTagProcessor);
 
     // Build the Vision Portal, using the above settings.
     visionPortal = builder.build();
+    visionPortal.stopStreaming();
     FtcLogger.exit();
   }
 
@@ -120,12 +122,12 @@ public class FtcAprilTag {
   @SuppressLint("DefaultLocale")
   public void showTelemetry() {
     FtcLogger.enter();
-    if (telemetryEnabled && aprilTag != null) {
-      List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-      telemetry.addData("# AprilTags Detected", currentDetections.size());
+    if (telemetryEnabled && aprilTagProcessor != null) {
+      List<AprilTagDetection> aprilTagDetections = getAllDetections();
+      telemetry.addData("# AprilTags Detected", aprilTagDetections.size());
 
       // Step through the list of detections and set info for each one.
-      for (AprilTagDetection detection : currentDetections) {
+      for (AprilTagDetection detection : aprilTagDetections) {
         if (detection.metadata != null) {
           telemetry.addLine(String.format("\n==== (ID %d) %s",
               detection.id, detection.metadata.name));
@@ -133,6 +135,8 @@ public class FtcAprilTag {
               detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
           telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f (deg)",
               detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+          telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
+              detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
         } else {
           telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
         }
@@ -151,12 +155,23 @@ public class FtcAprilTag {
   }
 
   /**
+   * Code to run ONCE when the driver hits PLAY
+   */
+  public void start() {
+    FtcLogger.enter();
+    if (visionPortal != null) {
+      visionPortal.resumeStreaming();
+    }
+
+    FtcLogger.exit();
+  }
+
+  /**
    * Stops the object detection processing.
    */
   public void stop() {
     FtcLogger.enter();
     if (visionPortal != null) {
-      visionPortal.setProcessorEnabled(aprilTag, false);
       visionPortal.close();
       visionPortal = null;
     }

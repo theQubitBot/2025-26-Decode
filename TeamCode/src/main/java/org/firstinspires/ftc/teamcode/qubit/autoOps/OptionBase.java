@@ -8,11 +8,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcImu;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -112,13 +109,6 @@ public class OptionBase {
     if (autoOpMode.opModeIsActive()) {
       opModeIsActive = true;
     } else {
-      // Save settings for use by TeleOp
-      if (robot.driveTrain.driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE &&
-          robot.driveTrain.driveTypeEnum == DriveTypeEnum.FIELD_ORIENTED_DRIVE) {
-        robot.imu.read();
-        FtcImu.endAutoOpHeading = robot.imu.getHeading();
-      }
-
       opModeIsActive = false;
     }
 
