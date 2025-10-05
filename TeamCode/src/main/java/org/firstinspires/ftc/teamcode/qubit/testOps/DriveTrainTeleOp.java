@@ -32,7 +32,7 @@ public class DriveTrainTeleOp extends OpMode {
     robot.init(hardwareMap, telemetry, false);
     robot.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     robot.driveTrain.setDriveTypeAndMode(
-        DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
+        DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
     FtcLogger.exit();
   }
 
@@ -75,16 +75,16 @@ public class DriveTrainTeleOp extends OpMode {
     loopTime.reset();
 
     telemetry.addData(FtcUtils.TAG, "a: FWD POV, b: RWD POV, x: MecanumDrive FOD, y: AWD POV");
-    if (gamepad1.a) {
+    if (gamepad1.aWasPressed()) {
       robot.driveTrain.setDriveTypeAndMode(
           DriveTrainEnum.FRONT_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
-    } else if (gamepad1.b) {
+    } else if (gamepad1.bWasPressed()) {
       robot.driveTrain.setDriveTypeAndMode(
           DriveTrainEnum.REAR_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
-    } else if (gamepad1.x) {
+    } else if (gamepad1.xWasPressed()) {
       robot.driveTrain.setDriveTypeAndMode(
           DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
-    } else if (gamepad1.y) {
+    } else if (gamepad1.yWasPressed()) {
       robot.driveTrain.setDriveTypeAndMode(
           DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
     }

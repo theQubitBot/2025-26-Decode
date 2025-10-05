@@ -6,7 +6,14 @@
             <goBILDA5202SeriesMotor name="leftRearMotor" port="1" />
             <goBILDA5202SeriesMotor name="rightFrontMotor" port="2" />
             <goBILDA5202SeriesMotor name="rightRearMotor" port="3" />
+            <Servo name="leftSweeperServo" port="0" />
+            <Servo name="leftRollerServo" port="1" />
+            <Servo name="rightSweeperServo" port="2" />
+            <Servo name="rightRollerServo" port="3" />
+            <Servo name="sorterServo" port="4" />
+            <RevBlinkinLedDriver name="blinkinLed" port="5" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
+            <goBILDAPinpoint name="pinpointDriver" port="0" bus="1" />
         </LynxModule>
     </LynxUsbDevice>
 </Robot>

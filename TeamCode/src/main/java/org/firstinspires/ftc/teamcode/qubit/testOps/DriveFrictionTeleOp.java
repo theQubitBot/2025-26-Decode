@@ -23,7 +23,6 @@ public class DriveFrictionTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
-  private boolean lastDPadUpPressed = false, lastDPadDownPressed = false;
   double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
   double rampUpDownPower = 0.01;
   double lfVelocity, lrVelocity, rfVelocity, rrVelocity, maxVelocity;
@@ -83,19 +82,10 @@ public class DriveFrictionTeleOp extends OpMode {
     loopTime.reset();
 
     telemetry.addData(FtcUtils.TAG, "dPad up/down for power up/down");
-    if (gamepad1.dpad_up || gamepad2.dpad_up) {
-      if (!lastDPadUpPressed) {
-        lastDPadUpPressed = true;
+    if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
         newMotorPower += rampUpDownPower;
-      }
-    } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
-      if (!lastDPadDownPressed) {
-        lastDPadDownPressed = true;
+    } else if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) {
         newMotorPower -= rampUpDownPower;
-      }
-    } else {
-      lastDPadUpPressed = false;
-      lastDPadDownPressed = false;
     }
 
     newMotorPower = Range.clip(newMotorPower,
