@@ -6,14 +6,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
+import org.firstinspires.ftc.teamcode.qubit.core.ArtifactSensor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
 //@Disabled
 @TeleOp(group = "TestOp")
-public class AprilTagTeleOp extends OpMode {
-  private FtcAprilTag aprilTag;
+public class ArtifactSensorTeleOp extends OpMode {
+  private ArtifactSensor artifactSensor;
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
 
@@ -22,11 +22,12 @@ public class AprilTagTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(">", "Initializing, please wait...");
     telemetry.update();
-    aprilTag = new FtcAprilTag(null);
-    aprilTag.init(hardwareMap, telemetry);
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+    artifactSensor = new ArtifactSensor();
+    artifactSensor.init(hardwareMap, telemetry);
 
     FtcLogger.exit();
   }
@@ -49,7 +50,7 @@ public class AprilTagTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(">", "Starting...");
     telemetry.update();
-    aprilTag.start();
+    artifactSensor.start();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     FtcLogger.exit();
@@ -63,7 +64,7 @@ public class AprilTagTeleOp extends OpMode {
     FtcLogger.enter();
     loopTime.reset();
 
-    aprilTag.showTelemetry();
+    artifactSensor.showTelemetry();
 
     // Show the elapsed game time.
     telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
@@ -78,7 +79,7 @@ public class AprilTagTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
-
+    artifactSensor.stop();
     telemetry.addData(">", "Tele Op stopped.");
     telemetry.update();
     FtcLogger.exit();

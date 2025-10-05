@@ -23,6 +23,7 @@ public class FtcBot extends FtcSubSystemBase {
 
   // robot sub systems
   public FtcAprilTag aprilTag = null;
+  public ArtifactSensor artifactSensor = null;
   public FtcIntake intake = null;
   public FtcSorter sorter = null;
   public FtcShooter shooter = null;
@@ -40,6 +41,7 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain.telemetryEnabled = false;
       blinkinLed.telemetryEnabled = false;
       aprilTag.telemetryEnabled = false;
+      artifactSensor.telemetryEnabled = false;
       intake.telemetryEnabled = false;
       sorter.telemetryEnabled = false;
       shooter.telemetryEnabled = false;
@@ -64,6 +66,7 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain.telemetryEnabled = true;
       blinkinLed.telemetryEnabled = true;
       aprilTag.telemetryEnabled = true;
+      artifactSensor.telemetryEnabled = true;
       intake.telemetryEnabled = true;
       sorter.telemetryEnabled = true;
       shooter.telemetryEnabled = true;
@@ -109,6 +112,9 @@ public class FtcBot extends FtcSubSystemBase {
 
       aprilTag = new FtcAprilTag(this);
       aprilTag.init(hardwareMap, telemetry);
+
+      artifactSensor = new ArtifactSensor();
+      artifactSensor.init(hardwareMap, telemetry);
 
       intake = new FtcIntake(this);
       intake.init(hardwareMap, telemetry);
@@ -230,6 +236,10 @@ public class FtcBot extends FtcSubSystemBase {
         aprilTag.start();
       }
 
+      if (artifactSensor != null) {
+        artifactSensor.start();
+      }
+
       if (intake != null) {
         intake.start();
       }
@@ -266,6 +276,10 @@ public class FtcBot extends FtcSubSystemBase {
 
       if (aprilTag != null) {
         aprilTag.stop();
+      }
+
+      if (artifactSensor != null) {
+        artifactSensor.stop();
       }
 
       if (intake != null) {

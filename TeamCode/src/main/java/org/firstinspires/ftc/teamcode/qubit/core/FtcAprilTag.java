@@ -3,12 +3,15 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 import android.annotation.SuppressLint;
 import android.util.Size;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
@@ -20,8 +23,6 @@ import java.util.List;
  * A class to identify and make available April Tags using the Vision Portal.
  */
 public class FtcAprilTag {
-  // True for webcam, false for phone camera
-  private static final boolean USE_WEBCAM = true;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;
@@ -32,7 +33,7 @@ public class FtcAprilTag {
     parent = robot;
   }
 
-  public List<AprilTagDetection> getAllDetections() {
+  private List<AprilTagDetection> getAllDetections() {
     List<AprilTagDetection> detections = null;
     if (aprilTagProcessor != null) {
       detections = aprilTagProcessor.getDetections();
@@ -41,32 +42,22 @@ public class FtcAprilTag {
     return detections;
   }
 
-  public double getGoalDistance() {
-    double range = Double.MAX_VALUE;
+  public double getGoalRange() {
+    double range = Double.MIN_VALUE;
     List<AprilTagDetection> detections = getAllDetections();
-    if (detections != null && !detections.isEmpty()) {
+    if (detections != null && !detections.isEmpty() && parent!=null && parent.config!=null) {
       for (AprilTagDetection detection : detections) {
-        if (detection.metadata != null &&
-            detection.id == 21 || detection.id == 22 || detection.id == 23) {
-          // Get the closest April tag range.
-          if (detection.ftcPose.range < range) {
+        if (detection.metadata != null){
+          if(parent.config.allianceColor == AllianceColorEnum.BLUE && detection.id == 20) {
             range = detection.ftcPose.range;
-          }
+          } else if(parent.config.allianceColor == AllianceColorEnum.RED && detection.id == 24) {
+              range = detection.ftcPose.range;
+            }
         }
       }
     }
 
     return range;
-  }
-
-  public AprilTagDetection getFirstDetection() {
-    AprilTagDetection detection = null;
-    List<AprilTagDetection> detections = getAllDetections();
-    if (detections != null && !detections.isEmpty()) {
-      detection = detections.get(0);
-    }
-
-    return detection;
   }
 
   /**
@@ -79,7 +70,7 @@ public class FtcAprilTag {
     // Create the AprilTag processor.
     aprilTagProcessor = new AprilTagProcessor.Builder()
         .setDrawAxes(FtcUtils.DEBUG)
-        .setDrawCubeProjection(FtcUtils.DEBUG)
+        .setDrawCubeProjection(false)
         .setDrawTagOutline(FtcUtils.DEBUG)
         .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
         .setTagLibrary(AprilTagGameDatabase.getDecodeTagLibrary())
@@ -87,32 +78,26 @@ public class FtcAprilTag {
         //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
         .build();
 
-    // Create the vision portal by using a builder.
-    VisionPortal.Builder builder = new VisionPortal.Builder();
+    visionPortal = new VisionPortal.Builder()
+        .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME))
+        .setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT))
+        .enableLiveView(true)
+        .setStreamFormat(VisionPortal.StreamFormat.YUY2)
+        .setAutoStopLiveView(true)
+        .addProcessor(aprilTagProcessor)
+        .build();
 
-    // Set the camera to webcam
-    builder.setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME));
+    if (FtcUtils.DEBUG) {
+      FtcDashboard dashboard = FtcDashboard.getInstance();
+      if (dashboard != null) {
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        dashboard.startCameraStream(visionPortal, 0);
+      }
 
-    // Choose a camera resolution. Not all cameras support all resolutions.
-    builder.setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT));
+      telemetry.setMsTransmissionInterval(100);  // Speed up telemetry updates, for debugging.
+      telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+    }
 
-    // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-    builder.enableLiveView(FtcUtils.DEBUG);
-
-    // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-    builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-    // Choose whether or not LiveView stops if no processors are enabled.
-    // If set "true", monitor shows solid orange screen if no processors enabled.
-    // If set "false", monitor shows camera view without annotations.
-    builder.setAutoStopLiveView(true);
-
-    // Set and enable the processor.
-    builder.addProcessor(aprilTagProcessor);
-
-    // Build the Vision Portal, using the above settings.
-    visionPortal = builder.build();
-    visionPortal.stopStreaming();
     FtcLogger.exit();
   }
 
