@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcDriveTrain;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
@@ -41,7 +42,9 @@ public class DriveFrictionTeleOp extends OpMode {
 
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-    driveTrain = new FtcDriveTrain(null);
+    FtcBot robot = new FtcBot();
+    robot.init(hardwareMap, telemetry);
+    driveTrain = robot.driveTrain;
     driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
     driveTrain.init(hardwareMap, telemetry);
     driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);

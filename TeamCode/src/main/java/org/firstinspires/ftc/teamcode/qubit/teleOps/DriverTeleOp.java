@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "Official")
 public class DriverTeleOp extends OpMode {
   // Declare OpMode members

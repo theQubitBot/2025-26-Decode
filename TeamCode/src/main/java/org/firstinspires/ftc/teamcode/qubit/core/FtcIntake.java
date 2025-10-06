@@ -15,24 +15,28 @@ import java.util.Locale;
  */
 public class FtcIntake extends FtcSubSystemBase {
   private static final String TAG = "FtcIntake";
-  public static final String LEFT_SPIN_SERVO_NAME = "leftSpinServo";
-  public static final String RIGHT_SPIN_SERVO_NAME = "rightSpinServo";
-  public static final String VERTICAL_SPIN_SERVO_NAME = "verticalSpinServo";
-  public static final double HORIZONTAL_SPIN_IN_POWER = 0.6500;
-  public static final double VERTICAL_SPIN_IN_POWER = 0.6300;
-  public static final double SPIN_OUT_POWER = 0.2000;
-  public static final double SPIN_HOLD_POWER = 0.5400;
-  public static final double SPIN_STOP_POWER = FtcServo.MID_POSITION;
-  public static final int ARTIFACT_INTAKE_TIME = 500; // milliseconds
+  public static final String LEFT_ROLLER_SERVO_NAME = "leftRollerServo";
+  public static final String RIGHT_ROLLER_SERVO_NAME = "rightRollerServo";
+  public static final String LEFT_SWEEPER_SERVO_NAME = "leftSweeperServo";
+  public static final String RIGHT_SWEEPER_SERVO_NAME = "rightSweeperServo";
+  public static final double ROLLER_IN_POWER = 0.8000;
+  public static final double ROLLER_OUT_POWER = 0.2000;
+  public static final double SWEEPER_IN_POWER = 1.000;
+  public static final double SWEEPER_OUT_POWER = 0.2000;
+  public static final double ROLLER_HOLD_POWER = 0.5500;
+  public static final double SWEEPER_HOLD_POWER = 0.5500;
+  public static final double INTAKE_STOP_POWER = FtcServo.MID_POSITION;
+  public static final int ARTIFACT_INTAKE_TIME = 1000; // milliseconds
   public static final int ARTIFACT_OUTTAKE_TIME = 1000; // milliseconds
 
   private final boolean intakeEnabled = true;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
   private final FtcBot parent;
-  private FtcServo leftSpinServo = null;
-  private FtcServo rightSpinServo = null;
-  private FtcServo verticalSpinServo = null;
+  private FtcServo leftRollerServo = null;
+  private FtcServo rightRollerServo = null;
+  private FtcServo leftSweeperServo = null;
+  private FtcServo rightSweeperServo = null;
 
   public FtcIntake(FtcBot robot) {
     parent = robot;
@@ -48,12 +52,14 @@ public class FtcIntake extends FtcSubSystemBase {
     FtcLogger.enter();
     this.telemetry = telemetry;
     if (intakeEnabled) {
-      leftSpinServo = new FtcServo(hardwareMap.get(Servo.class, LEFT_SPIN_SERVO_NAME));
-      leftSpinServo.setDirection(Servo.Direction.REVERSE);
-      rightSpinServo = new FtcServo(hardwareMap.get(Servo.class, RIGHT_SPIN_SERVO_NAME));
-      rightSpinServo.setDirection(Servo.Direction.FORWARD);
-      verticalSpinServo = new FtcServo(hardwareMap.get(Servo.class, VERTICAL_SPIN_SERVO_NAME));
-      verticalSpinServo.setDirection(Servo.Direction.FORWARD);
+      leftRollerServo = new FtcServo(hardwareMap.get(Servo.class, LEFT_ROLLER_SERVO_NAME));
+      leftRollerServo.setDirection(Servo.Direction.REVERSE);
+      rightRollerServo = new FtcServo(hardwareMap.get(Servo.class, RIGHT_ROLLER_SERVO_NAME));
+      rightRollerServo.setDirection(Servo.Direction.FORWARD);
+      leftSweeperServo = new FtcServo(hardwareMap.get(Servo.class, LEFT_SWEEPER_SERVO_NAME));
+      leftSweeperServo.setDirection(Servo.Direction.FORWARD);
+      rightSweeperServo = new FtcServo(hardwareMap.get(Servo.class, RIGHT_SWEEPER_SERVO_NAME));
+      rightSweeperServo.setDirection(Servo.Direction.REVERSE);
 
       showTelemetry();
       telemetry.addData(TAG, "initialized");
@@ -76,14 +82,10 @@ public class FtcIntake extends FtcSubSystemBase {
     if (intakeEnabled) {
       if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
         spinStop();
-      } else if (gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5) {
-        spinIn(false);
-      } else if (gamePad1.right_bumper || gamePad2.right_bumper) {
-        spinIn(false);
       } else if (gamePad1.left_trigger >= 0.5 || gamePad2.left_trigger >= 0.5) {
+        spinIn(false);
+      } else if (gamePad1.left_bumper || gamePad2.left_bumper) {
         spinOut(false);
-      } else if (FtcUtils.lastNSeconds(runtime, 10)) {
-        spinStop();
       } else {
         spinHold();
       }
@@ -98,9 +100,10 @@ public class FtcIntake extends FtcSubSystemBase {
   public void spinHold() {
     FtcLogger.enter();
     if (intakeEnabled) {
-      leftSpinServo.setPosition(SPIN_STOP_POWER);
-      rightSpinServo.setPosition(SPIN_STOP_POWER);
-      verticalSpinServo.setPosition(SPIN_HOLD_POWER);
+      leftRollerServo.setPosition(ROLLER_HOLD_POWER);
+      rightRollerServo.setPosition(ROLLER_HOLD_POWER);
+      leftSweeperServo.setPosition(SWEEPER_HOLD_POWER);
+      rightSweeperServo.setPosition(SWEEPER_HOLD_POWER);
     }
 
     FtcLogger.exit();
@@ -112,13 +115,13 @@ public class FtcIntake extends FtcSubSystemBase {
   public void spinIn(boolean waitTillCompletion) {
     FtcLogger.enter();
     if (intakeEnabled) {
-      leftSpinServo.setPosition(HORIZONTAL_SPIN_IN_POWER);
-      rightSpinServo.setPosition(HORIZONTAL_SPIN_IN_POWER);
-      verticalSpinServo.setPosition(VERTICAL_SPIN_IN_POWER);
-    }
-
-    if (waitTillCompletion) {
-      FtcUtils.sleep(ARTIFACT_INTAKE_TIME);
+      leftRollerServo.setPosition(ROLLER_IN_POWER);
+      rightRollerServo.setPosition(ROLLER_IN_POWER);
+      leftSweeperServo.setPosition(SWEEPER_IN_POWER);
+      rightSweeperServo.setPosition(SWEEPER_IN_POWER);
+      if (waitTillCompletion) {
+        FtcUtils.sleep(ARTIFACT_INTAKE_TIME);
+      }
     }
 
     FtcLogger.exit();
@@ -130,9 +133,10 @@ public class FtcIntake extends FtcSubSystemBase {
   public void spinOut(boolean waitTillCompletion) {
     FtcLogger.enter();
     if (intakeEnabled) {
-      leftSpinServo.setPosition(SPIN_OUT_POWER);
-      rightSpinServo.setPosition(SPIN_OUT_POWER);
-      verticalSpinServo.setPosition(SPIN_OUT_POWER);
+      leftRollerServo.setPosition(ROLLER_OUT_POWER);
+      rightRollerServo.setPosition(ROLLER_OUT_POWER);
+      leftSweeperServo.setPosition(SWEEPER_OUT_POWER);
+      rightSweeperServo.setPosition(SWEEPER_OUT_POWER);
       if (waitTillCompletion) {
         FtcUtils.sleep(ARTIFACT_OUTTAKE_TIME);
       }
@@ -147,9 +151,10 @@ public class FtcIntake extends FtcSubSystemBase {
   public void spinStop() {
     FtcLogger.enter();
     if (intakeEnabled) {
-      leftSpinServo.setPosition(SPIN_STOP_POWER);
-      rightSpinServo.setPosition(SPIN_STOP_POWER);
-      verticalSpinServo.setPosition(SPIN_STOP_POWER);
+      leftRollerServo.setPosition(INTAKE_STOP_POWER);
+      rightRollerServo.setPosition(INTAKE_STOP_POWER);
+      leftSweeperServo.setPosition(INTAKE_STOP_POWER);
+      rightSweeperServo.setPosition(INTAKE_STOP_POWER);
     }
 
     FtcLogger.exit();
@@ -161,10 +166,12 @@ public class FtcIntake extends FtcSubSystemBase {
   public void showTelemetry() {
     FtcLogger.enter();
     if (intakeEnabled && telemetryEnabled) {
-      if (leftSpinServo != null && rightSpinServo != null && verticalSpinServo != null) {
+      if (leftRollerServo != null && rightRollerServo != null
+          && leftSweeperServo != null && rightSweeperServo != null ) {
         telemetry.addData(TAG, String.format(Locale.US,
-            "spin: %5.4f, %5.4f, %5.4f",
-            leftSpinServo.getPosition(), rightSpinServo.getPosition(), verticalSpinServo.getPosition()));
+            "roller: %5.4f, %5.4f, sweeper: %5.4f, %5.4f",
+            leftRollerServo.getPosition(), rightRollerServo.getPosition(),
+            leftSweeperServo.getPosition(), rightSweeperServo.getPosition()));
       }
     }
 
@@ -177,19 +184,24 @@ public class FtcIntake extends FtcSubSystemBase {
   public void start() {
     FtcLogger.enter();
     if (intakeEnabled) {
-      if (leftSpinServo != null &&
-          leftSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        leftSpinServo.getController().pwmEnable();
+      if (leftRollerServo != null &&
+          leftRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        leftRollerServo.getController().pwmEnable();
       }
 
-      if (rightSpinServo != null &&
-          rightSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        rightSpinServo.getController().pwmEnable();
+      if (rightRollerServo != null &&
+          rightRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        rightRollerServo.getController().pwmEnable();
       }
 
-      if (verticalSpinServo != null &&
-          verticalSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        verticalSpinServo.getController().pwmEnable();
+      if (leftSweeperServo != null &&
+          leftSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        leftSweeperServo.getController().pwmEnable();
+      }
+
+      if (rightSweeperServo != null &&
+          rightSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        rightSweeperServo.getController().pwmEnable();
       }
 
       spinStop();
@@ -204,22 +216,28 @@ public class FtcIntake extends FtcSubSystemBase {
   public void stop() {
     FtcLogger.enter();
     if (intakeEnabled) {
-      if (leftSpinServo != null &&
-          leftSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
-        leftSpinServo.setPosition(SPIN_STOP_POWER);
-        leftSpinServo.getController().pwmDisable();
+      if (leftRollerServo != null &&
+          leftRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+        leftRollerServo.setPosition(INTAKE_STOP_POWER);
+        leftRollerServo.getController().pwmDisable();
       }
 
-      if (rightSpinServo != null &&
-          rightSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
-        rightSpinServo.setPosition(SPIN_STOP_POWER);
-        rightSpinServo.getController().pwmDisable();
+      if (rightRollerServo != null &&
+          rightRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+        rightRollerServo.setPosition(INTAKE_STOP_POWER);
+        rightRollerServo.getController().pwmDisable();
       }
 
-      if (verticalSpinServo != null &&
-          verticalSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
-        verticalSpinServo.setPosition(SPIN_STOP_POWER);
-        verticalSpinServo.getController().pwmDisable();
+      if (leftSweeperServo != null &&
+          leftSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+        leftSweeperServo.setPosition(INTAKE_STOP_POWER);
+        leftSweeperServo.getController().pwmDisable();
+      }
+
+      if (rightSweeperServo != null &&
+          rightSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+        rightSweeperServo.setPosition(INTAKE_STOP_POWER);
+        rightSweeperServo.getController().pwmDisable();
       }
     }
 

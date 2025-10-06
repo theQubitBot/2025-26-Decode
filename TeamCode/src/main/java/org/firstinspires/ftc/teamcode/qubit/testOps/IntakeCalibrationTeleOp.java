@@ -13,17 +13,18 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
 public class IntakeCalibrationTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
 
-  FtcServo leftSpinServo = null;
-  FtcServo rightSpinServo = null;
-  FtcServo verticalSpinServo = null;
-  double leftSpinPower, rightSpinPower, verticalSpinPower;
+  FtcServo leftRollerServo = null;
+  FtcServo rightRollerServo = null;
+  FtcServo leftSweeperServo = null;
+  FtcServo rightSweeperServo = null;
+  double leftRollerPower, rightRollerPower, leftSweeperPower, rightSweeperPower;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -34,32 +35,41 @@ public class IntakeCalibrationTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
 
-    leftSpinServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.LEFT_SPIN_SERVO_NAME));
-    if (leftSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      leftSpinServo.getController().pwmEnable();
+    leftRollerServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.LEFT_ROLLER_SERVO_NAME));
+    if (leftRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      leftRollerServo.getController().pwmEnable();
     }
 
-    leftSpinServo.setDirection(Servo.Direction.REVERSE);
-    leftSpinPower = FtcIntake.SPIN_STOP_POWER;
-    leftSpinServo.setPosition(leftSpinPower);
+    leftRollerServo.setDirection(Servo.Direction.REVERSE);
+    leftRollerPower = FtcIntake.INTAKE_STOP_POWER;
+    leftRollerServo.setPosition(leftRollerPower);
 
-    rightSpinServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.RIGHT_SPIN_SERVO_NAME));
-    if (rightSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      rightSpinServo.getController().pwmEnable();
+    rightRollerServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.RIGHT_ROLLER_SERVO_NAME));
+    if (rightRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      rightRollerServo.getController().pwmEnable();
     }
 
-    rightSpinServo.setDirection(Servo.Direction.FORWARD);
-    rightSpinPower = FtcIntake.SPIN_STOP_POWER;
-    rightSpinServo.setPosition(rightSpinPower);
+    rightRollerServo.setDirection(Servo.Direction.FORWARD);
+    rightRollerPower = FtcIntake.INTAKE_STOP_POWER;
+    rightRollerServo.setPosition(rightRollerPower);
 
-    verticalSpinServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.VERTICAL_SPIN_SERVO_NAME));
-    if (verticalSpinServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      verticalSpinServo.getController().pwmEnable();
+    leftSweeperServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.LEFT_SWEEPER_SERVO_NAME));
+    if (leftSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      leftSweeperServo.getController().pwmEnable();
     }
 
-    verticalSpinServo.setDirection(Servo.Direction.FORWARD);
-    verticalSpinPower = FtcIntake.SPIN_STOP_POWER;
-    verticalSpinServo.setPosition(verticalSpinPower);
+    leftSweeperServo.setDirection(Servo.Direction.FORWARD);
+    leftSweeperPower = FtcIntake.INTAKE_STOP_POWER;
+    leftSweeperServo.setPosition(leftSweeperPower);
+
+    rightSweeperServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.RIGHT_SWEEPER_SERVO_NAME));
+    if (rightSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      rightSweeperServo.getController().pwmEnable();
+    }
+
+    rightSweeperServo.setDirection(Servo.Direction.REVERSE);
+    rightSweeperPower = FtcIntake.INTAKE_STOP_POWER;
+    rightSweeperServo.setPosition(rightSweeperPower);
 
     FtcLogger.exit();
   }
@@ -99,30 +109,39 @@ public class IntakeCalibrationTeleOp extends OpMode {
     double position = FtcServo.MID_POSITION;
 
     if (gamepad1.left_stick_y >= 0.5 || gamepad1.left_stick_y <= -0.5) {
-      leftSpinPower = Math.abs(gamepad1.left_stick_y);
-      position = leftSpinPower;
-      servo = leftSpinServo;
+      leftSweeperPower = Math.abs(gamepad1.left_stick_y);
+      position = leftSweeperPower;
+      servo = leftSweeperServo;
     } else {
-      leftSpinPower = FtcServo.MID_POSITION;
-      leftSpinServo.setPosition(leftSpinPower);
+      leftSweeperPower = FtcServo.MID_POSITION;
+      leftSweeperServo.setPosition(leftSweeperPower);
     }
 
     if (gamepad1.right_stick_y >= 0.5 || gamepad1.right_stick_y <= -0.5) {
-      rightSpinPower = Math.abs(gamepad1.right_stick_y);
-      position = rightSpinPower;
-      servo = rightSpinServo;
+      rightSweeperPower = Math.abs(gamepad1.right_stick_y);
+      position = rightSweeperPower;
+      servo = rightSweeperServo;
     } else {
-      rightSpinPower = FtcServo.MID_POSITION;
-      rightSpinServo.setPosition(rightSpinPower);
+      rightSweeperPower = FtcServo.MID_POSITION;
+      rightSweeperServo.setPosition(rightSweeperPower);
     }
 
-    if (gamepad1.dpad_up) {
-      verticalSpinPower = FtcIntake.VERTICAL_SPIN_IN_POWER;
-      position = verticalSpinPower;
-      servo = verticalSpinServo;
+    if (gamepad1.dpad_left) {
+      leftRollerPower = FtcIntake.ROLLER_IN_POWER;
+      position = leftRollerPower;
+      servo = leftRollerServo;
     } else {
-      verticalSpinPower = FtcServo.MID_POSITION;
-      verticalSpinServo.setPosition(verticalSpinPower);
+      leftRollerPower = FtcServo.MID_POSITION;
+      leftRollerServo.setPosition(leftRollerPower);
+    }
+
+    if (gamepad1.dpad_right) {
+      rightRollerPower = FtcIntake.ROLLER_IN_POWER;
+      position = rightRollerPower;
+      servo = rightRollerServo;
+    } else {
+      rightRollerPower = FtcServo.MID_POSITION;
+      rightRollerServo.setPosition(rightRollerPower);
     }
 
     if (servo != null) {
@@ -130,14 +149,15 @@ public class IntakeCalibrationTeleOp extends OpMode {
       servo.setPosition(position);
     }
 
-    telemetry.addData("Right spin", "right stick Y");
-    telemetry.addData("Left spin", "left stick Y");
-    telemetry.addData("Vertical spin", "dPad up");
-    telemetry.addData("Right flip", "right trigger/bumper");
-    telemetry.addData("Left flip", "left trigger/bumper");
+    telemetry.addData("Left sweeper", "left stick Y");
+    telemetry.addData("Right sweeper", "right stick Y");
+    telemetry.addData("Left roller", "dPad left");
+    telemetry.addData("Right roller", "dPad right");
     telemetry.addLine();
-    telemetry.addData("Position", "LSpin %5.4f RSpin %5.4f",
-        leftSpinPower, rightSpinPower);
+    telemetry.addData("Position", "LSweeper %5.4f RSweeper %5.4f",
+        leftSweeperPower, rightSweeperPower);
+    telemetry.addData("Position", "LRoller %5.4f RRoller %5.4f",
+        leftRollerPower, rightRollerPower);
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
