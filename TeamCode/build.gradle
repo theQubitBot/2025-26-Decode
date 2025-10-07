@@ -30,20 +30,24 @@ android {
 }
 
 repositories {
+    // FTC Dashboard
     maven { url = 'https://maven.brott.dev/' }
 
-    // pedro pathing
-    maven { url = 'https://maven.pedropathing.com' }
+    // Pedro pathing dependency
     maven { url = "https://mymaven.bylazar.com/releases" }
 }
 
 dependencies {
+    // FTC SDK
     implementation project(':FtcRobotController')
+
+    // FTC Dashboard
     implementation "com.acmerobotics.dashboard:dashboard:0.4.16"
 
-    // pedro pathing
-    implementation 'com.pedropathing:ftc:2.0.0'
-    implementation 'com.pedropathing:telemetry:0.0.6'
+    // Pedro pathing
+    implementation 'com.pedropathing:ftc:2.0.2'
+    implementation 'com.pedropathing:telemetry:1.0.0'
 
+    // Pedro pathing dependency
     implementation 'com.bylazar:fullpanels:1.0.2'
 }
