@@ -101,7 +101,7 @@ public class OptionBase {
    * A helper method to test if the autoOp is active. When autoOp is inactive,
    * stores the lift and gyro values for use in TeleOp.
    *
-   * @return
+   * @return True if Op is still active.
    */
   public boolean saveAndTest() {
     FtcLogger.enter();

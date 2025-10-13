@@ -16,7 +16,7 @@ import java.util.Locale;
  */
 public class FtcBlinkinLed extends FtcSubSystemBase {
   private static final String TAG = "FtcBlinkinLed";
-  private static final String BLINKIN_NAME = "blinkinLed";
+  private static final String BLINKIN_NAME = "blinkinLedDriver";
   private final boolean blinkinLedEnabled = true;
   public boolean telemetryEnabled = true;
   private RevBlinkinLedDriver blinkinLedDriver = null;
@@ -24,7 +24,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   // Start with LED strip being off.
   private BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.BLACK;
   private Telemetry telemetry;
-  private FtcBot parent = null;
+  private FtcBot parent;
 
   public FtcBlinkinLed(FtcBot robot) {
     parent = robot;
@@ -49,36 +49,24 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
 
   public void operate(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
     FtcLogger.enter();
-    if (blinkinLedEnabled) {
-      if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
-        stop();
-      } else if (gamePad1.rightBumperWasPressed() || gamePad2.rightBumperWasPressed()) {
-        if (parent != null) {
-          parent.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.FIRE_LARGE);
-        }
-      } else if (gamePad1.leftBumperWasPressed() || gamePad2.leftBumperWasPressed()) {
-        if (parent != null) {
-          stop();
-        }
-      } else if (FtcUtils.lastNSeconds(runtime, 10)) {
-        if (parent != null) {
-          if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
-            if (currentPattern != BlinkinPattern.HEARTBEAT_BLUE) {
-              set(BlinkinPattern.HEARTBEAT_BLUE);
-            }
-          } else {
-            if (currentPattern != BlinkinPattern.HEARTBEAT_RED) {
-              set(BlinkinPattern.HEARTBEAT_RED);
-            }
-          }
+    if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
+      stop();
+    } else if (gamePad1.x || gamePad2.x || gamePad1.b || gamePad2.b) {
+      set(BlinkinPattern.TWINKLES_LAVA_PALETTE);
+    } else if (parent != null && parent.aprilTag != null && parent.aprilTag.getGoalRange() > 0) {
+      set(BlinkinPattern.GREEN);
+    } else if (FtcUtils.lastNSeconds(runtime, 10)) {
+      if (parent != null) {
+        if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
+          set(BlinkinPattern.HEARTBEAT_BLUE);
         } else {
-          if (currentPattern != BlinkinPattern.HEARTBEAT_WHITE) {
-            set(BlinkinPattern.HEARTBEAT_WHITE);
-          }
+          set(BlinkinPattern.HEARTBEAT_RED);
         }
       } else {
-        stop();
+        set(BlinkinPattern.HEARTBEAT_WHITE);
       }
+    } else {
+      stop();
     }
 
     FtcLogger.exit();
@@ -105,8 +93,10 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
    */
   public void set(RevBlinkinLedDriver.BlinkinPattern pattern) {
     if (blinkinLedEnabled && blinkinLedDriver != null) {
-      currentPattern = pattern;
-      blinkinLedDriver.setPattern(pattern);
+      if (currentPattern != pattern) {
+        currentPattern = pattern;
+        blinkinLedDriver.setPattern(currentPattern);
+      }
     }
   }
 
@@ -121,9 +111,16 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   }
 
   /**
+   * Starts the current LED display pattern by setting the BLACK pattern.
+   */
+  public void start() {
+    set(BlinkinPattern.BLACK);
+  }
+
+  /**
    * Stops the current LED display pattern by setting the BLACK pattern.
    */
   public void stop() {
-    set(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+    set(BlinkinPattern.BLACK);
   }
 }

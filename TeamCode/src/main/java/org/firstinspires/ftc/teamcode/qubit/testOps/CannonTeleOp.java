@@ -4,30 +4,31 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcDriveTrain;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 
 import java.util.Locale;
 
+// big triangle - 0.45 is max
+// small triangle - 0.65 is max
+
 //@Disabled
 @TeleOp(group = "TestOp")
-public class DriveFrictionTeleOp extends OpMode {
+public class CannonTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
   double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
-  double rampUpDownPower = 0.01;
-  double lfVelocity, lrVelocity, rfVelocity, rrVelocity, maxVelocity;
-  FtcDriveTrain driveTrain = null;
+  final double largeDeltaPower = 0.10;
+  final double smallDeltaPower = 0.01;
+
+  FtcCannon cannon;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -42,12 +43,11 @@ public class DriveFrictionTeleOp extends OpMode {
 
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-    FtcBot robot = new FtcBot();
-    robot.init(hardwareMap, telemetry);
-    driveTrain = robot.driveTrain;
-    driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
-    driveTrain.init(hardwareMap, telemetry);
-    driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+
+    cannon = new FtcCannon();
+    cannon.telemetryEnabled = true;
+    cannon.init(hardwareMap, telemetry);
+
     FtcLogger.exit();
   }
 
@@ -71,7 +71,7 @@ public class DriveFrictionTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    driveTrain.telemetryEnabled = FtcUtils.DEBUG;
+    cannon.start();
     FtcLogger.exit();
   }
 
@@ -84,32 +84,38 @@ public class DriveFrictionTeleOp extends OpMode {
     // Show the elapsed game time and wheel power.
     loopTime.reset();
 
-    telemetry.addData(FtcUtils.TAG, "dPad up/down for power up/down");
+    telemetry.addData("dPad up/down", "Large power +/-");
+    telemetry.addData("dPad left/right", "Small power +/-");
     if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
-      newMotorPower += rampUpDownPower;
+      newMotorPower = cannon.leftCannonMotor.getPower() + largeDeltaPower;
+    } else if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) {
+      newMotorPower = cannon.leftCannonMotor.getPower() + smallDeltaPower;
     } else if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) {
-      newMotorPower -= rampUpDownPower;
+      newMotorPower = cannon.leftCannonMotor.getPower() - largeDeltaPower;
+    } else if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) {
+      newMotorPower = cannon.leftCannonMotor.getPower() - smallDeltaPower;
     }
 
     newMotorPower = Range.clip(newMotorPower,
         FtcMotor.ZERO_POWER, FtcDriveTrain.MAXIMUM_FORWARD_POWER);
-    if (newMotorPower != oldMotorPower) {
-      driveTrain.setDrivePower(newMotorPower, newMotorPower, newMotorPower, newMotorPower);
-      oldMotorPower = newMotorPower;
+    cannon.leftCannonMotor.setPower(newMotorPower);
+    cannon.rightCannonMotor.setPower(newMotorPower);
+    oldMotorPower = newMotorPower;
+
+    if (gamepad1.xWasPressed()) {
+      cannon.leftTriggerServo.setPosition(FtcCannon.LEFT_TRIGGER_UP_POSITION);
+    } else if (gamepad1.xWasReleased()) {
+      cannon.leftTriggerServo.setPosition(FtcCannon.LEFT_TRIGGER_DOWN_POSITION);
+    } else if (gamepad1.bWasPressed()) {
+      cannon.rightTriggerServo.setPosition(FtcCannon.RIGHT_TRIGGER_UP_POSITION);
+    } else if (gamepad1.bWasReleased()) {
+      cannon.rightTriggerServo.setPosition(FtcCannon.RIGHT_TRIGGER_DOWN_POSITION);
     }
 
     // Emit telemetry for graph plots in RoadRunner Dashboard
-    lfVelocity = Math.abs(driveTrain.allMotors.get(0).getVelocity());
-    lrVelocity = Math.abs(driveTrain.allMotors.get(1).getVelocity());
-    rfVelocity = Math.abs(driveTrain.allMotors.get(2).getVelocity());
-    rrVelocity = Math.abs(driveTrain.allMotors.get(3).getVelocity());
-    maxVelocity = Math.max(Math.max(lfVelocity, lrVelocity), Math.max(rfVelocity, rrVelocity));
-    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Motor power %.2f", newMotorPower));
-    telemetry.addData("LF", maxVelocity - lfVelocity);
-    telemetry.addData("LR", maxVelocity - lrVelocity);
-    telemetry.addData("RF", maxVelocity - rfVelocity);
-    telemetry.addData("RR", maxVelocity - rrVelocity);
-
+    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Power %.2f", newMotorPower));
+    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Velocity %5.1f, %5.1f",
+        cannon.leftCannonMotor.getVelocity(), cannon.rightCannonMotor.getVelocity()));
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
@@ -122,7 +128,7 @@ public class DriveFrictionTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
-    driveTrain.stop();
+    cannon.stop();
     this.telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     this.telemetry.update();
     FtcLogger.exit();

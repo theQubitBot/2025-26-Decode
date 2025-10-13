@@ -6,6 +6,7 @@ import android.util.Size;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -23,11 +24,17 @@ import java.util.List;
  * A class to identify and make available April Tags using the Vision Portal.
  */
 public class FtcAprilTag {
+  static final String TAG = "FtcAprilTag";
+  public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
+  public static final double OBELISK_BLUE_POSITION = 0.5335;
+  public static final double OBELISK_RED_POSITION = 0.4705;
+  public static final double GOAL_POSITION = 0.50;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry;
-  private FtcBot parent = null;
+  private final FtcBot parent;
+  private FtcServo aprilTagServo = null;
 
   public FtcAprilTag(FtcBot robot) {
     parent = robot;
@@ -45,14 +52,14 @@ public class FtcAprilTag {
   public double getGoalRange() {
     double range = Double.MIN_VALUE;
     List<AprilTagDetection> detections = getAllDetections();
-    if (detections != null && !detections.isEmpty() && parent!=null && parent.config!=null) {
+    if (detections != null && !detections.isEmpty() && parent != null && parent.config != null) {
       for (AprilTagDetection detection : detections) {
-        if (detection.metadata != null){
-          if(parent.config.allianceColor == AllianceColorEnum.BLUE && detection.id == 20) {
+        if (detection.metadata != null) {
+          if (parent.config.allianceColor == AllianceColorEnum.BLUE && detection.id == 20) {
             range = detection.ftcPose.range;
-          } else if(parent.config.allianceColor == AllianceColorEnum.RED && detection.id == 24) {
-              range = detection.ftcPose.range;
-            }
+          } else if (parent.config.allianceColor == AllianceColorEnum.RED && detection.id == 24) {
+            range = detection.ftcPose.range;
+          }
         }
       }
     }
@@ -67,6 +74,9 @@ public class FtcAprilTag {
     FtcLogger.enter();
     this.telemetry = telemetry;
 
+    aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, APRIL_TAG_SERVO_NAME));
+    aprilTagServo.setPosition(FtcServo.MID_POSITION);
+
     // Create the AprilTag processor.
     aprilTagProcessor = new AprilTagProcessor.Builder()
         .setDrawAxes(FtcUtils.DEBUG)
@@ -79,13 +89,16 @@ public class FtcAprilTag {
         .build();
 
     visionPortal = new VisionPortal.Builder()
-        .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME))
+        .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_2_NAME))
         .setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT))
         .enableLiveView(true)
         .setStreamFormat(VisionPortal.StreamFormat.YUY2)
         .setAutoStopLiveView(true)
         .addProcessor(aprilTagProcessor)
         .build();
+
+    aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, APRIL_TAG_SERVO_NAME));
+    aprilTagServo.setDirection(Servo.Direction.FORWARD);
 
     if (FtcUtils.DEBUG) {
       FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -99,6 +112,16 @@ public class FtcAprilTag {
     }
 
     FtcLogger.exit();
+  }
+
+  public void pointAtObelisk() {
+    if (parent != null && parent.config != null) {
+      if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
+        aprilTagServo.setPosition(OBELISK_BLUE_POSITION);
+      } else if (parent.config.allianceColor == AllianceColorEnum.RED) {
+        aprilTagServo.setPosition(OBELISK_RED_POSITION);
+      }
+    }
   }
 
   /**
@@ -148,11 +171,14 @@ public class FtcAprilTag {
       visionPortal.resumeStreaming();
     }
 
+    if (aprilTagServo != null) {
+      aprilTagServo.setPosition(GOAL_POSITION);
+    }
     FtcLogger.exit();
   }
 
   /**
-   * Stops the object detection processing.
+   * Stops the tag detection processing.
    */
   public void stop() {
     FtcLogger.enter();

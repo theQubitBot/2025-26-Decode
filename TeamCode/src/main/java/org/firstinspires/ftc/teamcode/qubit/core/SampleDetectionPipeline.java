@@ -12,7 +12,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 public class SampleDetectionPipeline extends OpenCvPipeline {
   private static final String TAG = "MsdPipeline";
-  private OpenCvWebcam openCvWebcam = null;
+  private OpenCvWebcam openCvWebcam;
   private boolean annotateFrame = true;
 
   // Volatile because accessed by OpMode without syncObject

@@ -14,7 +14,8 @@ import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 
 public class ArtifactSensor {
-  PredominantColorProcessor colorProcessor;
+  public static final String SORTER_SERVO_NAME = "sorterServo";
+  private PredominantColorProcessor colorProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry;

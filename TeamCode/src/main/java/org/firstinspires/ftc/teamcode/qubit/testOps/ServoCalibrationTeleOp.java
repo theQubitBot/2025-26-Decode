@@ -1,27 +1,30 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.qubit.core.ArtifactSensor;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
 public class ServoCalibrationTeleOp extends OpMode {
   // Declare OpMode members
-  private ElapsedTime runtime = null;
-  private ElapsedTime loopTime = null;
+  ElapsedTime runtime = null;
+  ElapsedTime loopTime = null;
   static final int CYCLE_MS = 50;           // period of each cycle
-  static final String SERVO_NAME = "";
-
-  Servo deliveryServo;
-  double deliveryPosition;
+  FtcServo aprilTagServo, sorterServo, leftTriggerServo, rightTriggerServo;
+  FtcServo currentServo;
+  double servoPosition;
+  String servoName;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -31,9 +34,34 @@ public class ServoCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(">", "Initializing, please wait...");
     telemetry.update();
-    deliveryServo = hardwareMap.get(Servo.class, "");
-    deliveryPosition = 0;
-    deliveryServo.setPosition(deliveryPosition);
+    aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, FtcAprilTag.APRIL_TAG_SERVO_NAME));
+    leftTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.LEFT_TRIGGER_SERVO_NAME));
+    rightTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.RIGHT_TRIGGER_SERVO_NAME));
+    sorterServo = new FtcServo(hardwareMap.get(Servo.class, ArtifactSensor.SORTER_SERVO_NAME));
+
+    if (aprilTagServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      aprilTagServo.getController().pwmEnable();
+    }
+
+    if (leftTriggerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      leftTriggerServo.getController().pwmEnable();
+    }
+
+    if (rightTriggerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      rightTriggerServo.getController().pwmEnable();
+    }
+
+    if (sorterServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      sorterServo.getController().pwmEnable();
+    }
+
+    servoPosition = FtcServo.MID_POSITION;
+    aprilTagServo.setPosition(servoPosition);
+    leftTriggerServo.setPosition(servoPosition);
+    rightTriggerServo.setPosition(servoPosition);
+    sorterServo.setPosition(servoPosition);
+    currentServo = aprilTagServo;
+    servoName = FtcAprilTag.APRIL_TAG_SERVO_NAME;
     FtcLogger.exit();
   }
 
@@ -68,29 +96,44 @@ public class ServoCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     // Show the elapsed game time and wheel power.
     loopTime.reset();
-    double position = 0;
-    Servo servo = null;
 
-    if (gamepad1.dpad_up) {
-      deliveryPosition += FtcServo.LARGE_INCREMENT;
-      servo = deliveryServo;
-      position = deliveryPosition;
-    } else if (gamepad1.dpad_down) {
-      deliveryPosition -= FtcServo.LARGE_INCREMENT;
-      servo = deliveryServo;
-      position = deliveryPosition;
+    if (gamepad1.yWasPressed() || gamepad2.yWasPressed()) {
+      currentServo = aprilTagServo;
+      servoName = FtcAprilTag.APRIL_TAG_SERVO_NAME;
+    } else if (gamepad1.xWasPressed() || gamepad2.xWasPressed()) {
+      currentServo = leftTriggerServo;
+      servoName = FtcCannon.LEFT_TRIGGER_SERVO_NAME;
+    } else if (gamepad1.bWasPressed() || gamepad2.bWasPressed()) {
+      currentServo = rightTriggerServo;
+      servoName = FtcCannon.RIGHT_TRIGGER_SERVO_NAME;
+    } else if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
+      currentServo = sorterServo;
+      servoName = ArtifactSensor.SORTER_SERVO_NAME;
     }
 
-    if (servo != null) {
-      position = Range.clip(position, Servo.MIN_POSITION, Servo.MAX_POSITION);
-      servo.setPosition(position);
+    if (gamepad1.dpad_up || gamepad2.dpad_up) {
+      servoPosition = currentServo.getPosition() + FtcServo.LARGE_INCREMENT;
+    } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
+      servoPosition = currentServo.getPosition() + FtcServo.SMALL_INCREMENT;
+    } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+      servoPosition = currentServo.getPosition() - FtcServo.LARGE_INCREMENT;
+    } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
+      servoPosition = currentServo.getPosition() - FtcServo.SMALL_INCREMENT;
     }
 
-    telemetry.addData("hand delivery", "dPad up/down");
-    telemetry.addData("hand fingers", "dPad left/right");
-    telemetry.addData("arm", "right trigger/bumper");
-    telemetry.addData("Position", "delivery %5.4f",
-        deliveryPosition);
+    if (currentServo != null) {
+      servoPosition = Range.clip(servoPosition, Servo.MIN_POSITION, Servo.MAX_POSITION);
+      currentServo.setPosition(servoPosition);
+    }
+
+    telemetry.addData("large increment/decrement", "dPad up/down");
+    telemetry.addData("small increment/decrement", "dPad left/right");
+    telemetry.addLine();
+    telemetry.addData("a", "artifact sensor servo");
+    telemetry.addData("x", "left trigger servo");
+    telemetry.addData("b", "right trigger servo");
+    telemetry.addData("y", "aprilTag servo");
+    telemetry.addData("Servo", "%s %5.4f", servoName, servoPosition);
     telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();

@@ -26,7 +26,7 @@ public class FtcBot extends FtcSubSystemBase {
   public ArtifactSensor artifactSensor = null;
   public FtcIntake intake = null;
   public FtcSorter sorter = null;
-  public FtcShooter shooter = null;
+  public FtcCannon cannon = null;
   public MatchConfig config = null;
   private Telemetry telemetry = null;
 
@@ -39,12 +39,12 @@ public class FtcBot extends FtcSubSystemBase {
     telemetryEnabled = false;
     if (trollBot == TrollBotEnum.TrollBotA) {
       driveTrain.telemetryEnabled = false;
-      //blinkinLed.telemetryEnabled = false;
+      blinkinLed.telemetryEnabled = false;
       //aprilTag.telemetryEnabled = false;
-      //artifactSensor.telemetryEnabled = false;
+      artifactSensor.telemetryEnabled = false;
       intake.telemetryEnabled = false;
-      //sorter.telemetryEnabled = false;
-      //shooter.telemetryEnabled = false;
+      sorter.telemetryEnabled = false;
+      cannon.telemetryEnabled = false;
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = false;
@@ -64,12 +64,12 @@ public class FtcBot extends FtcSubSystemBase {
     telemetryEnabled = true;
     if (trollBot == TrollBotEnum.TrollBotA) {
       driveTrain.telemetryEnabled = true;
-      //blinkinLed.telemetryEnabled = true;
+      blinkinLed.telemetryEnabled = true;
       //aprilTag.telemetryEnabled = true;
-      //artifactSensor.telemetryEnabled = true;
+      artifactSensor.telemetryEnabled = true;
       intake.telemetryEnabled = true;
-      //sorter.telemetryEnabled = true;
-      //shooter.telemetryEnabled = true;
+      sorter.telemetryEnabled = true;
+      cannon.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotD) {
@@ -101,7 +101,7 @@ public class FtcBot extends FtcSubSystemBase {
       bulkRead.init(hardwareMap, telemetry);
 
       blinkinLed = new FtcBlinkinLed(this);
-      //blinkinLed.init(hardwareMap, telemetry);
+      blinkinLed.init(hardwareMap, telemetry);
 
       config = new MatchConfig();
       config.init(hardwareMap, telemetry);
@@ -114,13 +114,16 @@ public class FtcBot extends FtcSubSystemBase {
       //aprilTag.init(hardwareMap, telemetry);
 
       artifactSensor = new ArtifactSensor();
-      //artifactSensor.init(hardwareMap, telemetry);
+      artifactSensor.init(hardwareMap, telemetry);
 
       intake = new FtcIntake(this);
       intake.init(hardwareMap, telemetry);
 
       sorter = new FtcSorter(this);
-      //sorter.init(hardwareMap, telemetry);
+      sorter.init(hardwareMap, telemetry);
+
+      cannon = new FtcCannon();
+      cannon.init(hardwareMap, telemetry);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);
@@ -167,11 +170,11 @@ public class FtcBot extends FtcSubSystemBase {
 
     bulkRead.clearBulkCache();
     if (trollBot == TrollBotEnum.TrollBotA) {
-      //blinkinLed.operate(gamePad1, gamePad2, runtime);
+      blinkinLed.operate(gamePad1, gamePad2, runtime);
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
       intake.operate(gamePad1, gamePad2, runtime);
-      //sorter.operate(gamePad1, gamePad2);
-      //shooter.operate(gamePad1, gamePad2);
+      sorter.operate(gamePad1, gamePad2);
+      cannon.operate(gamePad1, gamePad2);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
     } else if (trollBot == TrollBotEnum.TrollBotD) {
@@ -184,11 +187,11 @@ public class FtcBot extends FtcSubSystemBase {
 
     if (telemetryEnabled) {
       if (trollBot == TrollBotEnum.TrollBotA) {
-        //blinkinLed.showTelemetry();
+        blinkinLed.showTelemetry();
         intake.showTelemetry();
-        //sorter.showTelemetry();
-        //shooter.showTelemetry();
-        //showGamePadTelemetry(gamePad1);
+        sorter.showTelemetry();
+        cannon.showTelemetry();
+        showGamePadTelemetry(gamePad1);
         driveTrain.showTelemetry();
       } else if (trollBot == TrollBotEnum.TrollBotB) {
         showGamePadTelemetry(gamePad1);
@@ -232,12 +235,16 @@ public class FtcBot extends FtcSubSystemBase {
   public void start() {
     FtcLogger.enter();
     if (trollBot == TrollBotEnum.TrollBotA) {
+      if (blinkinLed != null) {
+        blinkinLed.start();
+      }
+
       if (aprilTag != null) {
         //aprilTag.start();
       }
 
       if (artifactSensor != null) {
-        //artifactSensor.start();
+        artifactSensor.start();
       }
 
       if (intake != null) {
@@ -245,11 +252,11 @@ public class FtcBot extends FtcSubSystemBase {
       }
 
       if (sorter != null) {
-        //sorter.start();
+        sorter.start();
       }
 
-      if (shooter != null) {
-        //shooter.start();
+      if (cannon != null) {
+        cannon.start();
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
@@ -267,7 +274,7 @@ public class FtcBot extends FtcSubSystemBase {
     FtcLogger.enter();
     if (trollBot == TrollBotEnum.TrollBotA) {
       if (blinkinLed != null) {
-        //blinkinLed.stop();
+        blinkinLed.stop();
       }
 
       if (driveTrain != null) {
@@ -279,7 +286,7 @@ public class FtcBot extends FtcSubSystemBase {
       }
 
       if (artifactSensor != null) {
-        //artifactSensor.stop();
+        artifactSensor.stop();
       }
 
       if (intake != null) {
@@ -287,11 +294,11 @@ public class FtcBot extends FtcSubSystemBase {
       }
 
       if (sorter != null) {
-        //sorter.stop();
+        sorter.stop();
       }
 
-      if (shooter != null) {
-        //shooter.stop();
+      if (cannon != null) {
+        cannon.stop();
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {

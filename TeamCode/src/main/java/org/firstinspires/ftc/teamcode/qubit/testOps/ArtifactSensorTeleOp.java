@@ -23,12 +23,11 @@ public class ArtifactSensorTeleOp extends OpMode {
     telemetry.addData(">", "Initializing, please wait...");
     telemetry.update();
 
-    FtcDashboard dashboard = FtcDashboard.getInstance();
-    telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-
     artifactSensor = new ArtifactSensor();
     artifactSensor.init(hardwareMap, telemetry);
 
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
     FtcLogger.exit();
   }
 

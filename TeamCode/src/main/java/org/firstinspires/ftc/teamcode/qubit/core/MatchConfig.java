@@ -21,7 +21,7 @@ import java.io.IOException;
 public class MatchConfig {
   private static final String TAG = "MatchConfig";
   public static final String MATCH_CONFIG_FILENAME = "matchConfig.txt";
-  private static final long MAX_START_DELAY_SECONDS = 10;
+  private static final long MAX_START_DELAY_SECONDS = 20;
   private boolean gamePad1Connected, gamePad2Connected;
   public boolean configIsComplete;
   private final boolean configFeatureEnabled = true;
@@ -189,8 +189,8 @@ public class MatchConfig {
   public void showMenu() {
     if (configFeatureEnabled) {
       telemetry.addData("Match Configuration Command Menu", "");
-      telemetry.addData("Bumper", "alliance color BLUE");
-      telemetry.addData("Trigger", "alliance color RED");
+      telemetry.addData("Bumper", "BLUE alliance");
+      telemetry.addData("Trigger", "RED alliance");
       telemetry.addData("dPad", "left: LARGE_TRIANGLE position, right: SMALL_TRIANGLE position");
       telemetry.addData("Start delay", "dPad up: increase, down: decrease");
     }

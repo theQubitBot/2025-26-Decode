@@ -12,7 +12,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 public class MultipleObjectDetectionPipeline extends OpenCvPipeline {
   private static final String TAG = "ModPipeline";
-  private OpenCvWebcam openCvWebcam = null;
+  private OpenCvWebcam openCvWebcam;
   private boolean annotateFrame = false;
 
   // Volatile because accessed by OpMode without syncObject

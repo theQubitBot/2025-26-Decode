@@ -18,10 +18,10 @@ import java.util.List;
  * A class to manage the robot drive train.
  * Note:  All hardware element names are camel case and have no spaces between words.
  * <p>
- * Motor:  Left  drive greenShooterMotor: "leftFrontMotor"
- * Motor:  Left  drive greenShooterMotor: "leftRearMotor"
- * Motor:  Right drive greenShooterMotor: "rightFrontMotor"
- * Motor:  Right drive greenShooterMotor: "rightRearMotor"
+ * Motor:  Left  front Motor: "leftFrontMotor"
+ * Motor:  Left  rear Motor: "leftRearMotor"
+ * Motor:  Right front Motor: "rightFrontMotor"
+ * Motor:  Right rear Motor: "rightRearMotor"
  */
 public class FtcDriveTrain extends FtcSubSystemBase {
   private static final String TAG = "FtcDriveTrain";
@@ -29,7 +29,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   public static final double MECANUM_POWER_BOOST_FACTOR = 1.00;
   public static final double MINIMUM_FORWARD_TELE_OP_POWER = 0.25;
 
-  // Ideally, you would find the min power value by incrementing greenShooterMotor power by 0.01
+  // Ideally, you would find the min power value by incrementing motor power by 0.01
   // and noting the min power at which the robot begins to move/turn.
   // Robot weight distribution would impact rotational inertia, which would impact
   // the turn value most.
@@ -41,7 +41,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   public static final double STEP1_FORWARD_POWER = FORWARD_SLO_MO_POWER;
   public static final double STEP2_FORWARD_POWER = 0.90;
 
-  // JITTER is ideally the minimum greenShooterMotor power to move a wheel when the robot is jacked up.
+  // JITTER is ideally the minimum motor power to move a wheel when the robot is jacked up.
   // Empirically, the minimum power would be the one to overcome internal friction.
   // So, if the joystick is jittery, we can safely ignore joystick values below this.
   // Must set this to at least 0.01 for trigonometry to work.
@@ -159,7 +159,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         activeMotors = allMotors;
       }
 
-      // Reset greenShooterMotor encoders
+      // Reset motor encoders
       for (FtcMotor motor : activeMotors) {
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
       }
@@ -204,7 +204,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     double xMagnitude = Math.abs(x);
     double powerMagnitude = Math.max(yMagnitude, xMagnitude);
     double maxWheelPower;
-    double joyStickHeading = 0;
+    double joyStickHeading;
 
     if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
       stop();
@@ -330,13 +330,13 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   }
 
   /**
-   * Increase/decrease greenShooterMotor power incrementally for a smooth acceleration/deceleration.
+   * Increase/decrease leftCannonMotor power incrementally for a smooth acceleration/deceleration.
    * Must call the method repeatedly (e.g. via tele Op).
    *
-   * @param leftFrontPower  Left front greenShooterMotor power
-   * @param leftRearPower   Left rear greenShooterMotor power
-   * @param rightFrontPower Right front greenShooterMotor power
-   * @param rightRearPower  Right rear greenShooterMotor power
+   * @param leftFrontPower  Left front motor power
+   * @param leftRearPower   Left rear motor power
+   * @param rightFrontPower Right front motor power
+   * @param rightRearPower  Right rear motor power
    * @param loopTime        The loopTime passed in by TeleOp that determines how fast the TeleOp
    *                        loop is executing. Shorter the loopTime, smaller the braking power step.
    */
@@ -362,8 +362,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    * Increases or decreases the power incrementally for a smooth acceleration/deceleration.
    * Must call the method repeatedly (e.g. via tele Op).
    *
-   * @param motor    The greenShooterMotor to set the power to.
-   * @param power    The power to set to the greenShooterMotor to.
+   * @param motor    The motor to set the power to.
+   * @param power    The power to set to the motor to.
    * @param loopTime The loopTime passed in by TeleOp that determines how fast the TeleOp loop
    *                 is executing. Shorter the loopTime, shorter the braking power step.
    */
@@ -425,18 +425,18 @@ public class FtcDriveTrain extends FtcSubSystemBase {
       if (driveTrainEnum == DriveTrainEnum.FRONT_WHEEL_DRIVE ||
           driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE ||
           driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
-        telemetry.addData("Left Front Motor", "power %.2f distance %d",
+        telemetry.addData("LF Motor", "pwr %.2f dist %d",
             leftFrontMotor.getPower(), leftFrontMotor.getCurrentPosition());
-        telemetry.addData("Right Front Motor", "power %.2f distance %d",
+        telemetry.addData("RF Motor", "pwr %.2f dist %d",
             rightFrontMotor.getPower(), rightFrontMotor.getCurrentPosition());
       }
 
       if (driveTrainEnum == DriveTrainEnum.REAR_WHEEL_DRIVE ||
           driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE ||
           driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
-        telemetry.addData("Left Rear Motor", "power %.2f distance %d",
+        telemetry.addData("LR Motor", "pwr %.2f dist %d",
             leftRearMotor.getPower(), leftRearMotor.getCurrentPosition());
-        telemetry.addData("Right Rear Motor", "power %.2f distance %d",
+        telemetry.addData("RR Motor", "pwr %.2f dist %d",
             rightRearMotor.getPower(), rightRearMotor.getCurrentPosition());
       }
 

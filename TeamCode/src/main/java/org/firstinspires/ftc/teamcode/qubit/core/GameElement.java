@@ -66,8 +66,8 @@ public class GameElement {
   public int attendanceCount() {
     int sum = 0;
     synchronized (attendanceRegister) {
-      for (int i = 0; i < attendanceRegister.length; i++) {
-        sum += attendanceRegister[i];
+      for (int j : attendanceRegister) {
+        sum += j;
       }
     }
 

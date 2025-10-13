@@ -19,12 +19,12 @@ public class FtcIntake extends FtcSubSystemBase {
   public static final String RIGHT_ROLLER_SERVO_NAME = "rightRollerServo";
   public static final String LEFT_SWEEPER_SERVO_NAME = "leftSweeperServo";
   public static final String RIGHT_SWEEPER_SERVO_NAME = "rightSweeperServo";
-  public static final double ROLLER_IN_POWER = 0.8000;
+  public static final double ROLLER_IN_POWER = 1.0000;
   public static final double ROLLER_OUT_POWER = 0.2000;
   public static final double SWEEPER_IN_POWER = 1.000;
   public static final double SWEEPER_OUT_POWER = 0.2000;
-  public static final double ROLLER_HOLD_POWER = 0.5500;
-  public static final double SWEEPER_HOLD_POWER = 0.5500;
+  public static final double ROLLER_HOLD_POWER = 0.5000;
+  public static final double SWEEPER_HOLD_POWER = 0.5000;
   public static final double INTAKE_STOP_POWER = FtcServo.MID_POSITION;
   public static final int ARTIFACT_INTAKE_TIME = 1000; // milliseconds
   public static final int ARTIFACT_OUTTAKE_TIME = 1000; // milliseconds
@@ -167,7 +167,7 @@ public class FtcIntake extends FtcSubSystemBase {
     FtcLogger.enter();
     if (intakeEnabled && telemetryEnabled) {
       if (leftRollerServo != null && rightRollerServo != null
-          && leftSweeperServo != null && rightSweeperServo != null ) {
+          && leftSweeperServo != null && rightSweeperServo != null) {
         telemetry.addData(TAG, String.format(Locale.US,
             "roller: %5.4f, %5.4f, sweeper: %5.4f, %5.4f",
             leftRollerServo.getPosition(), rightRollerServo.getPosition(),

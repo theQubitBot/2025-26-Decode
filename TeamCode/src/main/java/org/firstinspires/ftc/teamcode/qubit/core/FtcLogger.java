@@ -13,7 +13,7 @@ import java.util.Locale;
  */
 public final class FtcLogger {
   private static final String TAG = "FtcLogger";
-  private static ElapsedTime runtime = null;
+  private static ElapsedTime runtime;
 
   // PERFORMANCE
   // Set to false for official runs.

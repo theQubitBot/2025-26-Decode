@@ -66,8 +66,8 @@ public class SampleElement {
   public int attendanceCount() {
     int count = 0;
     synchronized (attendanceRegister) {
-      for (int i = 0; i < attendanceRegister.length; i++) {
-        count += attendanceRegister[i];
+      for (int j : attendanceRegister) {
+        count += j;
       }
     }
 

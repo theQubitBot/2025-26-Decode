@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import static org.firstinspires.ftc.teamcode.qubit.core.FtcUtils.sleep;
-
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 
 import java.util.Locale;
 
@@ -17,12 +16,14 @@ import java.util.Locale;
 public class FtcSorter extends FtcSubSystemBase {
   private static final String TAG = "FtcSorter";
   public static final String SORTER_SERVO_NAME = "sorterServo";
-
+  public static final double SORTER_GREEN_POSITION = 0.4910;
+  public static final double SORTER_PURPLE_POSITION = 0.4320;
+  public static final int SORTER_SERVO_MOVE_TIME = 200; // milliseconds
   private final boolean sorterEnabled = true;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
   public FtcServo sorterServo = null;
-  private FtcBot parent = null;
+  private final FtcBot parent;
 
   /* Constructor */
   public FtcSorter(FtcBot robot) {
@@ -60,13 +61,38 @@ public class FtcSorter extends FtcSubSystemBase {
   // Possibly - have merry-go-round operate completely autonomously? using diff. kinds of sensors
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     FtcLogger.enter();
-    if (sorterEnabled && sorterServo != null) {
+    if (parent != null && parent.artifactSensor != null) {
+      if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_GREEN) {
+        setGreen(false);
+      }
+      if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_PURPLE) {
+        setPurple(false);
+      }
     }
+
     FtcLogger.exit();
   }
 
+  public void setGreen(boolean waitTillCompletion) {
+    if (sorterEnabled && sorterServo != null) {
+      sorterServo.setPosition(SORTER_GREEN_POSITION);
+      if (waitTillCompletion) {
+        FtcUtils.sleep(SORTER_SERVO_MOVE_TIME);
+      }
+    }
+  }
+
+  public void setPurple(boolean waitTillCompletion) {
+    if (sorterEnabled && sorterServo != null) {
+      sorterServo.setPosition(SORTER_PURPLE_POSITION);
+      if (waitTillCompletion) {
+        FtcUtils.sleep(SORTER_SERVO_MOVE_TIME);
+      }
+    }
+  }
+
   /**
-   * Displays greenShooterMotor power telemetry. Helps with debugging.
+   * Displays motor power telemetry. Helps with debugging.
    */
   public void showTelemetry() {
     FtcLogger.enter();
@@ -82,8 +108,12 @@ public class FtcSorter extends FtcSubSystemBase {
    */
   public void start() {
     FtcLogger.enter();
+    if (sorterEnabled && sorterServo != null &&
+        sorterServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      sorterServo.getController().pwmEnable();
+    }
 
-    sleep(100);
+    setPurple(false);
     FtcLogger.exit();
   }
 
@@ -92,12 +122,6 @@ public class FtcSorter extends FtcSubSystemBase {
    */
   public void stop() {
     FtcLogger.enter();
-    if (sorterEnabled && sorterServo != null &&
-        sorterServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
-      sorterServo.setPosition(FtcServo.MID_POSITION);
-      sorterServo.getController().pwmDisable();
-    }
-
     FtcLogger.exit();
   }
 }
