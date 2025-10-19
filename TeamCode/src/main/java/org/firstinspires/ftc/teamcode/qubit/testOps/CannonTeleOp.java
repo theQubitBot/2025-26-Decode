@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcDriveTrain;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
@@ -28,6 +29,7 @@ public class CannonTeleOp extends OpMode {
   final double largeDeltaPower = 0.10;
   final double smallDeltaPower = 0.01;
 
+  FtcAprilTag aprilTag;
   FtcCannon cannon;
 
   /*
@@ -44,7 +46,11 @@ public class CannonTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
 
-    cannon = new FtcCannon();
+    aprilTag = new FtcAprilTag(null);
+    aprilTag.telemetryEnabled = true;
+    aprilTag.init(hardwareMap, telemetry);
+
+    cannon = new FtcCannon(null);
     cannon.telemetryEnabled = true;
     cannon.init(hardwareMap, telemetry);
 
@@ -71,6 +77,7 @@ public class CannonTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    aprilTag.start();
     cannon.start();
     FtcLogger.exit();
   }
@@ -112,10 +119,11 @@ public class CannonTeleOp extends OpMode {
       cannon.rightTriggerServo.setPosition(FtcCannon.RIGHT_TRIGGER_DOWN_POSITION);
     }
 
-    // Emit telemetry for graph plots in RoadRunner Dashboard
     telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Power %.2f", newMotorPower));
     telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Velocity %5.1f, %5.1f",
         cannon.leftCannonMotor.getVelocity(), cannon.rightCannonMotor.getVelocity()));
+    aprilTag.showTelemetry();
+
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();

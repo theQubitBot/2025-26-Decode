@@ -17,17 +17,17 @@ public class FtcBot extends FtcSubSystemBase {
   private static final String TAG = "FtcBot";
   private boolean telemetryEnabled = true;
   public final TrollBotEnum trollBot = TrollBotEnum.TrollBotA;
-  public FtcBulkRead bulkRead = null;
-  public FtcBlinkinLed blinkinLed = null;
-  public FtcDriveTrain driveTrain = null;
 
   // robot sub systems
   public FtcAprilTag aprilTag = null;
   public ArtifactSensor artifactSensor = null;
-  public FtcIntake intake = null;
-  public FtcSorter sorter = null;
+  public FtcBlinkinLed blinkinLed = null;
+  public FtcBulkRead bulkRead = null;
   public FtcCannon cannon = null;
   public MatchConfig config = null;
+  public FtcDriveTrain driveTrain = null;
+  public FtcIntake intake = null;
+  public FtcSorter sorter = null;
   private Telemetry telemetry = null;
 
   /* Constructor */
@@ -38,13 +38,13 @@ public class FtcBot extends FtcSubSystemBase {
     FtcLogger.enter();
     telemetryEnabled = false;
     if (trollBot == TrollBotEnum.TrollBotA) {
-      driveTrain.telemetryEnabled = false;
-      blinkinLed.telemetryEnabled = false;
       //aprilTag.telemetryEnabled = false;
       artifactSensor.telemetryEnabled = false;
+      blinkinLed.telemetryEnabled = false;
+      cannon.telemetryEnabled = false;
+      driveTrain.telemetryEnabled = false;
       intake.telemetryEnabled = false;
       sorter.telemetryEnabled = false;
-      cannon.telemetryEnabled = false;
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = false;
@@ -63,13 +63,13 @@ public class FtcBot extends FtcSubSystemBase {
     FtcLogger.enter();
     telemetryEnabled = true;
     if (trollBot == TrollBotEnum.TrollBotA) {
-      driveTrain.telemetryEnabled = true;
-      blinkinLed.telemetryEnabled = true;
       //aprilTag.telemetryEnabled = true;
       artifactSensor.telemetryEnabled = true;
+      blinkinLed.telemetryEnabled = true;
+      cannon.telemetryEnabled = true;
+      driveTrain.telemetryEnabled = true;
       intake.telemetryEnabled = true;
       sorter.telemetryEnabled = true;
-      cannon.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.telemetryEnabled = true;
     } else if (trollBot == TrollBotEnum.TrollBotD) {
@@ -88,20 +88,28 @@ public class FtcBot extends FtcSubSystemBase {
    *
    * @param hardwareMap The hardware map to use for initialization.
    * @param telemetry   The telemetry to use.
-   * @param autoOp      If true, initializes the webcams. Otherwise initializes only IMU.
-   *                    Typically you would save on processing by not initializing the webcams or IMU
-   *                    unnecessarily
+   * @param autoOp      If true, initializes subsystems and takes other actions that make sense only
+   *                    in autoOp. You may save on processing or not move servos during teleOp init.
    */
   public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
 
     if (trollBot == TrollBotEnum.TrollBotA) {
-      bulkRead = new FtcBulkRead();
-      bulkRead.init(hardwareMap, telemetry);
+      aprilTag = new FtcAprilTag(this);
+      //aprilTag.init(hardwareMap, telemetry);
+
+      artifactSensor = new ArtifactSensor();
+      artifactSensor.init(hardwareMap, telemetry);
 
       blinkinLed = new FtcBlinkinLed(this);
       blinkinLed.init(hardwareMap, telemetry);
+
+      bulkRead = new FtcBulkRead();
+      bulkRead.init(hardwareMap, telemetry);
+
+      cannon = new FtcCannon(this);
+      cannon.init(hardwareMap, telemetry);
 
       config = new MatchConfig();
       config.init(hardwareMap, telemetry);
@@ -110,20 +118,11 @@ public class FtcBot extends FtcSubSystemBase {
       driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
       driveTrain.init(hardwareMap, telemetry);
 
-      aprilTag = new FtcAprilTag(this);
-      //aprilTag.init(hardwareMap, telemetry);
-
-      artifactSensor = new ArtifactSensor();
-      artifactSensor.init(hardwareMap, telemetry);
-
-      intake = new FtcIntake(this);
+      intake = new FtcIntake();
       intake.init(hardwareMap, telemetry);
 
       sorter = new FtcSorter(this);
       sorter.init(hardwareMap, telemetry);
-
-      cannon = new FtcCannon();
-      cannon.init(hardwareMap, telemetry);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);
@@ -235,16 +234,20 @@ public class FtcBot extends FtcSubSystemBase {
   public void start() {
     FtcLogger.enter();
     if (trollBot == TrollBotEnum.TrollBotA) {
-      if (blinkinLed != null) {
-        blinkinLed.start();
-      }
-
       if (aprilTag != null) {
-        //aprilTag.start();
+        aprilTag.start();
       }
 
       if (artifactSensor != null) {
         artifactSensor.start();
+      }
+
+      if (blinkinLed != null) {
+        blinkinLed.start();
+      }
+
+      if (cannon != null) {
+        cannon.start();
       }
 
       if (intake != null) {
@@ -253,10 +256,6 @@ public class FtcBot extends FtcSubSystemBase {
 
       if (sorter != null) {
         sorter.start();
-      }
-
-      if (cannon != null) {
-        cannon.start();
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {
@@ -282,7 +281,7 @@ public class FtcBot extends FtcSubSystemBase {
       }
 
       if (aprilTag != null) {
-        //aprilTag.stop();
+        aprilTag.stop();
       }
 
       if (artifactSensor != null) {

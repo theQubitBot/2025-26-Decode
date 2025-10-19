@@ -32,15 +32,10 @@ public class FtcIntake extends FtcSubSystemBase {
   private final boolean intakeEnabled = true;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
-  private final FtcBot parent;
   private FtcServo leftRollerServo = null;
   private FtcServo rightRollerServo = null;
   private FtcServo leftSweeperServo = null;
   private FtcServo rightSweeperServo = null;
-
-  public FtcIntake(FtcBot robot) {
-    parent = robot;
-  }
 
   /**
    * Initialize standard Hardware interfaces.
@@ -95,7 +90,7 @@ public class FtcIntake extends FtcSubSystemBase {
   }
 
   /**
-   * Spin slowly inwards to hold the sample.
+   * Spin slowly inwards to hold the artifact.
    */
   public void spinHold() {
     FtcLogger.enter();
@@ -110,7 +105,7 @@ public class FtcIntake extends FtcSubSystemBase {
   }
 
   /**
-   * Spin inwards to intake the sample.
+   * Spin inwards to intake the artifact.
    */
   public void spinIn(boolean waitTillCompletion) {
     FtcLogger.enter();
@@ -128,7 +123,7 @@ public class FtcIntake extends FtcSubSystemBase {
   }
 
   /**
-   * Spin outwards to outtake the sample.
+   * Spin outwards to outtake the artifact.
    */
   public void spinOut(boolean waitTillCompletion) {
     FtcLogger.enter();
@@ -184,24 +179,36 @@ public class FtcIntake extends FtcSubSystemBase {
   public void start() {
     FtcLogger.enter();
     if (intakeEnabled) {
-      if (leftRollerServo != null &&
-          leftRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        leftRollerServo.getController().pwmEnable();
+      if (leftRollerServo != null) {
+        if (leftRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+          leftRollerServo.getController().pwmEnable();
+        }
+
+        leftRollerServo.setPosition(INTAKE_STOP_POWER);
       }
 
-      if (rightRollerServo != null &&
-          rightRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        rightRollerServo.getController().pwmEnable();
+      if (rightRollerServo != null) {
+        if (rightRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+          rightRollerServo.getController().pwmEnable();
+        }
+
+        rightRollerServo.setPosition(INTAKE_STOP_POWER);
       }
 
-      if (leftSweeperServo != null &&
-          leftSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        leftSweeperServo.getController().pwmEnable();
+      if (leftSweeperServo != null) {
+        if (leftSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+          leftSweeperServo.getController().pwmEnable();
+        }
+
+        leftSweeperServo.setPosition(INTAKE_STOP_POWER);
       }
 
-      if (rightSweeperServo != null &&
-          rightSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        rightSweeperServo.getController().pwmEnable();
+      if (rightSweeperServo != null) {
+        if (rightSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+          rightSweeperServo.getController().pwmEnable();
+        }
+
+        rightSweeperServo.setPosition(INTAKE_STOP_POWER);
       }
 
       spinStop();
@@ -216,28 +223,20 @@ public class FtcIntake extends FtcSubSystemBase {
   public void stop() {
     FtcLogger.enter();
     if (intakeEnabled) {
-      if (leftRollerServo != null &&
-          leftRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+      if (leftRollerServo != null) {
         leftRollerServo.setPosition(INTAKE_STOP_POWER);
-        leftRollerServo.getController().pwmDisable();
       }
 
-      if (rightRollerServo != null &&
-          rightRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+      if (rightRollerServo != null) {
         rightRollerServo.setPosition(INTAKE_STOP_POWER);
-        rightRollerServo.getController().pwmDisable();
       }
 
-      if (leftSweeperServo != null &&
-          leftSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+      if (leftSweeperServo != null) {
         leftSweeperServo.setPosition(INTAKE_STOP_POWER);
-        leftSweeperServo.getController().pwmDisable();
       }
 
-      if (rightSweeperServo != null &&
-          rightSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.DISABLED) {
+      if (rightSweeperServo != null) {
         rightSweeperServo.setPosition(INTAKE_STOP_POWER);
-        rightSweeperServo.getController().pwmDisable();
       }
     }
 

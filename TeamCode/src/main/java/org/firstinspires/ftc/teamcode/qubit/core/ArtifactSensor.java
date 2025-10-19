@@ -13,8 +13,10 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 
+/**
+ * A camera based artifact sensor.
+ */
 public class ArtifactSensor {
-  public static final String SORTER_SERVO_NAME = "sorterServo";
   private PredominantColorProcessor colorProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;
@@ -38,21 +40,21 @@ public class ArtifactSensor {
     visionPortal = new VisionPortal.Builder()
         .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME))
         .setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT))
-        .enableLiveView(true)
+        .enableLiveView(FtcUtils.DEBUG)
         .setStreamFormat(VisionPortal.StreamFormat.YUY2)
         .setAutoStopLiveView(true)
         .addProcessor(colorProcessor)
         .build();
 
     if (FtcUtils.DEBUG) {
+      visionPortal.resumeLiveView();
       FtcDashboard dashboard = FtcDashboard.getInstance();
       if (dashboard != null) {
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        this.telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         dashboard.startCameraStream(visionPortal, 0);
       }
-
-      telemetry.setMsTransmissionInterval(100);  // Speed up telemetry updates, for debugging.
-      telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+    } else {
+      visionPortal.stopLiveView();
     }
   }
 
@@ -66,7 +68,7 @@ public class ArtifactSensor {
   }
 
   /**
-   * Function to add telemetry about AprilTag detections.
+   * Function to add telemetry about Artifact detection.
    */
   @SuppressLint("DefaultLocale")
   public void showTelemetry() {
@@ -91,7 +93,7 @@ public class ArtifactSensor {
   }
 
   /**
-   * Stops the object detection processing.
+   * Stops artifact detection processing.
    */
   public void stop() {
     FtcLogger.enter();

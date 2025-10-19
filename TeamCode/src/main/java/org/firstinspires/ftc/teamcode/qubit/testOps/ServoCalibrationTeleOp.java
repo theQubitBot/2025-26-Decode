@@ -7,11 +7,11 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.ArtifactSensor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcSorter;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
 //@Disabled
@@ -21,6 +21,7 @@ public class ServoCalibrationTeleOp extends OpMode {
   ElapsedTime runtime = null;
   ElapsedTime loopTime = null;
   static final int CYCLE_MS = 50;           // period of each cycle
+  FtcAprilTag aprilTag;
   FtcServo aprilTagServo, sorterServo, leftTriggerServo, rightTriggerServo;
   FtcServo currentServo;
   double servoPosition;
@@ -34,10 +35,13 @@ public class ServoCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(">", "Initializing, please wait...");
     telemetry.update();
+    aprilTag = new FtcAprilTag(null);
+    aprilTag.init(hardwareMap, telemetry);
+
     aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, FtcAprilTag.APRIL_TAG_SERVO_NAME));
     leftTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.LEFT_TRIGGER_SERVO_NAME));
     rightTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.RIGHT_TRIGGER_SERVO_NAME));
-    sorterServo = new FtcServo(hardwareMap.get(Servo.class, ArtifactSensor.SORTER_SERVO_NAME));
+    sorterServo = new FtcServo(hardwareMap.get(Servo.class, FtcSorter.SORTER_SERVO_NAME));
 
     if (aprilTagServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
       aprilTagServo.getController().pwmEnable();
@@ -108,7 +112,7 @@ public class ServoCalibrationTeleOp extends OpMode {
       servoName = FtcCannon.RIGHT_TRIGGER_SERVO_NAME;
     } else if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
       currentServo = sorterServo;
-      servoName = ArtifactSensor.SORTER_SERVO_NAME;
+      servoName = FtcSorter.SORTER_SERVO_NAME;
     }
 
     if (gamepad1.dpad_up || gamepad2.dpad_up) {

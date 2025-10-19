@@ -13,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
@@ -26,9 +27,11 @@ import java.util.List;
 public class FtcAprilTag {
   static final String TAG = "FtcAprilTag";
   public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
-  public static final double OBELISK_BLUE_POSITION = 0.5335;
-  public static final double OBELISK_RED_POSITION = 0.4705;
-  public static final double GOAL_POSITION = 0.50;
+  public static final double OBELISK_BLUE_ALLIANCE_LARGE_TRIANGLE_POSITION = 0.5365;
+  public static final double OBELISK_BLUE_ALLIANCE_SMALL_TRIANGLE_POSITION = 0.5050;
+  public static final double OBELISK_RED_ALLIANCE_LARGE_TRIANGLE_POSITION = 0.4465;
+  public static final double OBELISK_RED_ALLIANCE_SMALL_TRIANGLE_POSITION = 0.4780;
+  public static final double GOAL_POSITION = 0.4915;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;
@@ -55,9 +58,8 @@ public class FtcAprilTag {
     if (detections != null && !detections.isEmpty() && parent != null && parent.config != null) {
       for (AprilTagDetection detection : detections) {
         if (detection.metadata != null) {
-          if (parent.config.allianceColor == AllianceColorEnum.BLUE && detection.id == 20) {
-            range = detection.ftcPose.range;
-          } else if (parent.config.allianceColor == AllianceColorEnum.RED && detection.id == 24) {
+          if ((parent.config.allianceColor == AllianceColorEnum.BLUE && detection.id == 20) ||
+              (parent.config.allianceColor == AllianceColorEnum.RED && detection.id == 24)) {
             range = detection.ftcPose.range;
           }
         }
@@ -68,7 +70,7 @@ public class FtcAprilTag {
   }
 
   /**
-   * Initialize the object detection processor.
+   * Initialize the AprilTag detection processor.
    */
   public void init(HardwareMap hardwareMap, Telemetry telemetry) {
     FtcLogger.enter();
@@ -85,13 +87,12 @@ public class FtcAprilTag {
         .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
         .setTagLibrary(AprilTagGameDatabase.getDecodeTagLibrary())
         .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-        //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
         .build();
 
     visionPortal = new VisionPortal.Builder()
         .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_2_NAME))
         .setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT))
-        .enableLiveView(true)
+        .enableLiveView(FtcUtils.DEBUG)
         .setStreamFormat(VisionPortal.StreamFormat.YUY2)
         .setAutoStopLiveView(true)
         .addProcessor(aprilTagProcessor)
@@ -101,14 +102,14 @@ public class FtcAprilTag {
     aprilTagServo.setDirection(Servo.Direction.FORWARD);
 
     if (FtcUtils.DEBUG) {
+      visionPortal.resumeLiveView();
       FtcDashboard dashboard = FtcDashboard.getInstance();
       if (dashboard != null) {
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        this.telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         dashboard.startCameraStream(visionPortal, 0);
       }
-
-      telemetry.setMsTransmissionInterval(100);  // Speed up telemetry updates, for debugging.
-      telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+    } else {
+      visionPortal.stopLiveView();
     }
 
     FtcLogger.exit();
@@ -117,9 +118,17 @@ public class FtcAprilTag {
   public void pointAtObelisk() {
     if (parent != null && parent.config != null) {
       if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
-        aprilTagServo.setPosition(OBELISK_BLUE_POSITION);
+        if (parent.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
+          aprilTagServo.setPosition(OBELISK_BLUE_ALLIANCE_LARGE_TRIANGLE_POSITION);
+        } else {
+          aprilTagServo.setPosition(OBELISK_BLUE_ALLIANCE_SMALL_TRIANGLE_POSITION);
+        }
       } else if (parent.config.allianceColor == AllianceColorEnum.RED) {
-        aprilTagServo.setPosition(OBELISK_RED_POSITION);
+        if (parent.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
+          aprilTagServo.setPosition(OBELISK_RED_ALLIANCE_LARGE_TRIANGLE_POSITION);
+        } else {
+          aprilTagServo.setPosition(OBELISK_RED_ALLIANCE_SMALL_TRIANGLE_POSITION);
+        }
       }
     }
   }
@@ -131,8 +140,16 @@ public class FtcAprilTag {
   public void showTelemetry() {
     FtcLogger.enter();
     if (telemetryEnabled && aprilTagProcessor != null) {
+      double position = aprilTagServo.getPosition();
+      telemetry.addData(TAG, "Servo %5.4f (%s)",
+          position,
+          position == OBELISK_BLUE_ALLIANCE_LARGE_TRIANGLE_POSITION ? "Blue large" :
+              position == OBELISK_BLUE_ALLIANCE_SMALL_TRIANGLE_POSITION ? "Blue small" :
+                  position == OBELISK_RED_ALLIANCE_LARGE_TRIANGLE_POSITION ? "Red large" :
+                      position == OBELISK_RED_ALLIANCE_SMALL_TRIANGLE_POSITION ? "Red small" :
+                          position == GOAL_POSITION ? "Goal" : "Unknown");
       List<AprilTagDetection> aprilTagDetections = getAllDetections();
-      telemetry.addData("# AprilTags Detected", aprilTagDetections.size());
+      telemetry.addData("AprilTags count", aprilTagDetections.size());
 
       // Step through the list of detections and set info for each one.
       for (AprilTagDetection detection : aprilTagDetections) {
@@ -178,7 +195,7 @@ public class FtcAprilTag {
   }
 
   /**
-   * Stops the tag detection processing.
+   * Stops the April Tag detection processing.
    */
   public void stop() {
     FtcLogger.enter();

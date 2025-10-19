@@ -11,13 +11,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.Locale;
 
 /**
- * A class to manage the spinning wheel.
+ * A class to manage the cannon.
  */
 public class FtcCannon extends FtcSubSystemBase {
   private static final String TAG = "FtcCannon";
   public static final String LEFT_CANNON_MOTOR_NAME = "leftCannonMotor";
   public static final String RIGHT_CANNON_MOTOR_NAME = "rightCannonMotor";
-  public static final double LEFT_CANNON_FIRE_POWER = 0.75;
+  public static final double LEFT_CANNON_FIRE_POWER = 0.65;
   public static final double RIGHT_CANNON_FIRE_POWER = 0.75;
   public static final String LEFT_TRIGGER_SERVO_NAME = "leftTriggerServo";
   public static final String RIGHT_TRIGGER_SERVO_NAME = "rightTriggerServo";
@@ -29,11 +29,47 @@ public class FtcCannon extends FtcSubSystemBase {
   private final boolean cannonEnabled = true;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
+  private final FtcBot parent;
   public FtcMotor leftCannonMotor = null, rightCannonMotor = null;
   public FtcServo leftTriggerServo = null, rightTriggerServo = null;
 
+  private final double[][] powerMap = {
+      {Double.MIN_VALUE, 0.0},
+      {10.0, 0.45},
+      {55.3, 0.45}, // 1200
+      {62.1, 0.44}, // 1140
+      {69.5, 0.44}, // 1140
+      {77.2, 0.45}, // 1180
+      {85.0, 0.45}, // 1180
+      {92.4, 0.48}, // 1260
+      {101.7, 0.50}, // 1280
+      {113.7, 0.55}, // 1360
+      {Double.MAX_VALUE, 0.0}
+  };
+
   /* Constructor */
-  public FtcCannon() {
+  public FtcCannon(FtcBot robot) {
+    parent = robot;
+  }
+
+  /**
+   * Finds the closest matching power for the given distance.
+   *
+   * @param distance The distance to the goal april tag.
+   * @return Power for the cannon motors.
+   */
+  private Double getClosestPower(double distance) {
+    double minDifference = Math.abs(distance - powerMap[0][0]);
+    double power = powerMap[0][1];
+    for (int i = 1; i < powerMap.length; i++) {
+      double currentDifference = Math.abs(distance - powerMap[i][0]);
+      if (currentDifference < minDifference) {
+        minDifference = currentDifference;
+        power = powerMap[i][1];
+      }
+    }
+
+    return power;
   }
 
   /**
@@ -49,22 +85,18 @@ public class FtcCannon extends FtcSubSystemBase {
       leftCannonMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, LEFT_CANNON_MOTOR_NAME));
       leftCannonMotor.setDirection(DcMotorEx.Direction.FORWARD);
       leftCannonMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-      leftCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-      leftCannonMotor.setPower(FtcMotor.ZERO_POWER);
+      leftCannonMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
       rightCannonMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, RIGHT_CANNON_MOTOR_NAME));
       rightCannonMotor.setDirection(DcMotorEx.Direction.REVERSE);
       rightCannonMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-      rightCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-      rightCannonMotor.setPower(FtcMotor.ZERO_POWER);
+      rightCannonMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
       leftTriggerServo = new FtcServo(hardwareMap.get(Servo.class, LEFT_TRIGGER_SERVO_NAME));
       leftTriggerServo.setDirection(Servo.Direction.FORWARD);
-      leftTriggerServo.setPosition(LEFT_TRIGGER_DOWN_POSITION);
 
       rightTriggerServo = new FtcServo(hardwareMap.get(Servo.class, RIGHT_TRIGGER_SERVO_NAME));
       rightTriggerServo.setDirection(Servo.Direction.FORWARD);
-      rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
 
       showTelemetry();
       telemetry.addData(TAG, "initialized");
@@ -76,41 +108,55 @@ public class FtcCannon extends FtcSubSystemBase {
   }
 
   /**
-   * Operates the wheel using the gamePads.
+   * Operates the cannon using the gamePads.
    *
    * @param gamePad1 The first gamePad to use.
    * @param gamePad2 The second gamePad to use.
    */
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     if (cannonEnabled && leftCannonMotor != null && rightCannonMotor != null) {
-      if (gamePad1.right_trigger >= 0.5) {
-        leftCannonMotor.setPower(LEFT_CANNON_FIRE_POWER);
-        rightCannonMotor.setPower(RIGHT_CANNON_FIRE_POWER);
+      double power = 0.0;
+      if (gamePad1.right_trigger > 0.05 || gamePad2.right_trigger > 0.05) {
+        if (parent != null && parent.aprilTag != null) {
+          power = getClosestPower(parent.aprilTag.getGoalRange());
+        } else {
+          power = Math.abs(Math.max(gamePad1.right_trigger, gamePad2.right_trigger));
+        }
+      } else if (gamePad1.y || gamePad2.y) {
+        power = 0.45;
+      } else if (gamePad1.a || gamePad2.a) {
+        power = 0.55;
       } else {
-        leftCannonMotor.setPower(FtcMotor.ZERO_POWER);
-        rightCannonMotor.setPower(FtcMotor.ZERO_POWER);
+        power = FtcMotor.ZERO_POWER;
       }
 
-      if (gamePad1.xWasPressed()) {
+      leftCannonMotor.setPower(power);
+      rightCannonMotor.setPower(power);
+
+      if (gamePad1.xWasPressed() || gamePad2.xWasPressed()) {
         leftTriggerServo.setPosition(LEFT_TRIGGER_UP_POSITION);
-      } else if (gamePad1.xWasReleased()) {
+      } else if (gamePad1.xWasReleased() || gamePad2.xWasReleased()) {
         leftTriggerServo.setPosition(LEFT_TRIGGER_DOWN_POSITION);
-      } else if (gamePad1.bWasPressed()) {
+      } else if (gamePad1.bWasPressed() || gamePad2.bWasPressed()) {
         rightTriggerServo.setPosition(RIGHT_TRIGGER_UP_POSITION);
-      } else if (gamePad1.bWasReleased()) {
+      } else if (gamePad1.bWasReleased() || gamePad2.bWasReleased()) {
         rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
       }
     }
   }
 
   /**
-   * Displays wheel servo telemetry. Helps with debugging.
+   * Displays cannon telemetry. Helps with debugging.
    */
   public void showTelemetry() {
     FtcLogger.enter();
     if (cannonEnabled && telemetryEnabled && leftCannonMotor != null && rightCannonMotor != null) {
-      telemetry.addData(TAG, String.format(Locale.US, "Left: %2.1f, Right: %2.1f",
-          leftCannonMotor.getPower(), rightCannonMotor.getPower()));
+      telemetry.addData(TAG, String.format(Locale.US, "Left: %2.1f (%4.0f), Right: %2.1f (%4.0f)",
+          leftCannonMotor.getPower(), leftCannonMotor.getVelocity(),
+          rightCannonMotor.getPower(), rightCannonMotor.getVelocity()));
+      telemetry.addData(TAG, String.format(Locale.US, "Left: %s, Right: %s",
+          leftTriggerServo.getPosition() == LEFT_TRIGGER_UP_POSITION ? "Up" : "Down",
+          rightTriggerServo.getPosition() == RIGHT_TRIGGER_UP_POSITION ? "Up" : "Down"));
     }
 
     FtcLogger.exit();
@@ -122,14 +168,28 @@ public class FtcCannon extends FtcSubSystemBase {
   public void start() {
     FtcLogger.enter();
     if (cannonEnabled) {
-      if (leftTriggerServo != null &&
-          leftTriggerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        leftTriggerServo.getController().pwmEnable();
+      if (leftCannonMotor != null) {
+        leftCannonMotor.setPower(FtcMotor.ZERO_POWER);
       }
 
-      if (rightTriggerServo != null &&
-          rightTriggerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-        rightTriggerServo.getController().pwmEnable();
+      if (rightCannonMotor != null) {
+        rightCannonMotor.setPower(FtcMotor.ZERO_POWER);
+      }
+
+      if (leftTriggerServo != null) {
+        if (leftTriggerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+          leftTriggerServo.getController().pwmEnable();
+        }
+
+        leftTriggerServo.setPosition(LEFT_TRIGGER_DOWN_POSITION);
+      }
+
+      if (rightTriggerServo != null) {
+        if (rightTriggerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+          rightTriggerServo.getController().pwmEnable();
+        }
+
+        rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
       }
     }
 
@@ -137,15 +197,26 @@ public class FtcCannon extends FtcSubSystemBase {
   }
 
   /**
-   * Stops the wheel.
+   * Stops the cannon.
    */
   public void stop() {
     FtcLogger.enter();
     if (cannonEnabled) {
-      leftCannonMotor.setPower(FtcMotor.ZERO_POWER);
-      rightCannonMotor.setPower(FtcMotor.ZERO_POWER);
-      leftTriggerServo.setPosition(LEFT_TRIGGER_DOWN_POSITION);
-      rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
+      if (leftCannonMotor != null) {
+        leftCannonMotor.setPower(FtcMotor.ZERO_POWER);
+      }
+
+      if (rightCannonMotor != null) {
+        rightCannonMotor.setPower(FtcMotor.ZERO_POWER);
+      }
+
+      if (leftTriggerServo != null) {
+        leftTriggerServo.setPosition(LEFT_TRIGGER_DOWN_POSITION);
+      }
+
+      if (rightTriggerServo != null) {
+        rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
+      }
     }
 
     FtcLogger.exit();

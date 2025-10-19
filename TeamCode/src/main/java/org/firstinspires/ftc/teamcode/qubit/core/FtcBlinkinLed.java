@@ -24,7 +24,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   // Start with LED strip being off.
   private BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.BLACK;
   private Telemetry telemetry;
-  private FtcBot parent;
+  private final FtcBot parent;
 
   public FtcBlinkinLed(FtcBot robot) {
     parent = robot;
@@ -47,6 +47,13 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
     }
   }
 
+  /**
+   * Set a LED pattern based on gameplay conditions.
+   *
+   * @param gamePad1 Gamepad1 to use.
+   * @param gamePad2 Gamepad2 to use.
+   * @param runtime  The cumulative time game has been running.
+   */
   public void operate(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
     FtcLogger.enter();
     if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {

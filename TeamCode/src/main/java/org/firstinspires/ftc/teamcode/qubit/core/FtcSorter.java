@@ -11,7 +11,7 @@ import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 import java.util.Locale;
 
 /**
- * A class to manage the spinning wheel.
+ * A class to manage the artifact sorter.
  */
 public class FtcSorter extends FtcSubSystemBase {
   private static final String TAG = "FtcSorter";
@@ -52,13 +52,12 @@ public class FtcSorter extends FtcSubSystemBase {
   }
 
   /**
-   * Operates the merry-go-round using the gamePads.
+   * Operates the sorter automatically using artifact sensor.
    *
-   * @param gamePad1 The first gamePad to use.
-   * @param gamePad2 The second gamePad to use.
+   * @param gamePad1 Not used.
+   * @param gamePad2 Not used.
    */
 
-  // Possibly - have merry-go-round operate completely autonomously? using diff. kinds of sensors
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     FtcLogger.enter();
     if (parent != null && parent.artifactSensor != null) {
@@ -73,6 +72,11 @@ public class FtcSorter extends FtcSubSystemBase {
     FtcLogger.exit();
   }
 
+  /**
+   * Sets the sorter to the green barrel.
+   *
+   * @param waitTillCompletion When True, waits for sorter to complete the movement.
+   */
   public void setGreen(boolean waitTillCompletion) {
     if (sorterEnabled && sorterServo != null) {
       sorterServo.setPosition(SORTER_GREEN_POSITION);
@@ -82,6 +86,11 @@ public class FtcSorter extends FtcSubSystemBase {
     }
   }
 
+  /**
+   * Sets the sorter to the purple barrel.
+   *
+   * @param waitTillCompletion When True, waits for sorter to complete the movement.
+   */
   public void setPurple(boolean waitTillCompletion) {
     if (sorterEnabled && sorterServo != null) {
       sorterServo.setPosition(SORTER_PURPLE_POSITION);
@@ -92,12 +101,14 @@ public class FtcSorter extends FtcSubSystemBase {
   }
 
   /**
-   * Displays motor power telemetry. Helps with debugging.
+   * Displays sorter telemetry. Helps with debugging.
    */
   public void showTelemetry() {
     FtcLogger.enter();
     if (sorterEnabled && telemetryEnabled) {
-      telemetry.addData(TAG, String.format(Locale.US, "%5.4f", sorterServo.getPosition()));
+      telemetry.addData(TAG, String.format(Locale.US, "%5.4f (%s)",
+          sorterServo.getPosition(),
+          sorterServo.getPosition() == SORTER_GREEN_POSITION ? "Green" : "Purple"));
     }
 
     FtcLogger.exit();
@@ -108,17 +119,19 @@ public class FtcSorter extends FtcSubSystemBase {
    */
   public void start() {
     FtcLogger.enter();
-    if (sorterEnabled && sorterServo != null &&
-        sorterServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      sorterServo.getController().pwmEnable();
+    if (sorterEnabled && sorterServo != null) {
+      if (sorterServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        sorterServo.getController().pwmEnable();
+      }
+
+      setPurple(false);
     }
 
-    setPurple(false);
     FtcLogger.exit();
   }
 
   /**
-   * Stops the merry-go-round mechanism.
+   * Stops the sorter.
    */
   public void stop() {
     FtcLogger.enter();

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.qubit.testOps;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 
 import java.util.Locale;
 
-//@Disabled
+@Disabled
 @TeleOp(group = "TestOp")
 public class DriveFrictionTeleOp extends OpMode {
   // Declare OpMode members
@@ -43,7 +44,7 @@ public class DriveFrictionTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
     FtcBot robot = new FtcBot();
-    robot.init(hardwareMap, telemetry);
+    robot.init(hardwareMap, telemetry, false);
     driveTrain = robot.driveTrain;
     driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
     driveTrain.init(hardwareMap, telemetry);

@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
     <Webcam name="Webcam 1" serialNumber="B3941B40" />
+    <Webcam name="Webcam 2" serialNumber="16E01580" />
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
             <goBILDA5202SeriesMotor name="rightFrontMotor" port="0" />
@@ -21,7 +22,7 @@
             <Servo name="leftRollerServo" port="2" />
             <Servo name="sorterServo" port="4" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
-            <goBILDAPinpoint name="pinpointDriver" port="0" bus="1" />
+            <goBILDAPinpoint name="pinpointDriver" port="0" bus="3" />
         </LynxModule>
     </LynxUsbDevice>
 </Robot>
