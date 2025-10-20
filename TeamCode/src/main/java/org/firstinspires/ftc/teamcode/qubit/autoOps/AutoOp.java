@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode.qubit.autoOps;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -12,17 +11,19 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 
-@Disabled
 @Autonomous(group = "Official", preselectTeleOp = "DriverTeleOp")
 public class AutoOp extends LinearOpMode {
   private ElapsedTime runtime = null;
   FtcBot robot = null;
   Follower follower;
   OptionBase optionBase;
-  OptionLeft optionLeft;
-  OptionRight optionRight;
+  OptionBlueLargeTriangle optionBlueLargeTriangle;
+  OptionBlueSmallTriangle optionBlueSmallTriangle;
+  OptionRedLargeTriangle optionRedLargeTriangle;
+  OptionRedSmallTriangle optionRedSmallTriangle;
 
   @Override
   public void runOpMode() {
@@ -46,10 +47,7 @@ public class AutoOp extends LinearOpMode {
     robot = new FtcBot();
     robot.init(hardwareMap, telemetry, true);
     robot.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.BLACK);
-    robot.intake.spinStop();
-    if (robot.config.robotPosition == RobotPositionEnum.SMALL_TRIANGLE) {
-    } else {
-    }
+    robot.aprilTag.pointAtObelisk();
 
     if (FtcUtils.DEBUG) {
       robot.enableTelemetry();
@@ -62,12 +60,31 @@ public class AutoOp extends LinearOpMode {
     // Must initialize this after robot.driveTrain initialization since driveTrain
     // sets the motors to run without encoders.
     follower = Constants.createFollower(hardwareMap);
-    if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-      optionLeft = new OptionLeft(this, robot, follower).init();
-      optionBase = optionLeft;
+    if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
+      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
+        optionBlueLargeTriangle = new OptionBlueLargeTriangle(this, robot, follower).init();
+        optionBase = optionBlueLargeTriangle;
+      } else if (robot.config.robotPosition == RobotPositionEnum.SMALL_TRIANGLE) {
+        optionBlueSmallTriangle = new OptionBlueSmallTriangle(this, robot, follower).init();
+        optionBase = optionBlueSmallTriangle;
+      } else {
+        throw new IllegalStateException(String.format("Unsupported robot position: %s",
+            robot.config.robotPosition.toString()));
+      }
+    } else if (robot.config.allianceColor == AllianceColorEnum.RED) {
+      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
+        optionRedLargeTriangle = new OptionRedLargeTriangle(this, robot, follower).init();
+        optionBase = optionRedLargeTriangle;
+      } else if (robot.config.robotPosition == RobotPositionEnum.SMALL_TRIANGLE) {
+        optionRedSmallTriangle = new OptionRedSmallTriangle(this, robot, follower).init();
+        optionBase = optionRedSmallTriangle;
+      } else {
+        throw new IllegalStateException(String.format("Unsupported robot position: %s",
+            robot.config.robotPosition.toString()));
+      }
     } else {
-      optionRight = new OptionRight(this, robot, follower).init();
-      optionBase = optionRight;
+      throw new IllegalStateException(String.format("Unsupported alliance color: %s",
+          robot.config.allianceColor.toString()));
     }
 
     FtcLogger.exit();
@@ -115,12 +132,21 @@ public class AutoOp extends LinearOpMode {
     // Enable and reset servos
     robot.start();
 
-    if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-      optionLeft.execute();
+    if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
+      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
+        optionBlueLargeTriangle.execute();
+      } else {
+        optionBlueSmallTriangle.execute();
+      }
     } else {
-      optionRight.execute();
+      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
+        optionBlueLargeTriangle.execute();
+      } else {
+        optionBlueLargeTriangle.execute();
+      }
     }
 
+    robot.stop();
     FtcLogger.exit();
   }
 
@@ -143,7 +169,6 @@ public class AutoOp extends LinearOpMode {
       FtcUtils.sleep(FtcUtils.CYCLE_MS);
     }
 
-    robot.stop();
     FtcLogger.exit();
   }
 }

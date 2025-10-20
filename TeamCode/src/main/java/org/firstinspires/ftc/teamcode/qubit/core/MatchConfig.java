@@ -32,6 +32,7 @@ public class MatchConfig {
   public RobotPositionEnum robotPosition;
   public long delayInSeconds;
   public ObeliskTagEnum obeliskTagEnum;
+  public boolean deliverThirdRow = true;
 
   /**
    * Constructor
@@ -91,6 +92,8 @@ public class MatchConfig {
         allianceColor = savedMatchConfig.allianceColor;
         robotPosition = savedMatchConfig.robotPosition;
         delayInSeconds = savedMatchConfig.delayInSeconds;
+        obeliskTagEnum = savedMatchConfig.obeliskTagEnum;
+        deliverThirdRow = savedMatchConfig.deliverThirdRow;
       } catch (IOException e) {
         reset();
       } catch (Exception e) {
@@ -111,6 +114,7 @@ public class MatchConfig {
     robotPosition = RobotPositionEnum.SMALL_TRIANGLE;
     delayInSeconds = 0;
     obeliskTagEnum = ObeliskTagEnum.GPP;
+    deliverThirdRow = true;
     gamePad1Connected = gamePad2Connected = false;
     configIsComplete = !configFeatureEnabled;
     FtcLogger.exit();
@@ -179,6 +183,8 @@ public class MatchConfig {
       telemetry.addData("Match configuration", "");
       telemetry.addData(FtcUtils.TAG, "%s alliance, %s robot position",
           allianceColor, robotPosition);
+      telemetry.addData(FtcUtils.TAG, "%sdeliver third row",
+          deliverThirdRow ? "" : "do not ");
       telemetry.addData(FtcUtils.TAG, "start delay %d seconds", delayInSeconds);
     }
   }

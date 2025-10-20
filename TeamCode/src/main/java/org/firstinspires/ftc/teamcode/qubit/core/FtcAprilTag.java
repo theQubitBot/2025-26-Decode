@@ -32,6 +32,8 @@ public class FtcAprilTag {
   public static final double OBELISK_RED_ALLIANCE_LARGE_TRIANGLE_POSITION = 0.4465;
   public static final double OBELISK_RED_ALLIANCE_SMALL_TRIANGLE_POSITION = 0.4780;
   public static final double GOAL_POSITION = 0.4915;
+  public static final double MAX_RANGE = 150.0;
+  public static final double MIN_RANGE = 0.0;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;
@@ -53,7 +55,7 @@ public class FtcAprilTag {
   }
 
   public double getGoalRange() {
-    double range = Double.MIN_VALUE;
+    double range = 0.0;
     List<AprilTagDetection> detections = getAllDetections();
     if (detections != null && !detections.isEmpty() && parent != null && parent.config != null) {
       for (AprilTagDetection detection : detections) {
@@ -66,6 +68,7 @@ public class FtcAprilTag {
       }
     }
 
+    range = com.qualcomm.robotcore.util.Range.clip(range, MIN_RANGE, MAX_RANGE);
     return range;
   }
 

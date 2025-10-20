@@ -38,7 +38,7 @@ public class FtcBot extends FtcSubSystemBase {
     FtcLogger.enter();
     telemetryEnabled = false;
     if (trollBot == TrollBotEnum.TrollBotA) {
-      //aprilTag.telemetryEnabled = false;
+      aprilTag.telemetryEnabled = false;
       artifactSensor.telemetryEnabled = false;
       blinkinLed.telemetryEnabled = false;
       cannon.telemetryEnabled = false;
@@ -63,7 +63,7 @@ public class FtcBot extends FtcSubSystemBase {
     FtcLogger.enter();
     telemetryEnabled = true;
     if (trollBot == TrollBotEnum.TrollBotA) {
-      //aprilTag.telemetryEnabled = true;
+      aprilTag.telemetryEnabled = true;
       artifactSensor.telemetryEnabled = true;
       blinkinLed.telemetryEnabled = true;
       cannon.telemetryEnabled = true;
@@ -97,7 +97,7 @@ public class FtcBot extends FtcSubSystemBase {
 
     if (trollBot == TrollBotEnum.TrollBotA) {
       aprilTag = new FtcAprilTag(this);
-      //aprilTag.init(hardwareMap, telemetry);
+      aprilTag.init(hardwareMap, telemetry);
 
       artifactSensor = new ArtifactSensor();
       artifactSensor.init(hardwareMap, telemetry);

@@ -18,6 +18,8 @@ public class FtcSorter extends FtcSubSystemBase {
   public static final String SORTER_SERVO_NAME = "sorterServo";
   public static final double SORTER_GREEN_POSITION = 0.4910;
   public static final double SORTER_PURPLE_POSITION = 0.4320;
+  public static final double SORTER_STRAIGHT_POSITION =
+      (SORTER_GREEN_POSITION + SORTER_PURPLE_POSITION) / 2;
   public static final int SORTER_SERVO_MOVE_TIME = 200; // milliseconds
   private final boolean sorterEnabled = true;
   public boolean telemetryEnabled = true;
@@ -60,12 +62,15 @@ public class FtcSorter extends FtcSubSystemBase {
 
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     FtcLogger.enter();
-    if (parent != null && parent.artifactSensor != null) {
-      if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_GREEN) {
-        setGreen(false);
-      }
-      if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_PURPLE) {
-        setPurple(false);
+    if (parent != null) {
+      if (parent.cannon != null && parent.cannon.getPower() > 0) {
+        setStraight(false);
+      } else if (parent.artifactSensor != null) {
+        if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_GREEN) {
+          setGreen(false);
+        } else if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_PURPLE) {
+          setPurple(false);
+        }
       }
     }
 
@@ -92,6 +97,20 @@ public class FtcSorter extends FtcSubSystemBase {
    * @param waitTillCompletion When True, waits for sorter to complete the movement.
    */
   public void setPurple(boolean waitTillCompletion) {
+    if (sorterEnabled && sorterServo != null) {
+      sorterServo.setPosition(SORTER_PURPLE_POSITION);
+      if (waitTillCompletion) {
+        FtcUtils.sleep(SORTER_SERVO_MOVE_TIME);
+      }
+    }
+  }
+
+  /**
+   * Sets the sorter straight.
+   *
+   * @param waitTillCompletion When True, waits for sorter to complete the movement.
+   */
+  public void setStraight(boolean waitTillCompletion) {
     if (sorterEnabled && sorterServo != null) {
       sorterServo.setPosition(SORTER_PURPLE_POSITION);
       if (waitTillCompletion) {

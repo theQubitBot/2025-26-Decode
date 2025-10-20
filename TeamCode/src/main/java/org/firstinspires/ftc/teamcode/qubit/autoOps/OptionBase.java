@@ -36,7 +36,8 @@ public class OptionBase {
   protected Follower follower;
   protected final Pose startPose = new Pose(0, 0, 0);
 
-  protected Runnable intakeSpinIn, intakeSpinOut, intakeSpinStop;
+  protected Runnable intakeSpinIn, intakeSpinOut, intakeSpinHold,
+      sorterStraight, cannonWarmUp;
 
   static {
     RADIAN0 = Math.toRadians(0);
@@ -68,7 +69,10 @@ public class OptionBase {
 
     intakeSpinIn = () -> robot.intake.spinIn(false);
     intakeSpinOut = () -> robot.intake.spinOut(false);
-    intakeSpinStop = () -> robot.intake.spinStop();
+    intakeSpinHold = () -> robot.intake.spinHold();
+
+    sorterStraight = () -> robot.sorter.setStraight(false);
+    cannonWarmUp = () -> robot.cannon.setPower(0.45);
   }
 
   /**
