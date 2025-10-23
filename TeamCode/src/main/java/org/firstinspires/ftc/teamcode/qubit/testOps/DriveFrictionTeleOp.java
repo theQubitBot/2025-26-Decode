@@ -26,7 +26,7 @@ public class DriveFrictionTeleOp extends OpMode {
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
   double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
-  double rampUpDownPower = 0.01;
+  final double rampUpDownPower = 0.01;
   double lfVelocity, lrVelocity, rfVelocity, rrVelocity, maxVelocity;
   FtcDriveTrain driveTrain = null;
 

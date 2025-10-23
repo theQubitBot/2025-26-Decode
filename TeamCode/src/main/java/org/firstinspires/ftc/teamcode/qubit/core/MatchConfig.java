@@ -111,7 +111,7 @@ public class MatchConfig {
   public void reset() {
     FtcLogger.enter();
     allianceColor = AllianceColorEnum.RED;
-    robotPosition = RobotPositionEnum.SMALL_TRIANGLE;
+    robotPosition = RobotPositionEnum.AUDIENCE;
     delayInSeconds = 0;
     obeliskTagEnum = ObeliskTagEnum.GPP;
     deliverThirdRow = true;
@@ -139,9 +139,9 @@ public class MatchConfig {
 
       // Configure robot position on the field
       if (gamePad1.dpadLeftWasPressed() || gamePad2.dpadLeftWasPressed()) {
-        robotPosition = RobotPositionEnum.LARGE_TRIANGLE;
+        robotPosition = RobotPositionEnum.GOAL;
       } else if (gamePad1.dpadRightWasPressed() || gamePad2.dpadRightWasPressed()) {
-        robotPosition = RobotPositionEnum.SMALL_TRIANGLE;
+        robotPosition = RobotPositionEnum.AUDIENCE;
       }
 
       // Configure initial delay
@@ -149,6 +149,10 @@ public class MatchConfig {
         delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
       } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
         delayInSeconds = Math.max(delayInSeconds - 1, 0);
+      }
+
+      if (gamePad1.aWasPressed() || gamePad2.aWasPressed()) {
+        deliverThirdRow = !deliverThirdRow;
       }
 
       // Evaluate gamePad connections, if not connected.
@@ -181,11 +185,12 @@ public class MatchConfig {
   public void showConfiguration() {
     if (configFeatureEnabled) {
       telemetry.addData("Match configuration", "");
-      telemetry.addData(FtcUtils.TAG, "%s alliance, %s robot position",
+      telemetry.addData(FtcUtils.TAG, "%s alliance, %s position",
           allianceColor, robotPosition);
-      telemetry.addData(FtcUtils.TAG, "%sdeliver third row",
-          deliverThirdRow ? "" : "do not ");
       telemetry.addData(FtcUtils.TAG, "start delay %d seconds", delayInSeconds);
+      telemetry.addData(FtcUtils.TAG, "deliver third row: %s",
+          deliverThirdRow ? "yes" : "no");
+      telemetry.addData(FtcUtils.TAG, "Motif %s", obeliskTagEnum);
     }
   }
 
@@ -197,8 +202,9 @@ public class MatchConfig {
       telemetry.addData("Match Configuration Command Menu", "");
       telemetry.addData("Bumper", "BLUE alliance");
       telemetry.addData("Trigger", "RED alliance");
-      telemetry.addData("dPad", "left: LARGE_TRIANGLE position, right: SMALL_TRIANGLE position");
-      telemetry.addData("Start delay", "dPad up: increase, down: decrease");
+      telemetry.addData("dPad", "left: GOAL position, right: AUDIENCE position");
+      telemetry.addData("Start delay", "dPad up/down: +/-");
+      telemetry.addData("Deliver 3rd row", "a: toggle yes/no");
     }
   }
 }

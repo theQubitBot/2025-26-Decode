@@ -10,9 +10,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -20,6 +24,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class to identify and make available April Tags using the Vision Portal.
@@ -27,15 +32,19 @@ import java.util.List;
 public class FtcAprilTag {
   static final String TAG = "FtcAprilTag";
   public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
-  public static final double OBELISK_BLUE_ALLIANCE_LARGE_TRIANGLE_POSITION = 0.5365;
-  public static final double OBELISK_BLUE_ALLIANCE_SMALL_TRIANGLE_POSITION = 0.5050;
-  public static final double OBELISK_RED_ALLIANCE_LARGE_TRIANGLE_POSITION = 0.4465;
-  public static final double OBELISK_RED_ALLIANCE_SMALL_TRIANGLE_POSITION = 0.4780;
+  public static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5365;
+  public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5050;
+  public static final double OBELISK_RED_ALLIANCE_GOAL_POSITION = 0.4465;
+  public static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4780;
   public static final double GOAL_POSITION = 0.4915;
   public static final double MAX_RANGE = 150.0;
   public static final double MIN_RANGE = 0.0;
+  public static final int CAMERA_EXPOSURE = 9; // milliseconds
+  public static final int CAMERA_GAIN = 25;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
+  public int currentExposure, minExposure, maxExposure;
+  public int currentGain, minGain, maxGain;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry;
   private final FtcBot parent;
@@ -52,6 +61,27 @@ public class FtcAprilTag {
     }
 
     return detections;
+  }
+
+  /**
+   * Gets and stores exposure and gain ranges.
+   */
+  private void getCameraSetting() {
+    if (visionPortal != null) {
+      // Wait for the camera to be open
+      if (visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
+        // Get camera control values unless we are stopping.
+        ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
+        currentExposure = (int) exposureControl.getExposure(TimeUnit.MILLISECONDS);
+        minExposure = (int) exposureControl.getMinExposure(TimeUnit.MILLISECONDS) + 1;
+        maxExposure = (int) exposureControl.getMaxExposure(TimeUnit.MILLISECONDS);
+
+        GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
+        currentGain = gainControl.getGain();
+        minGain = gainControl.getMinGain();
+        maxGain = gainControl.getMaxGain();
+      }
+    }
   }
 
   public double getGoalRange() {
@@ -72,15 +102,32 @@ public class FtcAprilTag {
     return range;
   }
 
+  public ObeliskTagEnum getObeliskTag() {
+    ObeliskTagEnum ote = ObeliskTagEnum.UNKNOWN;
+    List<AprilTagDetection> detections = getAllDetections();
+    if (detections != null && !detections.isEmpty()) {
+      for (AprilTagDetection detection : detections) {
+        if (detection.metadata != null) {
+          if (detection.id == 21){
+            ote = ObeliskTagEnum.GPP;
+          }  else if (detection.id == 22){
+            ote = ObeliskTagEnum.PGP;
+          } else if ( detection.id == 23) {
+            ote = ObeliskTagEnum.PPG;
+          }
+        }
+      }
+    }
+
+    return  ote;
+  }
+
   /**
    * Initialize the AprilTag detection processor.
    */
   public void init(HardwareMap hardwareMap, Telemetry telemetry) {
     FtcLogger.enter();
     this.telemetry = telemetry;
-
-    aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, APRIL_TAG_SERVO_NAME));
-    aprilTagServo.setPosition(FtcServo.MID_POSITION);
 
     // Create the AprilTag processor.
     aprilTagProcessor = new AprilTagProcessor.Builder()
@@ -95,12 +142,20 @@ public class FtcAprilTag {
     visionPortal = new VisionPortal.Builder()
         .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_2_NAME))
         .setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT))
-        .enableLiveView(FtcUtils.DEBUG)
+        .setLiveViewContainerId(0)
         .setStreamFormat(VisionPortal.StreamFormat.YUY2)
         .setAutoStopLiveView(true)
         .addProcessor(aprilTagProcessor)
         .build();
 
+    Deadline deadline = new Deadline(5, TimeUnit.SECONDS);
+    while (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING &&
+        !deadline.hasExpired()) {
+      FtcUtils.sleep(20);
+    }
+
+    updateCameraSettings(CAMERA_EXPOSURE, CAMERA_GAIN);
+    getCameraSetting();
     aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, APRIL_TAG_SERVO_NAME));
     aprilTagServo.setDirection(Servo.Direction.FORWARD);
 
@@ -121,16 +176,16 @@ public class FtcAprilTag {
   public void pointAtObelisk() {
     if (parent != null && parent.config != null) {
       if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
-        if (parent.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-          aprilTagServo.setPosition(OBELISK_BLUE_ALLIANCE_LARGE_TRIANGLE_POSITION);
+        if (parent.config.robotPosition == RobotPositionEnum.GOAL) {
+          aprilTagServo.setPosition(OBELISK_BLUE_ALLIANCE_GOAL_POSITION);
         } else {
-          aprilTagServo.setPosition(OBELISK_BLUE_ALLIANCE_SMALL_TRIANGLE_POSITION);
+          aprilTagServo.setPosition(OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION);
         }
       } else if (parent.config.allianceColor == AllianceColorEnum.RED) {
-        if (parent.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-          aprilTagServo.setPosition(OBELISK_RED_ALLIANCE_LARGE_TRIANGLE_POSITION);
+        if (parent.config.robotPosition == RobotPositionEnum.GOAL) {
+          aprilTagServo.setPosition(OBELISK_RED_ALLIANCE_GOAL_POSITION);
         } else {
-          aprilTagServo.setPosition(OBELISK_RED_ALLIANCE_SMALL_TRIANGLE_POSITION);
+          aprilTagServo.setPosition(OBELISK_RED_ALLIANCE_AUDIENCE_POSITION);
         }
       }
     }
@@ -146,10 +201,10 @@ public class FtcAprilTag {
       double position = aprilTagServo.getPosition();
       telemetry.addData(TAG, "Servo %5.4f (%s)",
           position,
-          position == OBELISK_BLUE_ALLIANCE_LARGE_TRIANGLE_POSITION ? "Blue large" :
-              position == OBELISK_BLUE_ALLIANCE_SMALL_TRIANGLE_POSITION ? "Blue small" :
-                  position == OBELISK_RED_ALLIANCE_LARGE_TRIANGLE_POSITION ? "Red large" :
-                      position == OBELISK_RED_ALLIANCE_SMALL_TRIANGLE_POSITION ? "Red small" :
+          position == OBELISK_BLUE_ALLIANCE_GOAL_POSITION ? "Blue LT obelisk" :
+              position == OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION ? "Blue ST obelisk" :
+                  position == OBELISK_RED_ALLIANCE_GOAL_POSITION ? "Red LT obelisk" :
+                      position == OBELISK_RED_ALLIANCE_AUDIENCE_POSITION ? "Red ST obelisk" :
                           position == GOAL_POSITION ? "Goal" : "Unknown");
       List<AprilTagDetection> aprilTagDetections = getAllDetections();
       telemetry.addData("AprilTags count", aprilTagDetections.size());
@@ -157,26 +212,13 @@ public class FtcAprilTag {
       // Step through the list of detections and set info for each one.
       for (AprilTagDetection detection : aprilTagDetections) {
         if (detection.metadata != null) {
-          telemetry.addLine(String.format("\n==== (ID %d) %s",
+          telemetry.addLine(String.format("Tag (ID %d) %s",
               detection.id, detection.metadata.name));
-          telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f (inch)",
-              detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-          telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f (deg)",
-              detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-          telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
-              detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+          telemetry.addLine(String.format("Range %6.1f", detection.ftcPose.range));
         } else {
-          telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+          telemetry.addLine(String.format("Tag (ID %d) Unknown", detection.id));
         }
-
-        telemetry.addLine(String.format("Center %6.0f %6.0f (pixels)",
-            detection.center.x, detection.center.y));
       }
-
-      // Add "key" information to telemetry
-      telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-      telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-      telemetry.addLine("RBE = Range, Bearing & Elevation");
     }
 
     FtcLogger.exit();
@@ -205,6 +247,34 @@ public class FtcAprilTag {
     if (visionPortal != null) {
       visionPortal.close();
       visionPortal = null;
+    }
+
+    FtcLogger.exit();
+  }
+
+  /**
+   * Sets camera exposure and gain.
+   *
+   * @param exposure The exposure to set, in milliseconds (1-1000).
+   * @param gain     The gain to set (0-255).
+   */
+  public void updateCameraSettings(int exposure, int gain) {
+    FtcLogger.enter();
+    if (visionPortal != null) {
+      if (visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
+        // Ensure Manual Mode for values to take effect.
+        ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
+        if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+          exposureControl.setMode(ExposureControl.Mode.Manual);
+        }
+
+        exposureControl.setExposure(exposure, TimeUnit.MILLISECONDS);
+        currentExposure = exposure;
+
+        GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
+        gainControl.setGain(gain);
+        currentGain = gain;
+      }
     }
 
     FtcLogger.exit();

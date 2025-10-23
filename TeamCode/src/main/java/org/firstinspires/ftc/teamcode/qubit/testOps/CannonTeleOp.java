@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcDriveTrain;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -103,8 +102,7 @@ public class CannonTeleOp extends OpMode {
       newMotorPower = cannon.leftCannonMotor.getPower() - smallDeltaPower;
     }
 
-    newMotorPower = Range.clip(newMotorPower,
-        FtcMotor.ZERO_POWER, FtcDriveTrain.MAXIMUM_FORWARD_POWER);
+    newMotorPower = Range.clip(newMotorPower, FtcMotor.ZERO_POWER, FtcMotor.MAX_POWER);
     cannon.leftCannonMotor.setPower(newMotorPower);
     cannon.rightCannonMotor.setPower(newMotorPower);
     oldMotorPower = newMotorPower;
@@ -120,7 +118,7 @@ public class CannonTeleOp extends OpMode {
     }
 
     telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Power %.2f", newMotorPower));
-    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Velocity %5.1f, %5.1f",
+    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Velocity %5.2f, %5.2f",
         cannon.leftCannonMotor.getVelocity(), cannon.rightCannonMotor.getVelocity()));
     aprilTag.showTelemetry();
 

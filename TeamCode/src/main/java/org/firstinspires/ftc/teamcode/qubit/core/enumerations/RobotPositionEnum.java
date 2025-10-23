@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode.qubit.core.enumerations;
 
 /**
  * Robot position on the field at the autonomous operation start.
- * Robot can be placed on the LARGE_TRIANGLE or SMALL_TRIANGLE side.
+ * Robot can be placed on the GOAL or AUDIENCE side.
  */
 public enum RobotPositionEnum {
   UNKNOWN,
-  LARGE_TRIANGLE,
-  SMALL_TRIANGLE
+  GOAL,
+  AUDIENCE
 }

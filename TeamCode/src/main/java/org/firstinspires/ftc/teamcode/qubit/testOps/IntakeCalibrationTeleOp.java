@@ -107,7 +107,7 @@ public class IntakeCalibrationTeleOp extends OpMode {
     FtcServo servo = null;
     double position = FtcServo.MID_POSITION;
 
-    if (gamepad1.left_stick_y >= 0.5 || gamepad1.left_stick_y <= -0.5) {
+    if (Math.abs(gamepad1.left_stick_y) >= 0.1) {
       leftSweeperPower = Math.abs(gamepad1.left_stick_y);
       position = leftSweeperPower;
       servo = leftSweeperServo;
@@ -116,7 +116,7 @@ public class IntakeCalibrationTeleOp extends OpMode {
       leftSweeperServo.setPosition(leftSweeperPower);
     }
 
-    if (gamepad1.right_stick_y >= 0.5 || gamepad1.right_stick_y <= -0.5) {
+    if (Math.abs(gamepad1.right_stick_y) >= 0.1) {
       rightSweeperPower = Math.abs(gamepad1.right_stick_y);
       position = rightSweeperPower;
       servo = rightSweeperServo;
@@ -125,22 +125,22 @@ public class IntakeCalibrationTeleOp extends OpMode {
       rightSweeperServo.setPosition(rightSweeperPower);
     }
 
-    if (gamepad1.dpad_left) {
-      leftRollerPower = FtcIntake.ROLLER_IN_POWER;
-      position = leftRollerPower;
-      servo = leftRollerServo;
-    } else {
-      leftRollerPower = FtcServo.MID_POSITION;
-      leftRollerServo.setPosition(leftRollerPower);
-    }
-
-    if (gamepad1.dpad_right) {
-      rightRollerPower = FtcIntake.ROLLER_IN_POWER;
-      position = rightRollerPower;
-      servo = rightRollerServo;
-    } else {
-      rightRollerPower = FtcServo.MID_POSITION;
-      rightRollerServo.setPosition(rightRollerPower);
+    if (gamepad1.dpad_up || gamepad2.dpad_up) {
+      position = leftRollerServo.getPosition() + FtcServo.LARGE_INCREMENT;
+      leftRollerServo.setPosition(position);
+      rightRollerServo.setPosition(position);
+    } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
+      position = leftRollerServo.getPosition() + FtcServo.SMALL_INCREMENT;
+      leftRollerServo.setPosition(position);
+      rightRollerServo.setPosition(position);
+    } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+      position = leftRollerServo.getPosition() - FtcServo.LARGE_INCREMENT;
+      leftRollerServo.setPosition(position);
+      rightRollerServo.setPosition(position);
+    } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
+      position = leftRollerServo.getPosition() - FtcServo.LARGE_INCREMENT;
+      leftRollerServo.setPosition(position);
+      rightRollerServo.setPosition(position);
     }
 
     if (servo != null) {
@@ -150,13 +150,13 @@ public class IntakeCalibrationTeleOp extends OpMode {
 
     telemetry.addData("Left sweeper", "left stick Y");
     telemetry.addData("Right sweeper", "right stick Y");
-    telemetry.addData("Left roller", "dPad left");
-    telemetry.addData("Right roller", "dPad right");
+    telemetry.addData("roller", "dPad up/down = large +/-");
+    telemetry.addData("roller", "dPad left/right = small +/-");
     telemetry.addLine();
-    telemetry.addData("Position", "LSweeper %5.4f RSweeper %5.4f",
-        leftSweeperPower, rightSweeperPower);
-    telemetry.addData("Position", "LRoller %5.4f RRoller %5.4f",
-        leftRollerPower, rightRollerPower);
+    telemetry.addData("Sweeper", "Left %5.4f right %5.4f",
+        leftSweeperServo.getPosition(), rightSweeperServo.getPosition());
+    telemetry.addData("Roller", "left %5.4f right %5.4f",
+        leftRollerServo.getPosition(), rightRollerServo.getPosition());
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();

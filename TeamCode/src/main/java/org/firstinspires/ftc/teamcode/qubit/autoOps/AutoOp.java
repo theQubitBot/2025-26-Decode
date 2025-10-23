@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode.qubit.autoOps;
-// Joshua wrote this
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -12,6 +11,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 
 @Autonomous(group = "Official", preselectTeleOp = "DriverTeleOp")
@@ -20,10 +20,10 @@ public class AutoOp extends LinearOpMode {
   FtcBot robot = null;
   Follower follower;
   OptionBase optionBase;
-  OptionBlueLargeTriangle optionBlueLargeTriangle;
-  OptionBlueSmallTriangle optionBlueSmallTriangle;
-  OptionRedLargeTriangle optionRedLargeTriangle;
-  OptionRedSmallTriangle optionRedSmallTriangle;
+  OptionBlueGoal optionBlueGoal;
+  OptionBlueAudience optionBlueAudience;
+  OptionRedGoal optionRedGoal;
+  OptionRedAudience optionRedAudience;
 
   @Override
   public void runOpMode() {
@@ -61,23 +61,23 @@ public class AutoOp extends LinearOpMode {
     // sets the motors to run without encoders.
     follower = Constants.createFollower(hardwareMap);
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
-      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-        optionBlueLargeTriangle = new OptionBlueLargeTriangle(this, robot, follower).init();
-        optionBase = optionBlueLargeTriangle;
-      } else if (robot.config.robotPosition == RobotPositionEnum.SMALL_TRIANGLE) {
-        optionBlueSmallTriangle = new OptionBlueSmallTriangle(this, robot, follower).init();
-        optionBase = optionBlueSmallTriangle;
+      if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
+        optionBlueGoal = new OptionBlueGoal(this, robot, follower).init();
+        optionBase = optionBlueGoal;
+      } else if (robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
+        optionBlueAudience = new OptionBlueAudience(this, robot, follower).init();
+        optionBase = optionBlueAudience;
       } else {
         throw new IllegalStateException(String.format("Unsupported robot position: %s",
             robot.config.robotPosition.toString()));
       }
     } else if (robot.config.allianceColor == AllianceColorEnum.RED) {
-      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-        optionRedLargeTriangle = new OptionRedLargeTriangle(this, robot, follower).init();
-        optionBase = optionRedLargeTriangle;
-      } else if (robot.config.robotPosition == RobotPositionEnum.SMALL_TRIANGLE) {
-        optionRedSmallTriangle = new OptionRedSmallTriangle(this, robot, follower).init();
-        optionBase = optionRedSmallTriangle;
+      if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
+        optionRedGoal = new OptionRedGoal(this, robot, follower).init();
+        optionBase = optionRedGoal;
+      } else if (robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
+        optionRedAudience = new OptionRedAudience(this, robot, follower).init();
+        optionBase = optionRedAudience;
       } else {
         throw new IllegalStateException(String.format("Unsupported robot position: %s",
             robot.config.robotPosition.toString()));
@@ -94,6 +94,14 @@ public class AutoOp extends LinearOpMode {
     FtcLogger.enter();
 
     while (opModeInInit()) {
+      if(robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
+        ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
+        if (ote != ObeliskTagEnum.UNKNOWN) {
+          robot.config.obeliskTagEnum = ote;
+          robot.config.saveToFile();
+        }
+      }
+
       robot.config.showConfiguration();
       telemetry.addLine();
 
@@ -133,16 +141,16 @@ public class AutoOp extends LinearOpMode {
     robot.start();
 
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
-      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-        optionBlueLargeTriangle.execute();
+      if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
+        optionBlueGoal.execute();
       } else {
-        optionBlueSmallTriangle.execute();
+        optionBlueAudience.execute();
       }
     } else {
-      if (robot.config.robotPosition == RobotPositionEnum.LARGE_TRIANGLE) {
-        optionBlueLargeTriangle.execute();
+      if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
+        optionRedGoal.execute();
       } else {
-        optionBlueLargeTriangle.execute();
+        optionRedAudience.execute();
       }
     }
 

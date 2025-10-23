@@ -30,8 +30,8 @@ public final class FtcUtils {
   public static final int AUTO_2_TELE_OP_TRANSITION_TIME = 8; // seconds
   public static final int TELE_OP_DURATION = 120; // seconds
   public static final int END_GAME_DURATION = 30; // seconds
-  public static final int BUZZER_DURATION = 8; // seconds
-  public static final int CYCLE_MS = 50;
+  public static final int BUZZER_DURATION = 2; // seconds
+  public static final int CYCLE_MS = 50; // milliseconds
 
   /* Constructor */
   public FtcUtils() {
@@ -109,11 +109,11 @@ public final class FtcUtils {
   }
 
   public static boolean lastNSeconds(ElapsedTime runtime, int nSeconds) {
-    return runtime.seconds() >= (TELE_OP_DURATION - nSeconds);
+    return runtime.seconds() <= TELE_OP_DURATION && runtime.seconds() >= (TELE_OP_DURATION - nSeconds);
   }
 
   public static boolean endGame(ElapsedTime runtime) {
-    return runtime.seconds() >= (TELE_OP_DURATION - END_GAME_DURATION);
+    return lastNSeconds(runtime, END_GAME_DURATION);
   }
 
   public static boolean gameOver(ElapsedTime runtime) {

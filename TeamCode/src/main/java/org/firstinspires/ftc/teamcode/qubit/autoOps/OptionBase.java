@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+import org.firstinspires.ftc.teamcode.qubit.core.CannonPowerData;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -24,14 +25,17 @@ public class OptionBase {
   protected static final double RADIAN30;
   protected static final double RADIAN45;
   protected static final double RADIAN60;
+  protected static final double RADIAN70;
   protected static final double RADIAN75;
   protected static final double RADIAN90;
   protected static final double RADIAN105;
   protected static final double RADIAN120;
+  protected static final double RADIAN133;
   protected static final double RADIAN135;
   protected static final double RADIAN150;
   protected static final double RADIAN180;
   protected LinearOpMode autoOpMode;
+  public CannonPowerData cpd;
   protected FtcBot robot;
   protected Follower follower;
   protected final Pose startPose = new Pose(0, 0, 0);
@@ -46,10 +50,12 @@ public class OptionBase {
     RADIAN30 = Math.toRadians(30);
     RADIAN45 = Math.toRadians(45);
     RADIAN60 = Math.toRadians(60);
+    RADIAN70 = Math.toRadians(70);
     RADIAN75 = Math.toRadians(75);
     RADIAN90 = Math.toRadians(90);
     RADIAN105 = Math.toRadians(105);
     RADIAN120 = Math.toRadians(120);
+    RADIAN133 = Math.toRadians(133);
     RADIAN135 = Math.toRadians(135);
     RADIAN150 = Math.toRadians(150);
     RADIAN180 = Math.toRadians(179.99);

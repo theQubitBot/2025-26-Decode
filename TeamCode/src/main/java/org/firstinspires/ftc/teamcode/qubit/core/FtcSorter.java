@@ -54,23 +54,23 @@ public class FtcSorter extends FtcSubSystemBase {
   }
 
   /**
-   * Operates the sorter automatically using artifact sensor.
+   * Operates the sorter automatically using artifact sensor OR
+   * using gamepads.
    *
-   * @param gamePad1 Not used.
-   * @param gamePad2 Not used.
+   * @param gamePad1 Gamepad1 to use.
+   * @param gamePad2 Gamepad2 to use.
    */
 
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     FtcLogger.enter();
-    if (parent != null) {
-      if (parent.cannon != null && parent.cannon.getPower() > 0) {
-        setStraight(false);
-      } else if (parent.artifactSensor != null) {
-        if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_GREEN) {
-          setGreen(false);
-        } else if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_PURPLE) {
-          setPurple(false);
-        }
+
+    if (gamePad1.xWasPressed() || gamePad2.xWasPressed() || gamePad1.bWasPressed() || gamePad2.bWasPressed()) {
+      setStraight(false);
+    } else if (parent != null && parent.artifactSensor != null) {
+      if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_GREEN) {
+        setGreen(false);
+      } else if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_PURPLE) {
+        setPurple(false);
       }
     }
 
@@ -106,13 +106,13 @@ public class FtcSorter extends FtcSubSystemBase {
   }
 
   /**
-   * Sets the sorter straight.
+   * Sets the sorter straight ahead.
    *
    * @param waitTillCompletion When True, waits for sorter to complete the movement.
    */
   public void setStraight(boolean waitTillCompletion) {
     if (sorterEnabled && sorterServo != null) {
-      sorterServo.setPosition(SORTER_PURPLE_POSITION);
+      sorterServo.setPosition(SORTER_STRAIGHT_POSITION);
       if (waitTillCompletion) {
         FtcUtils.sleep(SORTER_SERVO_MOVE_TIME);
       }
@@ -127,7 +127,9 @@ public class FtcSorter extends FtcSubSystemBase {
     if (sorterEnabled && telemetryEnabled) {
       telemetry.addData(TAG, String.format(Locale.US, "%5.4f (%s)",
           sorterServo.getPosition(),
-          sorterServo.getPosition() == SORTER_GREEN_POSITION ? "Green" : "Purple"));
+          sorterServo.getPosition() == SORTER_GREEN_POSITION ? "Green" :
+              sorterServo.getPosition() == SORTER_PURPLE_POSITION ? "Purple" :
+                  sorterServo.getPosition() == SORTER_STRAIGHT_POSITION ? "Straight" : "Unknown"));
     }
 
     FtcLogger.exit();

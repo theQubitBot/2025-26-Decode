@@ -12,13 +12,13 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 /**
  * A class to implement autonomous objective
  */
-public class OptionBlueSmallTriangle extends OptionBase {
+public class OptionRedAudience extends OptionBase {
   Pose scorePose = startPose;
 
-  public Pose pickup3Pose = new Pose(15, 20, RADIAN45);
-  public Pose pickupLoadingZonePose = new Pose(15, 20, RADIAN45);
+  public Pose pickup3Pose = new Pose(34, 16, RADIAN45);
+  public Pose pickupLoadingZonePose = new Pose(29, 36, RADIAN45);
 
-  public Pose leavePose = new Pose(-24, 12, -RADIAN0);
+  public Pose leavePose = new Pose(26, 4, -RADIAN15);
 
   PathChain leavePath,
       pickup3Path, pickupLoadingZonePath,
@@ -27,17 +27,18 @@ public class OptionBlueSmallTriangle extends OptionBase {
   public static class Params {
     public boolean executeTrajectories = true, executeRobotActions = false;
     public boolean deliverPreloaded = true,
-        deliver3 = false, deliverLoadingZone = false,        leave = false;
+        deliver3 = false, deliverLoadingZone = false, leave = false;
   }
 
-  public static OptionBlueSmallTriangle.Params PARAMS = new OptionBlueSmallTriangle.Params();
+  public static OptionRedAudience.Params PARAMS = new OptionRedAudience.Params();
 
-  public OptionBlueSmallTriangle(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
+  public OptionRedAudience(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
+    cpd = robot.cannon.powerData.get(robot.cannon.powerData.size() - 1);
   }
 
-  public OptionBlueSmallTriangle init() {
+  public OptionRedAudience init() {
     // third artifact rwo
     pickup3Path = follower.pathBuilder()
         .addPath(new BezierLine(scorePose, pickup3Pose))
@@ -106,7 +107,7 @@ public class OptionBlueSmallTriangle extends OptionBase {
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 
     // Deliver loading zone
@@ -114,7 +115,7 @@ public class OptionBlueSmallTriangle extends OptionBase {
     if (PARAMS.deliverLoadingZone) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 
     // Leave

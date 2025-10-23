@@ -68,7 +68,7 @@ public class FtcMotor implements DcMotorEx {
 
   @Override
   public void setPIDFCoefficients(RunMode mode, PIDFCoefficients pidfCoefficients) throws UnsupportedOperationException {
-    throw new UnsupportedOperationException();
+    motor.setPIDFCoefficients(mode, pidfCoefficients);
   }
 
   @Override

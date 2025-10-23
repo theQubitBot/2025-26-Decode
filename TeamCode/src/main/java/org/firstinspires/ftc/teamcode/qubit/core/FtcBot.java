@@ -170,10 +170,10 @@ public class FtcBot extends FtcSubSystemBase {
     bulkRead.clearBulkCache();
     if (trollBot == TrollBotEnum.TrollBotA) {
       blinkinLed.operate(gamePad1, gamePad2, runtime);
+      cannon.operate(gamePad1, gamePad2);
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
       intake.operate(gamePad1, gamePad2, runtime);
       sorter.operate(gamePad1, gamePad2);
-      cannon.operate(gamePad1, gamePad2);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
     } else if (trollBot == TrollBotEnum.TrollBotD) {
@@ -186,12 +186,13 @@ public class FtcBot extends FtcSubSystemBase {
 
     if (telemetryEnabled) {
       if (trollBot == TrollBotEnum.TrollBotA) {
+        aprilTag.showTelemetry();
         blinkinLed.showTelemetry();
+        cannon.showTelemetry();
+        driveTrain.showTelemetry();
         intake.showTelemetry();
         sorter.showTelemetry();
-        cannon.showTelemetry();
         showGamePadTelemetry(gamePad1);
-        driveTrain.showTelemetry();
       } else if (trollBot == TrollBotEnum.TrollBotB) {
         showGamePadTelemetry(gamePad1);
       } else if (trollBot == TrollBotEnum.TrollBotC) {
@@ -272,14 +273,6 @@ public class FtcBot extends FtcSubSystemBase {
   public void stop() {
     FtcLogger.enter();
     if (trollBot == TrollBotEnum.TrollBotA) {
-      if (blinkinLed != null) {
-        blinkinLed.stop();
-      }
-
-      if (driveTrain != null) {
-        driveTrain.stop();
-      }
-
       if (aprilTag != null) {
         aprilTag.stop();
       }
@@ -288,16 +281,24 @@ public class FtcBot extends FtcSubSystemBase {
         artifactSensor.stop();
       }
 
+      if (blinkinLed != null) {
+        blinkinLed.stop();
+      }
+
+      if (cannon != null) {
+        cannon.stop();
+      }
+
+      if (driveTrain != null) {
+        driveTrain.stop();
+      }
+
       if (intake != null) {
         intake.stop();
       }
 
       if (sorter != null) {
         sorter.stop();
-      }
-
-      if (cannon != null) {
-        cannon.stop();
       }
     } else if (trollBot == TrollBotEnum.TrollBotB) {
     } else if (trollBot == TrollBotEnum.TrollBotC) {

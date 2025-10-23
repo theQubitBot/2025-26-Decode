@@ -40,7 +40,7 @@ public class ArtifactSensor {
     visionPortal = new VisionPortal.Builder()
         .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_1_NAME))
         .setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT))
-        .enableLiveView(FtcUtils.DEBUG)
+        .setLiveViewContainerId(0)
         .setStreamFormat(VisionPortal.StreamFormat.YUY2)
         .setAutoStopLiveView(true)
         .addProcessor(colorProcessor)

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.qubit.autoOps;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -13,7 +12,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 /**
  * A class to implement autonomous objective
  */
-public class OptionBlueLargeTriangle extends OptionBase {
+public class OptionRedGoal extends OptionBase {
   Pose scorePose = new Pose(-48, 0, RADIAN0);
 
   public Pose pickup1Pose = new Pose(15, 20, RADIAN45);
@@ -33,14 +32,15 @@ public class OptionBlueLargeTriangle extends OptionBase {
         leave = false;
   }
 
-  public static OptionBlueLargeTriangle.Params PARAMS = new OptionBlueLargeTriangle.Params();
+  public static OptionRedGoal.Params PARAMS = new OptionRedGoal.Params();
 
-  public OptionBlueLargeTriangle(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
+  public OptionRedGoal(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
+    cpd = robot.cannon.powerData.get(1);
   }
 
-  public OptionBlueLargeTriangle init() {
+  public OptionRedGoal init() {
     // preloaded artifacts
     scorePreloadPath = follower.pathBuilder()
         .addPath(new BezierLine(startPose, scorePose))
@@ -119,7 +119,7 @@ public class OptionBlueLargeTriangle extends OptionBase {
         })
         .build();
 
-     // leave
+    // leave
     leavePath = follower.pathBuilder()
         .addPath(new BezierLine(scorePose, leavePose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), leavePose.getHeading())
@@ -139,7 +139,7 @@ public class OptionBlueLargeTriangle extends OptionBase {
 
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, true, 3000);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 
     // Deliver first row
@@ -147,7 +147,7 @@ public class OptionBlueLargeTriangle extends OptionBase {
     if (PARAMS.deliver1) {
       if (PARAMS.executeTrajectories) runFollower(pickup1Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score1Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 
     // Deliver second row
@@ -155,7 +155,7 @@ public class OptionBlueLargeTriangle extends OptionBase {
     if (PARAMS.deliver2) {
       if (PARAMS.executeTrajectories) runFollower(pickup2Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score2Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 
     // Deliver third row
@@ -163,7 +163,7 @@ public class OptionBlueLargeTriangle extends OptionBase {
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 
     // Leave

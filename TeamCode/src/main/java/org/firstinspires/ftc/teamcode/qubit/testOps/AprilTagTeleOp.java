@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
@@ -63,10 +64,38 @@ public class AprilTagTeleOp extends OpMode {
     FtcLogger.enter();
     loopTime.reset();
 
+    telemetry.addLine("Find lowest Exposure and highest Gain that gives reliable detection.");
+    telemetry.addLine("DPad up/down:    Exposure +/-");
+    telemetry.addLine("DPad left/right: Gain +/-");
+    telemetry.addLine();
+
+    int newExposure = aprilTag.currentExposure;
+    int newGain = aprilTag.currentGain;
+    if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
+      newExposure++;
+    } else if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) {
+      newExposure--;
+    } else if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) {
+      newGain++;
+    } else if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) {
+      newGain--;
+    }
+
+    newExposure = Range.clip(newExposure, aprilTag.minExposure, aprilTag.maxExposure);
+    newGain = Range.clip(newGain, aprilTag.minGain, aprilTag.maxGain);
+
+    if (newExposure != aprilTag.currentExposure || newGain != aprilTag.currentGain) {
+      aprilTag.updateCameraSettings(newExposure, newGain);
+    }
+
+    telemetry.addData("Exposure", "%d  (%d - %d)",
+        aprilTag.currentExposure, aprilTag.minExposure, aprilTag.maxExposure);
+    telemetry.addData("Gain", "%d  (%d - %d)",
+        aprilTag.currentGain, aprilTag.minGain, aprilTag.maxGain);
     aprilTag.showTelemetry();
 
     // Show the elapsed game time.
-    telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
+    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
     FtcLogger.exit();
