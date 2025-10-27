@@ -142,7 +142,7 @@ public class MatchConfig {
         robotPosition = RobotPositionEnum.GOAL;
       } else if (gamePad1.dpadRightWasPressed() || gamePad2.dpadRightWasPressed()) {
         robotPosition = RobotPositionEnum.AUDIENCE;
-      } else if (gamePad1.yWasPressed() || gamePad2.yWasPressed()){
+      } else if (gamePad1.yWasPressed() || gamePad2.yWasPressed()) {
         robotPosition = RobotPositionEnum.OBELISK;
       }
 

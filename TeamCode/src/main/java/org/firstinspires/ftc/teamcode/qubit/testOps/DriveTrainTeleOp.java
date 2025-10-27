@@ -44,7 +44,7 @@ public class DriveTrainTeleOp extends OpMode {
   public void init_loop() {
     telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
     telemetry.update();
-    FtcUtils.sleep(10);
+    FtcUtils.sleep(FtcUtils.CYCLE_MS);
   }
 
   /*

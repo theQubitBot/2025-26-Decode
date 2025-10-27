@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 
 /**
  * A class to implement autonomous objective
@@ -18,16 +20,16 @@ public class OptionRedAudience extends OptionBase {
   public Pose pickup3Pose = new Pose(34, 16, RADIAN45);
   public Pose pickupLoadingZonePose = new Pose(29, 36, RADIAN45);
 
-  public Pose leavePose = new Pose(26, 4, -RADIAN15);
+  public Pose leavePose = new Pose(17, -10, RADIAN20);
 
   PathChain leavePath,
       pickup3Path, pickupLoadingZonePath,
       score3Path, scoreLoadingZonePath;
 
   public static class Params {
-    public boolean executeTrajectories = true, executeRobotActions = false;
+    public boolean executeTrajectories = true, executeRobotActions = true;
     public boolean deliverPreloaded = true,
-        deliver3 = false, deliverLoadingZone = false, leave = false;
+        deliver3 = false, deliverLoadingZone = false, leave = true;
   }
 
   public static OptionRedAudience.Params PARAMS = new OptionRedAudience.Params();
@@ -35,7 +37,7 @@ public class OptionRedAudience extends OptionBase {
   public OptionRedAudience(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
-    cpd = robot.cannon.powerData.get(robot.cannon.powerData.size() - 1);
+    ccd = robot.cannon.getClosestData(108);
   }
 
   public OptionRedAudience init() {
@@ -58,7 +60,7 @@ public class OptionRedAudience extends OptionBase {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
         .addTemporalCallback(30, () -> {
-          if (PARAMS.executeRobotActions) cannonWarmUp.run();
+          if (PARAMS.executeRobotActions) cannonIdle.run();
         })
         .build();
 
@@ -80,7 +82,7 @@ public class OptionRedAudience extends OptionBase {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
         .addTemporalCallback(30, () -> {
-          if (PARAMS.executeRobotActions) cannonWarmUp.run();
+          if (PARAMS.executeRobotActions) cannonIdle.run();
         })
         .build();
 
@@ -101,13 +103,28 @@ public class OptionRedAudience extends OptionBase {
 
     // Deliver preloaded
     if (!saveAndTest()) return;
+    robot.aprilTag.pointAtObelisk();
+    if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
+    FtcUtils.interruptedSleep(1000, autoOpMode);
+    ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
+    if (ote != ObeliskTagEnum.UNKNOWN) {
+      robot.config.obeliskTagEnum = ote;
+      robot.config.saveToFile();
+    }
+
+    // Deliver preloaded
+    if (PARAMS.deliverPreloaded) {
+      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
+      if (PARAMS.executeRobotActions) robot.intake.spinHold();
+      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+    }
 
     // Deliver third trow
     if (!saveAndTest()) return;
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver loading zone
@@ -115,7 +132,7 @@ public class OptionRedAudience extends OptionBase {
     if (PARAMS.deliverLoadingZone) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Leave

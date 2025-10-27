@@ -151,7 +151,7 @@ public class FtcAprilTag {
     Deadline deadline = new Deadline(5, TimeUnit.SECONDS);
     while (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING &&
         !deadline.hasExpired()) {
-      FtcUtils.sleep(20);
+      FtcUtils.sleep(FtcUtils.CYCLE_MS);
     }
 
     updateCameraSettings(CAMERA_EXPOSURE, CAMERA_GAIN);

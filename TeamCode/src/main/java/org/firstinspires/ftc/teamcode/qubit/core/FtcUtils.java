@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.collections.SimpleGson;
@@ -13,6 +14,7 @@ import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 
 import java.lang.reflect.Modifier;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class FtcUtils {
   public static final String TAG = ">";
-  public static final boolean DEBUG = true;
+  public static final boolean DEBUG = false;
   public static final double EPSILON0 = 0;
   public static final double EPSILON1 = 1e-1;
   public static final double EPSILON2 = 1e-2;
@@ -237,6 +239,23 @@ public final class FtcUtils {
   public static void sleep(Deadline deadline) {
     if (deadline != null && !deadline.hasExpired()) {
       sleep(deadline.timeRemaining(TimeUnit.MILLISECONDS));
+    }
+  }
+
+  /**
+   * Sleep for given milli seconds.
+   *
+   * @param milliseconds The time to sleep in milliseconds.
+   */
+  public static void interruptedSleep(long milliseconds, LinearOpMode autoOpMode) {
+    try {
+      if (milliseconds >= 0) {
+        Deadline d = new Deadline(milliseconds, TimeUnit.MILLISECONDS);
+        while (!d.hasExpired() && autoOpMode.opModeIsActive()) {
+          Thread.sleep(CYCLE_MS);
+        }
+      }
+    } catch (InterruptedException ignored) {
     }
   }
 

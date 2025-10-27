@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.qubit.autoOps;
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -46,7 +45,9 @@ public class AutoOp extends LinearOpMode {
     // Initialize robot.
     robot = new FtcBot();
     robot.init(hardwareMap, telemetry, true);
-    robot.blinkinLed.set(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+    // Enable and reset servos
+    robot.start();
+    robot.cannon.stop();
     robot.aprilTag.pointAtObelisk();
 
     if (FtcUtils.DEBUG) {
@@ -127,7 +128,7 @@ public class AutoOp extends LinearOpMode {
             robot.config.delayInSeconds);
         telemetry.addData(FtcUtils.TAG, "Countdown %d seconds", countDown);
         telemetry.update();
-        FtcUtils.sleep(1000);
+        FtcUtils.interruptedSleep(1000, this);
         countDown--;
       }
     }
@@ -136,9 +137,6 @@ public class AutoOp extends LinearOpMode {
     telemetry.addData(FtcUtils.TAG, "Auto Op started.");
     telemetry.update();
     if (!opModeIsActive()) return;
-
-    // Enable and reset servos
-    robot.start();
 
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {

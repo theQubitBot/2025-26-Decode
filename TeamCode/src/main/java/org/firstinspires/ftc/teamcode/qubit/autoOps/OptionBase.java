@@ -7,8 +7,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
-import org.firstinspires.ftc.teamcode.qubit.core.CannonPowerData;
+import org.firstinspires.ftc.teamcode.qubit.core.CannonControlData;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
@@ -35,13 +36,13 @@ public class OptionBase {
   protected static final double RADIAN150;
   protected static final double RADIAN180;
   protected LinearOpMode autoOpMode;
-  public CannonPowerData cpd;
+  public CannonControlData ccd;
   protected FtcBot robot;
   protected Follower follower;
   protected final Pose startPose = new Pose(0, 0, 0);
 
   protected Runnable intakeSpinIn, intakeSpinOut, intakeSpinHold,
-      sorterStraight, cannonWarmUp;
+      sorterStraight, cannonIdle;
 
   static {
     RADIAN0 = Math.toRadians(0);
@@ -78,7 +79,7 @@ public class OptionBase {
     intakeSpinHold = () -> robot.intake.spinHold();
 
     sorterStraight = () -> robot.sorter.setStraight(false);
-    cannonWarmUp = () -> robot.cannon.setPower(0.45);
+    cannonIdle = () -> robot.cannon.setVelocity(FtcCannon.LEFT_CANNON_IDLE_VELOCITY, false);
   }
 
   /**

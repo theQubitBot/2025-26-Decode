@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 
 /**
@@ -41,6 +40,7 @@ public class OptionBlueGoal extends OptionBase {
   public OptionBlueGoal(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
+    ccd = robot.cannon.getClosestData(46.7);
   }
 
   public OptionBlueGoal init() {
@@ -50,6 +50,9 @@ public class OptionBlueGoal extends OptionBase {
         .setConstantHeadingInterpolation(startPose.getHeading())
         .addTemporalCallback(10, () -> {
           if (PARAMS.executeRobotActions) robot.aprilTag.pointAtObelisk();
+        })
+        .addTemporalCallback(20, () -> {
+          if (PARAMS.executeRobotActions) robot.intake.spinHold();
         })
         .build();
 
@@ -72,7 +75,7 @@ public class OptionBlueGoal extends OptionBase {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
         .addTemporalCallback(30, () -> {
-          if (PARAMS.executeRobotActions) robot.cannon.setPower(cpd.power);
+          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
         })
         .build();
 
@@ -95,7 +98,7 @@ public class OptionBlueGoal extends OptionBase {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
         .addTemporalCallback(30, () -> {
-          if (PARAMS.executeRobotActions) robot.cannon.setPower(cpd.power);
+          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
         })
         .build();
 
@@ -118,7 +121,7 @@ public class OptionBlueGoal extends OptionBase {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
         .addTemporalCallback(30, () -> {
-          if (PARAMS.executeRobotActions) robot.cannon.setPower(cpd.power);
+          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
         })
         .build();
 
@@ -139,10 +142,9 @@ public class OptionBlueGoal extends OptionBase {
 
     // Deliver preloaded artifacts
     if (!saveAndTest()) return;
-    cpd = robot.cannon.getClosestData(46.7);
 
     if (PARAMS.deliverPreloaded) {
-      if (PARAMS.executeRobotActions) robot.cannon.setPower(cpd.power);
+      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, true, 3000);
       ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
       if (ote != ObeliskTagEnum.UNKNOWN) {
@@ -150,7 +152,7 @@ public class OptionBlueGoal extends OptionBase {
         robot.config.saveToFile();
       }
 
-      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver first row
@@ -158,7 +160,7 @@ public class OptionBlueGoal extends OptionBase {
     if (PARAMS.deliver1) {
       if (PARAMS.executeTrajectories) runFollower(pickup1Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score1Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver second row
@@ -166,7 +168,7 @@ public class OptionBlueGoal extends OptionBase {
     if (PARAMS.deliver2) {
       if (PARAMS.executeTrajectories) runFollower(pickup2Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score2Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver third row
@@ -174,7 +176,7 @@ public class OptionBlueGoal extends OptionBase {
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
+      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Leave

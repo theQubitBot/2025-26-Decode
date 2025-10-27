@@ -68,7 +68,7 @@ public class DrawRectPipelineTeleOp extends OpMode {
   public void init_loop() {
     telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
     telemetry.update();
-    FtcUtils.sleep(50);
+    FtcUtils.sleep(FtcUtils.CYCLE_MS);
   }
 
   /*
@@ -100,7 +100,7 @@ public class DrawRectPipelineTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
-    FtcUtils.sleep(100);
+    FtcUtils.sleep(FtcUtils.CYCLE_MS);
     FtcLogger.exit();
   }
 

@@ -58,13 +58,23 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
     FtcLogger.enter();
     if (gamePad1.x || gamePad2.x || gamePad1.b || gamePad2.b) {
       set(BlinkinPattern.TWINKLES_LAVA_PALETTE);
+    } else if (gamePad1.y || gamePad2.y) {
+      CannonControlData ccd = parent.cannon.getClosestData(46);
+      if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
+        set(BlinkinPattern.GREEN);
+      }
+    } else if (gamePad1.a || gamePad2.a) {
+      CannonControlData ccd = parent.cannon.getClosestData(115);
+      if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
+        set(BlinkinPattern.GREEN);
+      }
     } else if ((gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5) &&
-        parent != null && parent.aprilTag != null){
+        parent != null && parent.aprilTag != null) {
       double range = parent.aprilTag.getGoalRange();
-      if(range >= parent.cannon.powerData.get(1).distance &&
-          range <= parent.cannon.powerData.get(parent.cannon.powerData.size()-1).distance) {
-        CannonPowerData cpd = parent.cannon.getClosestData(range);
-        if (FtcUtils.areEqual(cpd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
+      if (range >= parent.cannon.controlData.get(1).distance &&
+          range <= parent.cannon.controlData.get(parent.cannon.controlData.size() - 1).distance) {
+        CannonControlData ccd = parent.cannon.getClosestData(range);
+        if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
           set(BlinkinPattern.GREEN);
         }
       }

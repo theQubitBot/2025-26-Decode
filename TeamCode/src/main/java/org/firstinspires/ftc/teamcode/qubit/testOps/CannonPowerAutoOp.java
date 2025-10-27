@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
 @Disabled
 @Autonomous(group = "TestOp")
-public class CannonCalibrationAutoOp extends LinearOpMode {
+public class CannonPowerAutoOp extends LinearOpMode {
   String fileName = "cannonCalibration.txt";
 
   @Override
@@ -39,7 +39,7 @@ public class CannonCalibrationAutoOp extends LinearOpMode {
         telemetry.addData(FtcUtils.TAG, "Pwr %1.2f, velocity %4.0f",
             power, velocity);
         telemetry.update();
-       // writer.append(power).append(velocity).flush();
+        // writer.append(power).append(velocity).flush();
       }
 
       for (double i = 70; i > 1; i--) {
