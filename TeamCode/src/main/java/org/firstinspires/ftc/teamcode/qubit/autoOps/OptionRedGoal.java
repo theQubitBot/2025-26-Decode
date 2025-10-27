@@ -8,28 +8,31 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 
 /**
  * A class to implement autonomous objective
  */
 public class OptionRedGoal extends OptionBase {
-  Pose scorePose = new Pose(-48, 0, RADIAN0);
+  Pose scorePose = new Pose(-43, 0, RADIAN0);
 
   public Pose pickup1Pose = new Pose(15, 20, RADIAN45);
+  public Pose pickup1ControlPose = new Pose(-32, 24, RADIAN45);
   public Pose pickup2Pose = new Pose(15, 20, RADIAN45);
+  public Pose pickup2ControlPose = new Pose(-46, 43, RADIAN45);
   public Pose pickup3Pose = new Pose(15, 20, RADIAN45);
-
-  public Pose leavePose = new Pose(-24, 12, -RADIAN0);
+  public Pose pickup3ControlPose = new Pose(-61, 60, RADIAN45);
+  public Pose leavePose = new Pose(-41, -30, RADIAN45);
 
   PathChain scorePreloadPath, leavePath,
       pickup1Path, pickup2Path, pickup3Path,
       score1Path, score2Path, score3Path;
 
   public static class Params {
-    public boolean executeTrajectories = true, executeRobotActions = false;
+    public boolean executeTrajectories = true, executeRobotActions = true;
     public boolean deliverPreloaded = true,
         deliver1 = false, deliver2 = false, deliver3 = false,
-        leave = false;
+        leave = true;
   }
 
   public static OptionRedGoal.Params PARAMS = new OptionRedGoal.Params();
@@ -37,7 +40,6 @@ public class OptionRedGoal extends OptionBase {
   public OptionRedGoal(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
-    cpd = robot.cannon.powerData.get(1);
   }
 
   public OptionRedGoal init() {
@@ -46,7 +48,7 @@ public class OptionRedGoal extends OptionBase {
         .addPath(new BezierLine(startPose, scorePose))
         .setConstantHeadingInterpolation(startPose.getHeading())
         .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) cannonWarmUp.run();
+          if (PARAMS.executeRobotActions) robot.aprilTag.pointAtObelisk();
         })
         .build();
 
@@ -136,9 +138,17 @@ public class OptionRedGoal extends OptionBase {
 
     // Deliver preloaded artifacts
     if (!saveAndTest()) return;
+    cpd = robot.cannon.getClosestData(46.7);
 
     if (PARAMS.deliverPreloaded) {
+      if (PARAMS.executeRobotActions) robot.cannon.setPower(cpd.power);
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, true, 3000);
+      ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
+      if (ote != ObeliskTagEnum.UNKNOWN) {
+        robot.config.obeliskTagEnum = ote;
+        robot.config.saveToFile();
+      }
+
       if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 

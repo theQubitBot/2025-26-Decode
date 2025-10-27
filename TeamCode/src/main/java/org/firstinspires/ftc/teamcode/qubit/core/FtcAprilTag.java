@@ -32,15 +32,15 @@ import java.util.concurrent.TimeUnit;
 public class FtcAprilTag {
   static final String TAG = "FtcAprilTag";
   public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
-  public static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5365;
-  public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5050;
+  public static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5345;
+  public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5000;
   public static final double OBELISK_RED_ALLIANCE_GOAL_POSITION = 0.4465;
-  public static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4780;
+  public static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4740;
   public static final double GOAL_POSITION = 0.4915;
   public static final double MAX_RANGE = 150.0;
   public static final double MIN_RANGE = 0.0;
-  public static final int CAMERA_EXPOSURE = 9; // milliseconds
-  public static final int CAMERA_GAIN = 25;
+  public static final int CAMERA_EXPOSURE = 5; // milliseconds
+  public static final int CAMERA_GAIN = 10;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
   public int currentExposure, minExposure, maxExposure;
@@ -108,18 +108,18 @@ public class FtcAprilTag {
     if (detections != null && !detections.isEmpty()) {
       for (AprilTagDetection detection : detections) {
         if (detection.metadata != null) {
-          if (detection.id == 21){
+          if (detection.id == 21) {
             ote = ObeliskTagEnum.GPP;
-          }  else if (detection.id == 22){
+          } else if (detection.id == 22) {
             ote = ObeliskTagEnum.PGP;
-          } else if ( detection.id == 23) {
+          } else if (detection.id == 23) {
             ote = ObeliskTagEnum.PPG;
           }
         }
       }
     }
 
-    return  ote;
+    return ote;
   }
 
   /**

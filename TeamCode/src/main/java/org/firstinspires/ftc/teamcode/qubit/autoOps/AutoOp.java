@@ -94,7 +94,7 @@ public class AutoOp extends LinearOpMode {
     FtcLogger.enter();
 
     while (opModeInInit()) {
-      if(robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
+      if (robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
         ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
         if (ote != ObeliskTagEnum.UNKNOWN) {
           robot.config.obeliskTagEnum = ote;

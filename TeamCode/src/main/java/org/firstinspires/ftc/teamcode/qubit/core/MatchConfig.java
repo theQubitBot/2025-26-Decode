@@ -142,6 +142,8 @@ public class MatchConfig {
         robotPosition = RobotPositionEnum.GOAL;
       } else if (gamePad1.dpadRightWasPressed() || gamePad2.dpadRightWasPressed()) {
         robotPosition = RobotPositionEnum.AUDIENCE;
+      } else if (gamePad1.yWasPressed() || gamePad2.yWasPressed()){
+        robotPosition = RobotPositionEnum.OBELISK;
       }
 
       // Configure initial delay
@@ -203,6 +205,7 @@ public class MatchConfig {
       telemetry.addData("Bumper", "BLUE alliance");
       telemetry.addData("Trigger", "RED alliance");
       telemetry.addData("dPad", "left: GOAL position, right: AUDIENCE position");
+      //telemetry.addData("y", "OBELISK position");
       telemetry.addData("Start delay", "dPad up/down: +/-");
       telemetry.addData("Deliver 3rd row", "a: toggle yes/no");
     }

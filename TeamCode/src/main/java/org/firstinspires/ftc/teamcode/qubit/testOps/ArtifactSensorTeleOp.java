@@ -21,7 +21,7 @@ public class ArtifactSensorTeleOp extends OpMode {
   @Override
   public void init() {
     FtcLogger.enter();
-    telemetry.addData(">", "Initializing, please wait...");
+    telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
 
     artifactSensor = new ArtifactSensor();
@@ -37,7 +37,7 @@ public class ArtifactSensorTeleOp extends OpMode {
    */
   @Override
   public void init_loop() {
-    telemetry.addData(">", "Waiting for driver to press play");
+    telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
     telemetry.update();
     FtcUtils.sleep(50);
   }
@@ -48,7 +48,7 @@ public class ArtifactSensorTeleOp extends OpMode {
   @Override
   public void start() {
     FtcLogger.enter();
-    telemetry.addData(">", "Starting...");
+    telemetry.addData(FtcUtils.TAG, "Starting...");
     telemetry.update();
     artifactSensor.start();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -67,7 +67,7 @@ public class ArtifactSensorTeleOp extends OpMode {
     artifactSensor.showTelemetry();
 
     // Show the elapsed game time.
-    telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
+    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
     FtcLogger.exit();
@@ -80,7 +80,7 @@ public class ArtifactSensorTeleOp extends OpMode {
   public void stop() {
     FtcLogger.enter();
     artifactSensor.stop();
-    telemetry.addData(">", "Tele Op stopped.");
+    telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     telemetry.update();
     FtcLogger.exit();
   }

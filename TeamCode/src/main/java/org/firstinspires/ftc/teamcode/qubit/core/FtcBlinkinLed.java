@@ -59,9 +59,15 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
     if (gamePad1.x || gamePad2.x || gamePad1.b || gamePad2.b) {
       set(BlinkinPattern.TWINKLES_LAVA_PALETTE);
     } else if ((gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5) &&
-        parent != null && parent.aprilTag != null &&
-        parent.aprilTag.getGoalRange() >= parent.cannon.powerData.get(1).distance) {
-      set(BlinkinPattern.GREEN);
+        parent != null && parent.aprilTag != null){
+      double range = parent.aprilTag.getGoalRange();
+      if(range >= parent.cannon.powerData.get(1).distance &&
+          range <= parent.cannon.powerData.get(parent.cannon.powerData.size()-1).distance) {
+        CannonPowerData cpd = parent.cannon.getClosestData(range);
+        if (FtcUtils.areEqual(cpd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
+          set(BlinkinPattern.GREEN);
+        }
+      }
     } else if (FtcUtils.lastNSeconds(runtime, 10)) {
       if (parent != null) {
         if (parent.config.allianceColor == AllianceColorEnum.BLUE) {

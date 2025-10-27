@@ -33,7 +33,7 @@ public class ServoCalibrationTeleOp extends OpMode {
   @Override
   public void init() {
     FtcLogger.enter();
-    telemetry.addData(">", "Initializing, please wait...");
+    telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
     aprilTag = new FtcAprilTag(null);
     aprilTag.init(hardwareMap, telemetry);
@@ -74,7 +74,7 @@ public class ServoCalibrationTeleOp extends OpMode {
    */
   @Override
   public void init_loop() {
-    telemetry.addData(">", "Waiting for driver to press play");
+    telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
     telemetry.update();
     FtcUtils.sleep(50);
   }
@@ -85,7 +85,7 @@ public class ServoCalibrationTeleOp extends OpMode {
   @Override
   public void start() {
     FtcLogger.enter();
-    telemetry.addData(">", "Starting...");
+    telemetry.addData(FtcUtils.TAG, "Starting...");
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -138,7 +138,7 @@ public class ServoCalibrationTeleOp extends OpMode {
     telemetry.addData("b", "right trigger servo");
     telemetry.addData("y", "aprilTag servo");
     telemetry.addData("Servo", "%s %5.4f", servoName, servoPosition);
-    telemetry.addData(">", "Loop %.0f ms, cumulative %.0f seconds",
+    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
     FtcUtils.sleep(CYCLE_MS);
@@ -150,7 +150,7 @@ public class ServoCalibrationTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
-    telemetry.addData(">", "Tele Op stopped.");
+    telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     telemetry.update();
     FtcLogger.exit();
   }

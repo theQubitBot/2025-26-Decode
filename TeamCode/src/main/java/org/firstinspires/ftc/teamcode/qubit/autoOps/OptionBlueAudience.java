@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 
 /**
  * A class to implement autonomous objective
@@ -21,16 +23,16 @@ public class OptionBlueAudience extends OptionBase {
   public Pose pickupLoadingZonePose = new Pose(15, 20, RADIAN133);
   public Pose pickupLoadingZoneControlPose = new Pose(15, 20, RADIAN133);
 
-  public Pose leavePose = new Pose(-24, 12, -RADIAN20);
+  public Pose leavePose = new Pose(17, 10, -RADIAN20);
 
   PathChain leavePath,
       pickup3Path, pickupLoadingZonePath,
       score3Path, scoreLoadingZonePath;
 
   public static class Params {
-    public boolean executeTrajectories = true, executeRobotActions = false;
+    public boolean executeTrajectories = true, executeRobotActions = true;
     public boolean deliverPreloaded = true,
-        deliver3 = false, deliverLoadingZone = false, leave = false;
+        deliver3 = false, deliverLoadingZone = false, leave = true;
   }
 
   public static OptionBlueAudience.Params PARAMS = new OptionBlueAudience.Params();
@@ -38,13 +40,12 @@ public class OptionBlueAudience extends OptionBase {
   public OptionBlueAudience(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
-    cpd = robot.cannon.powerData.get(robot.cannon.powerData.size() - 1);
   }
 
   public OptionBlueAudience init() {
     // third artifact rwo
     pickup3Path = follower.pathBuilder()
-        .addPath(new BezierCurve(scorePose,pickup3ControlPose, pickup3Pose))
+        .addPath(new BezierCurve(scorePose, pickup3ControlPose, pickup3Pose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
         .addTemporalCallback(100, () -> {
           if (PARAMS.executeRobotActions) intakeSpinIn.run();
@@ -66,7 +67,7 @@ public class OptionBlueAudience extends OptionBase {
         .build();
 
     pickupLoadingZonePath = follower.pathBuilder()
-        .addPath(new BezierCurve(scorePose,pickupLoadingZoneControlPose, pickupLoadingZonePose))
+        .addPath(new BezierCurve(scorePose, pickupLoadingZoneControlPose, pickupLoadingZonePose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), pickupLoadingZonePose.getHeading())
         .addTemporalCallback(100, () -> {
           if (PARAMS.executeRobotActions) intakeSpinIn.run();
@@ -103,9 +104,19 @@ public class OptionBlueAudience extends OptionBase {
     FtcLogger.enter();
 
     if (!saveAndTest()) return;
+    robot.aprilTag.pointAtObelisk();
+    cpd = robot.cannon.getClosestData(87);
+    if (PARAMS.executeRobotActions) robot.cannon.setPower(cpd.power);
+    FtcUtils.sleep(1000);
+    ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
+    if (ote != ObeliskTagEnum.UNKNOWN) {
+      robot.config.obeliskTagEnum = ote;
+      robot.config.saveToFile();
+    }
 
     // Deliver preloaded
     if (PARAMS.deliverPreloaded) {
+      if (PARAMS.executeRobotActions) robot.cannon.setPower(cpd.power);
       if (PARAMS.executeRobotActions) robot.cannon.fire(cpd, robot.config.obeliskTagEnum);
     }
 

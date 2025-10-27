@@ -6,6 +6,7 @@ package org.firstinspires.ftc.teamcode.qubit.core.enumerations;
  */
 public enum RobotPositionEnum {
   UNKNOWN,
+  AUDIENCE,
   GOAL,
-  AUDIENCE
+  OBELISK
 }
