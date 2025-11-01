@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.qubit.testOps;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -18,15 +19,15 @@ import java.util.Locale;
 // big triangle - 0.45 is max
 // small triangle - 0.65 is max
 
-//@Disabled
+@Disabled
 @TeleOp(group = "TestOp")
-public class CannonTeleOp extends OpMode {
+public class CannonPowerTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
   double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
-  final double largeDeltaPower = 0.10;
-  final double smallDeltaPower = 0.01;
+  final double largeDelta = 0.10;
+  final double smallDelta = 0.01;
 
   FtcAprilTag aprilTag;
   FtcCannon cannon;
@@ -38,9 +39,7 @@ public class CannonTeleOp extends OpMode {
   public void init() {
     FtcLogger.enter();
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    if (dashboard != null) {
-      telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-    }
+    telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
@@ -93,13 +92,13 @@ public class CannonTeleOp extends OpMode {
     telemetry.addData("dPad up/down", "Large power +/-");
     telemetry.addData("dPad left/right", "Small power +/-");
     if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
-      newMotorPower = cannon.leftCannonMotor.getPower() + largeDeltaPower;
+      newMotorPower = cannon.leftCannonMotor.getPower() + largeDelta;
     } else if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) {
-      newMotorPower = cannon.leftCannonMotor.getPower() + smallDeltaPower;
+      newMotorPower = cannon.leftCannonMotor.getPower() + smallDelta;
     } else if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) {
-      newMotorPower = cannon.leftCannonMotor.getPower() - largeDeltaPower;
+      newMotorPower = cannon.leftCannonMotor.getPower() - largeDelta;
     } else if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) {
-      newMotorPower = cannon.leftCannonMotor.getPower() - smallDeltaPower;
+      newMotorPower = cannon.leftCannonMotor.getPower() - smallDelta;
     }
 
     newMotorPower = Range.clip(newMotorPower, FtcMotor.ZERO_POWER, FtcMotor.MAX_POWER);

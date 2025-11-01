@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
  * A class to implement autonomous objective
  */
 public class OptionRedGoal extends OptionBase {
-  Pose scorePose = new Pose(-43, 0, RADIAN0);
+  Pose scorePose = new Pose(-41, 0, RADIAN0);
 
   public Pose pickup1Pose = new Pose(15, 20, RADIAN45);
   public Pose pickup1ControlPose = new Pose(-32, 24, RADIAN45);
@@ -22,7 +22,7 @@ public class OptionRedGoal extends OptionBase {
   public Pose pickup2ControlPose = new Pose(-46, 43, RADIAN45);
   public Pose pickup3Pose = new Pose(15, 20, RADIAN45);
   public Pose pickup3ControlPose = new Pose(-61, 60, RADIAN45);
-  public Pose leavePose = new Pose(-41, -30, RADIAN45);
+  public Pose leavePose = new Pose(-14, -14, RADIAN0);
 
   PathChain scorePreloadPath, leavePath,
       pickup1Path, pickup2Path, pickup3Path,
@@ -40,7 +40,7 @@ public class OptionRedGoal extends OptionBase {
   public OptionRedGoal(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
-    ccd = robot.cannon.getClosestData(46.7);
+    ccd = robot.cannon.getClosestData(35);
   }
 
   public OptionRedGoal init() {
@@ -152,7 +152,8 @@ public class OptionRedGoal extends OptionBase {
         robot.config.saveToFile();
       }
 
-      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver first row
@@ -160,7 +161,8 @@ public class OptionRedGoal extends OptionBase {
     if (PARAMS.deliver1) {
       if (PARAMS.executeTrajectories) runFollower(pickup1Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score1Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver second row
@@ -168,7 +170,8 @@ public class OptionRedGoal extends OptionBase {
     if (PARAMS.deliver2) {
       if (PARAMS.executeTrajectories) runFollower(pickup2Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score2Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver third row
@@ -176,7 +179,8 @@ public class OptionRedGoal extends OptionBase {
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Leave

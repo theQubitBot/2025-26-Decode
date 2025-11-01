@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.qubit.testOps;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -15,16 +14,14 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
 import java.util.Locale;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
 public class CannonVelTeleOp extends OpMode {
-  public static double MIN_VELOCITY = 800.0;
-  public static double MAX_VELOCITY = 1500.0;
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
   double expectedVelocity;
-  final double largeDeltaVelocity = 100;
-  final double smallDeltaVelocity = 20;
+  final double largeDelta = 100;
+  final double smallDelta = 20;
   FtcAprilTag aprilTag;
   FtcCannon cannon;
 
@@ -35,9 +32,7 @@ public class CannonVelTeleOp extends OpMode {
   public void init() {
     FtcLogger.enter();
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    if (dashboard != null) {
-      telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-    }
+    telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
@@ -75,7 +70,7 @@ public class CannonVelTeleOp extends OpMode {
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     aprilTag.start();
     cannon.start();
-    expectedVelocity = MIN_VELOCITY;
+    expectedVelocity = FtcCannon.MIN_VELOCITY;
     FtcLogger.exit();
   }
 
@@ -91,16 +86,16 @@ public class CannonVelTeleOp extends OpMode {
     telemetry.addData("dPad up/down", "Large vel +/-");
     telemetry.addData("dPad left/right", "Small vel +/-");
     if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
-      expectedVelocity += largeDeltaVelocity;
+      expectedVelocity += largeDelta;
     } else if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) {
-      expectedVelocity += smallDeltaVelocity;
+      expectedVelocity += smallDelta;
     } else if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) {
-      expectedVelocity -= largeDeltaVelocity;
+      expectedVelocity -= largeDelta;
     } else if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) {
-      expectedVelocity -= smallDeltaVelocity;
+      expectedVelocity -= smallDelta;
     }
 
-    expectedVelocity = Range.clip(expectedVelocity, MIN_VELOCITY, MAX_VELOCITY);
+    expectedVelocity = Range.clip(expectedVelocity, FtcCannon.MIN_VELOCITY, FtcCannon.MAX_VELOCITY);
     cannon.leftCannonMotor.setVelocity(expectedVelocity);
     cannon.rightCannonMotor.setVelocity(expectedVelocity);
 

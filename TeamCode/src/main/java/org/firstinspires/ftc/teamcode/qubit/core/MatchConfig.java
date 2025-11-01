@@ -142,18 +142,13 @@ public class MatchConfig {
         robotPosition = RobotPositionEnum.GOAL;
       } else if (gamePad1.dpadRightWasPressed() || gamePad2.dpadRightWasPressed()) {
         robotPosition = RobotPositionEnum.AUDIENCE;
-      } else if (gamePad1.yWasPressed() || gamePad2.yWasPressed()) {
-        robotPosition = RobotPositionEnum.OBELISK;
       }
-
       // Configure initial delay
-      if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
+      else if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
         delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
       } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
         delayInSeconds = Math.max(delayInSeconds - 1, 0);
-      }
-
-      if (gamePad1.aWasPressed() || gamePad2.aWasPressed()) {
+      } else if (gamePad1.aWasPressed() || gamePad2.aWasPressed()) {
         deliverThirdRow = !deliverThirdRow;
       }
 
@@ -190,8 +185,7 @@ public class MatchConfig {
       telemetry.addData(FtcUtils.TAG, "%s alliance, %s position",
           allianceColor, robotPosition);
       telemetry.addData(FtcUtils.TAG, "start delay %d seconds", delayInSeconds);
-      telemetry.addData(FtcUtils.TAG, "deliver third row: %s",
-          deliverThirdRow ? "yes" : "no");
+      telemetry.addData(FtcUtils.TAG, "deliver third row: %s", deliverThirdRow ? "yes" : "no");
       telemetry.addData(FtcUtils.TAG, "Motif %s", obeliskTagEnum);
     }
   }
@@ -204,8 +198,7 @@ public class MatchConfig {
       telemetry.addData("Match Configuration Command Menu", "");
       telemetry.addData("Bumper", "BLUE alliance");
       telemetry.addData("Trigger", "RED alliance");
-      telemetry.addData("dPad", "left: GOAL position, right: AUDIENCE position");
-      //telemetry.addData("y", "OBELISK position");
+      telemetry.addData("dPad", "left: GOAL, right: AUDIENCE position");
       telemetry.addData("Start delay", "dPad up/down: +/-");
       telemetry.addData("Deliver 3rd row", "a: toggle yes/no");
     }

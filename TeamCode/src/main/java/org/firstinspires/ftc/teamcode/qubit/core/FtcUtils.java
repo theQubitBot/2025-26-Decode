@@ -14,7 +14,6 @@ import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 
 import java.lang.reflect.Modifier;
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,6 +33,7 @@ public final class FtcUtils {
   public static final int END_GAME_DURATION = 30; // seconds
   public static final int BUZZER_DURATION = 2; // seconds
   public static final int CYCLE_MS = 50; // milliseconds
+  public static final int INTERRUPTIBLE_CYCLE_MS = 5; // milliseconds
 
   /* Constructor */
   public FtcUtils() {
@@ -247,12 +247,12 @@ public final class FtcUtils {
    *
    * @param milliseconds The time to sleep in milliseconds.
    */
-  public static void interruptedSleep(long milliseconds, LinearOpMode autoOpMode) {
+  public static void interruptibleSleep(long milliseconds, LinearOpMode autoOpMode) {
     try {
       if (milliseconds >= 0) {
         Deadline d = new Deadline(milliseconds, TimeUnit.MILLISECONDS);
         while (!d.hasExpired() && autoOpMode.opModeIsActive()) {
-          Thread.sleep(CYCLE_MS);
+          Thread.sleep(INTERRUPTIBLE_CYCLE_MS);
         }
       }
     } catch (InterruptedException ignored) {

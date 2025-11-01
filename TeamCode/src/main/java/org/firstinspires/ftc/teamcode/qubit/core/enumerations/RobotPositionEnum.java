@@ -8,5 +8,4 @@ public enum RobotPositionEnum {
   UNKNOWN,
   AUDIENCE,
   GOAL,
-  OBELISK
 }

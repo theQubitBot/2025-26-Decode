@@ -128,7 +128,7 @@ public class AutoOp extends LinearOpMode {
             robot.config.delayInSeconds);
         telemetry.addData(FtcUtils.TAG, "Countdown %d seconds", countDown);
         telemetry.update();
-        FtcUtils.interruptedSleep(1000, this);
+        FtcUtils.interruptibleSleep(1000, this);
         countDown--;
       }
     }
@@ -165,7 +165,7 @@ public class AutoOp extends LinearOpMode {
 
     double autoOpExecutionDuration = 0;
     if (runtime != null) {
-      autoOpExecutionDuration = runtime.seconds();
+      autoOpExecutionDuration = Math.round(runtime.seconds());
     }
 
     while (optionBase != null && optionBase.saveAndTest()) {

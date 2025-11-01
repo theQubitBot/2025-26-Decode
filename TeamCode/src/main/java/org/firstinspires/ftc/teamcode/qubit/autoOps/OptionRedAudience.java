@@ -105,7 +105,7 @@ public class OptionRedAudience extends OptionBase {
     if (!saveAndTest()) return;
     robot.aprilTag.pointAtObelisk();
     if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
-    FtcUtils.interruptedSleep(1000, autoOpMode);
+    FtcUtils.interruptibleSleep(1000, autoOpMode);
     ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
     if (ote != ObeliskTagEnum.UNKNOWN) {
       robot.config.obeliskTagEnum = ote;
@@ -116,7 +116,8 @@ public class OptionRedAudience extends OptionBase {
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
       if (PARAMS.executeRobotActions) robot.intake.spinHold();
-      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver third trow
@@ -124,7 +125,8 @@ public class OptionRedAudience extends OptionBase {
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver loading zone
@@ -132,7 +134,8 @@ public class OptionRedAudience extends OptionBase {
     if (PARAMS.deliverLoadingZone) {
       if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
       if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
-      if (PARAMS.executeRobotActions) robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Leave
