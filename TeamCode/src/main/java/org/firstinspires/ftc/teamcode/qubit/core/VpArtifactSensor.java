@@ -16,7 +16,7 @@ import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 /**
  * A camera based artifact sensor.
  */
-public class ArtifactSensor {
+public class VpArtifactSensor {
   private PredominantColorProcessor colorProcessor;
   private VisionPortal visionPortal;
   public boolean telemetryEnabled = true;

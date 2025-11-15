@@ -33,7 +33,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   // and noting the min power at which the robot begins to move/turn.
   // Robot weight distribution would impact rotational inertia, which would impact
   // the turn value most.
-  public static final double MAXIMUM_TURN_POWER = 0.70;
+  public static final double MAXIMUM_TURN_POWER = 0.90;
   public static final double MINIMUM_TURN_POWER = 0.25;
   public static final double FORWARD_SLO_MO_POWER = 0.25;
   public static final double STRAFE_SLO_MO_POWER = 0.40;

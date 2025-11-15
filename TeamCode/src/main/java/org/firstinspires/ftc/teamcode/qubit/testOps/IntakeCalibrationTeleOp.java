@@ -1,29 +1,25 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcIntake;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-//@Disabled
+@Disabled
 @TeleOp(group = "TestOp")
 public class IntakeCalibrationTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
-
-  FtcServo leftRollerServo = null;
-  FtcServo rightRollerServo = null;
-  FtcServo leftSweeperServo = null;
-  FtcServo rightSweeperServo = null;
-  double leftRollerPower, rightRollerPower, leftSweeperPower, rightSweeperPower;
+  FtcIntake intake = null;
+  double intakePower;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -33,43 +29,10 @@ public class IntakeCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-
-    leftRollerServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.LEFT_ROLLER_SERVO_NAME));
-    if (leftRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      leftRollerServo.getController().pwmEnable();
-    }
-
-    leftRollerServo.setDirection(Servo.Direction.REVERSE);
-    leftRollerPower = FtcIntake.INTAKE_STOP_POWER;
-    leftRollerServo.setPosition(leftRollerPower);
-
-    rightRollerServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.RIGHT_ROLLER_SERVO_NAME));
-    if (rightRollerServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      rightRollerServo.getController().pwmEnable();
-    }
-
-    rightRollerServo.setDirection(Servo.Direction.FORWARD);
-    rightRollerPower = FtcIntake.INTAKE_STOP_POWER;
-    rightRollerServo.setPosition(rightRollerPower);
-
-    leftSweeperServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.LEFT_SWEEPER_SERVO_NAME));
-    if (leftSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      leftSweeperServo.getController().pwmEnable();
-    }
-
-    leftSweeperServo.setDirection(Servo.Direction.FORWARD);
-    leftSweeperPower = FtcIntake.INTAKE_STOP_POWER;
-    leftSweeperServo.setPosition(leftSweeperPower);
-
-    rightSweeperServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.RIGHT_SWEEPER_SERVO_NAME));
-    if (rightSweeperServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
-      rightSweeperServo.getController().pwmEnable();
-    }
-
-    rightSweeperServo.setDirection(Servo.Direction.REVERSE);
-    rightSweeperPower = FtcIntake.INTAKE_STOP_POWER;
-    rightSweeperServo.setPosition(rightSweeperPower);
-
+    intake = new FtcIntake();
+    intake.init(hardwareMap, telemetry);
+    intakePower = 0;
+    intake.setPower(intakePower);
     FtcLogger.exit();
   }
 
@@ -93,6 +56,7 @@ public class IntakeCalibrationTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    intake.start();
     FtcLogger.exit();
   }
 
@@ -107,56 +71,19 @@ public class IntakeCalibrationTeleOp extends OpMode {
     FtcServo servo = null;
     double position = FtcServo.MID_POSITION;
 
-    if (Math.abs(gamepad1.left_stick_y) >= 0.1) {
-      leftSweeperPower = Math.abs(gamepad1.left_stick_y);
-      position = leftSweeperPower;
-      servo = leftSweeperServo;
-    } else {
-      leftSweeperPower = FtcServo.MID_POSITION;
-      leftSweeperServo.setPosition(leftSweeperPower);
-    }
-
-    if (Math.abs(gamepad1.right_stick_y) >= 0.1) {
-      rightSweeperPower = Math.abs(gamepad1.right_stick_y);
-      position = rightSweeperPower;
-      servo = rightSweeperServo;
-    } else {
-      rightSweeperPower = FtcServo.MID_POSITION;
-      rightSweeperServo.setPosition(rightSweeperPower);
-    }
-
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
-      position = leftRollerServo.getPosition() + FtcServo.LARGE_INCREMENT;
-      leftRollerServo.setPosition(position);
-      rightRollerServo.setPosition(position);
+      intakePower += 0.1;
     } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
-      position = leftRollerServo.getPosition() + FtcServo.SMALL_INCREMENT;
-      leftRollerServo.setPosition(position);
-      rightRollerServo.setPosition(position);
+      intakePower += 0.05;
     } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
-      position = leftRollerServo.getPosition() - FtcServo.LARGE_INCREMENT;
-      leftRollerServo.setPosition(position);
-      rightRollerServo.setPosition(position);
+      intakePower -= 0.1;
     } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
-      position = leftRollerServo.getPosition() - FtcServo.LARGE_INCREMENT;
-      leftRollerServo.setPosition(position);
-      rightRollerServo.setPosition(position);
+      intakePower -= 0.05;
     }
 
-    if (servo != null) {
-      position = Range.clip(position, Servo.MIN_POSITION, Servo.MAX_POSITION);
-      servo.setPosition(position);
-    }
-
-    telemetry.addData("Left sweeper", "left stick Y");
-    telemetry.addData("Right sweeper", "right stick Y");
-    telemetry.addData("roller", "dPad up/down = large +/-");
-    telemetry.addData("roller", "dPad left/right = small +/-");
-    telemetry.addLine();
-    telemetry.addData("Sweeper", "Left %5.4f right %5.4f",
-        leftSweeperServo.getPosition(), rightSweeperServo.getPosition());
-    telemetry.addData("Roller", "left %5.4f right %5.4f",
-        leftRollerServo.getPosition(), rightRollerServo.getPosition());
+    intakePower = Range.clip(intakePower, FtcMotor.MIN_POWER, FtcMotor.MAX_POWER);
+    intake.setPower(intakePower);
+    intake.showTelemetry();
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
@@ -169,6 +96,7 @@ public class IntakeCalibrationTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
+    intake.stop();
     telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     telemetry.update();
     FtcLogger.exit();

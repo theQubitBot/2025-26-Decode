@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode.qubit.testOps;
+package org.firstinspires.ftc.teamcode.qubit.motorOps;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -21,12 +22,12 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
  * d=37.5, v=1040, aligned with obelisk
  * orgPIDF = 10 3 0 0
  */
-//@Disabled
+@Disabled
 @TeleOp(group = "TestOp")
 @Config
 public class MotorVelocityPidTuner extends LinearOpMode {
   // These variables can be changed in FTC Dashboard when the OpMode is initialized.
-  public static double targetVelocity = 1060; // Target speed in ticks per second
+  public static double targetVelocity = 1000; // Target speed in ticks per second
   public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0, 0);
   private PIDFCoefficients pidfOld = new PIDFCoefficients(0, 0, 0, 0);
   private VoltageSensor batteryVoltageSensor;
@@ -66,9 +67,9 @@ public class MotorVelocityPidTuner extends LinearOpMode {
       if (MOTOR_VELO_PID.p != pidfOld.p || MOTOR_VELO_PID.i != pidfOld.i ||
           MOTOR_VELO_PID.d != pidfOld.d || MOTOR_VELO_PID.f != pidfOld.f) {
         // Update the PIDF coefficients on the motor controller from the FTC Dashboard values
-//        cannon.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER,
-//            new PIDFCoefficients(MOTOR_VELO_PID.p, MOTOR_VELO_PID.i,
-//                MOTOR_VELO_PID.d, MOTOR_VELO_PID.f));
+        cannon.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER,
+            new PIDFCoefficients(MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d,
+                MOTOR_VELO_PID.f * 12 / batteryVoltageSensor.getVoltage()));
         pidfOld.p = MOTOR_VELO_PID.p;
         pidfOld.i = MOTOR_VELO_PID.i;
         pidfOld.d = MOTOR_VELO_PID.d;
@@ -88,7 +89,7 @@ public class MotorVelocityPidTuner extends LinearOpMode {
     }
 
     // Stop the motor and restore original coefficients on exit
-    cannon.setVelocity(FtcCannon.LEFT_CANNON_ZERO_VELOCITY, false);
-//    cannon.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, originalPidf);
+    cannon.setVelocity(FtcCannon.CANNON_ZERO_VELOCITY, false);
+    cannon.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, originalPidf);
   }
 }

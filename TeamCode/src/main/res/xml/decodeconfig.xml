@@ -1,28 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
-    <Webcam name="Webcam 1" serialNumber="B3941B40" />
     <Webcam name="Webcam 2" serialNumber="16E01580" />
+    <EthernetDevice name="limelight" serialNumber="EthernetOverUsb:eth0:172.29.1.22" port="0" ipAddress="172.29.1.1" />
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
             <goBILDA5202SeriesMotor name="rightFrontMotor" port="0" />
             <goBILDA5202SeriesMotor name="rightRearMotor" port="1" />
+            <goBILDA5202SeriesMotor name="rightIntakeMotor" port="2" />
             <goBILDA5202SeriesMotor name="rightCannonMotor" port="3" />
-            <Servo name="rightSweeperServo" port="0" />
-            <Servo name="rightTriggerServo" port="1" />
-            <Servo name="rightRollerServo" port="2" />
-            <Servo name="aprilTagServo" port="4" />
-            <RevBlinkinLedDriver name="blinkinLedDriver" port="5" />
+            <Servo name="rightTriggerServo" port="0" />
+            <Servo name="aprilTagServo" port="2" />
+            <RevBlinkinLedDriver name="blinkinLedDriver" port="4" />
+            <goBILDAPinpoint name="pinpointDriver" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <goBILDA5202SeriesMotor name="leftFrontMotor" port="0" />
             <goBILDA5202SeriesMotor name="leftRearMotor" port="1" />
+            <goBILDA5202SeriesMotor name="leftIntakeMotor" port="2" />
             <goBILDA5202SeriesMotor name="leftCannonMotor" port="3" />
-            <Servo name="leftSweeperServo" port="0" />
-            <Servo name="leftTriggerServo" port="1" />
-            <Servo name="leftRollerServo" port="2" />
-            <Servo name="sorterServo" port="4" />
+            <Servo name="leftTriggerServo" port="0" />
+            <Servo name="sorterServo" port="2" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
-            <goBILDAPinpoint name="pinpointDriver" port="0" bus="3" />
         </LynxModule>
     </LynxUsbDevice>
 </Robot>

@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 
 import java.util.Locale;
 
@@ -64,12 +63,12 @@ public class FtcSorter extends FtcSubSystemBase {
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     FtcLogger.enter();
 
-    if (gamePad1.xWasPressed() || gamePad2.xWasPressed() || gamePad1.bWasPressed() || gamePad2.bWasPressed()) {
+    if (gamePad1.a || gamePad2.a) {
       setStraight(false);
     } else if (parent != null && parent.artifactSensor != null) {
-      if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_GREEN) {
+      if (parent.artifactSensor.isGreenVisible()) {
         setGreen(false);
-      } else if (parent.artifactSensor.getSwatch() == PredominantColorProcessor.Swatch.ARTIFACT_PURPLE) {
+      } else {
         setPurple(false);
       }
     }

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,7 +15,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcSorter;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-//@Disabled
+@Disabled
 @TeleOp(group = "TestOp")
 public class ServoCalibrationTeleOp extends OpMode {
   // Declare OpMode members
@@ -76,7 +77,7 @@ public class ServoCalibrationTeleOp extends OpMode {
   public void init_loop() {
     telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
     telemetry.update();
-    FtcUtils.sleep(50);
+    FtcUtils.sleep(FtcUtils.CYCLE_MS);
   }
 
   /*

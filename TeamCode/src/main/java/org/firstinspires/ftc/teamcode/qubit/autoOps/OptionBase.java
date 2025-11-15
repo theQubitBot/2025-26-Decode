@@ -79,7 +79,7 @@ public class OptionBase {
     intakeSpinHold = () -> robot.intake.spinHold();
 
     sorterStraight = () -> robot.sorter.setStraight(false);
-    cannonIdle = () -> robot.cannon.setVelocity(FtcCannon.LEFT_CANNON_IDLE_VELOCITY, false);
+    cannonIdle = () -> robot.cannon.setVelocity(FtcCannon.CANNON_IDLE_VELOCITY, false);
   }
 
   /**

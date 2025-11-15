@@ -20,7 +20,7 @@ public class FtcBot extends FtcSubSystemBase {
 
   // robot sub systems
   public FtcAprilTag aprilTag = null;
-  public ArtifactSensor artifactSensor = null;
+  public LlArtifactSensor artifactSensor = null;
   public FtcBlinkinLed blinkinLed = null;
   public FtcBulkRead bulkRead = null;
   public FtcCannon cannon = null;
@@ -99,7 +99,7 @@ public class FtcBot extends FtcSubSystemBase {
       aprilTag = new FtcAprilTag(this);
       aprilTag.init(hardwareMap, telemetry);
 
-      artifactSensor = new ArtifactSensor();
+      artifactSensor = new LlArtifactSensor();
       artifactSensor.init(hardwareMap, telemetry);
 
       blinkinLed = new FtcBlinkinLed(this);

@@ -18,12 +18,11 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 public class OptionBlueAudience extends OptionBase {
   Pose scorePose = startPose;
 
-  public Pose pickup3Pose = new Pose(15, 20, RADIAN70);
-  public Pose pickup3ControlPose = new Pose(15, 20, RADIAN70);
-  public Pose pickupLoadingZonePose = new Pose(15, 20, RADIAN133);
-  public Pose pickupLoadingZoneControlPose = new Pose(15, 20, RADIAN133);
-
-  public Pose leavePose = new Pose(17, 10, -RADIAN20);
+  public Pose pickup3Pose = new Pose(42, 27, RADIAN70);
+  public Pose pickup3ControlPose = new Pose(24, 1, RADIAN70);
+  public Pose pickupLoadingZonePose = new Pose(16, 36, RADIAN133);
+  public Pose pickupLoadingZoneControlPose = new Pose(24, 22, RADIAN133);
+  public Pose leavePose = new Pose(21, 0, RADIAN0);
 
   PathChain leavePath,
       pickup3Path, pickupLoadingZonePath,
@@ -32,7 +31,7 @@ public class OptionBlueAudience extends OptionBase {
   public static class Params {
     public boolean executeTrajectories = true, executeRobotActions = true;
     public boolean deliverPreloaded = true,
-        deliver3 = false, deliverLoadingZone = false, leave = true;
+        deliver3 = true, deliverLoadingZone = false, leave = true;
   }
 
   public static OptionBlueAudience.Params PARAMS = new OptionBlueAudience.Params();
@@ -40,59 +39,64 @@ public class OptionBlueAudience extends OptionBase {
   public OptionBlueAudience(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
-    ccd = robot.cannon.getClosestData(108);
+    ccd = robot.cannon.getClosestData(113);
   }
 
   public OptionBlueAudience init() {
     // third artifact rwo
     pickup3Path = follower.pathBuilder()
-        .addPath(new BezierCurve(scorePose, pickup3ControlPose, pickup3Pose))
-        .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
-        .addTemporalCallback(100, () -> {
+        .addPath(new BezierLine(scorePose, pickup3ControlPose))
+        .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3ControlPose.getHeading())
+        .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) intakeSpinIn.run();
         })
+        .addPath(new BezierLine(pickup3ControlPose, pickup3Pose))
+        .setConstantHeadingInterpolation(pickup3ControlPose.getHeading())
         .build();
 
     score3Path = follower.pathBuilder()
         .addPath(new BezierLine(pickup3Pose, scorePose))
         .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
-        .addTemporalCallback(10, () -> {
+        .addTemporalCallback(1, () -> {
+          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
+        })
+        .addTemporalCallback(5, () -> {
           if (PARAMS.executeRobotActions) intakeSpinHold.run();
         })
-        .addTemporalCallback(20, () -> {
+        .addTemporalCallback(10, () -> {
           if (PARAMS.executeRobotActions) sorterStraight.run();
-        })
-        .addTemporalCallback(30, () -> {
-          if (PARAMS.executeRobotActions) cannonIdle.run();
         })
         .build();
 
     pickupLoadingZonePath = follower.pathBuilder()
-        .addPath(new BezierCurve(scorePose, pickupLoadingZoneControlPose, pickupLoadingZonePose))
-        .setLinearHeadingInterpolation(scorePose.getHeading(), pickupLoadingZonePose.getHeading())
-        .addTemporalCallback(100, () -> {
+        .addPath(new BezierLine(scorePose, pickupLoadingZoneControlPose))
+        .setLinearHeadingInterpolation(scorePose.getHeading(), pickupLoadingZoneControlPose.getHeading())
+        .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) intakeSpinIn.run();
         })
+        .addPath(new BezierLine(pickupLoadingZoneControlPose, pickupLoadingZonePose))
         .build();
 
     scoreLoadingZonePath = follower.pathBuilder()
-        .addPath(new BezierLine(pickupLoadingZonePose, scorePose))
-        .setLinearHeadingInterpolation(pickupLoadingZonePose.getHeading(), scorePose.getHeading())
-        .addTemporalCallback(10, () -> {
+        .addPath(new BezierLine(pickupLoadingZonePose, pickupLoadingZoneControlPose))
+        .setLinearHeadingInterpolation(pickupLoadingZonePose.getHeading(), pickupLoadingZoneControlPose.getHeading())
+        .addTemporalCallback(1, () -> {
+          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
+        })
+        .addTemporalCallback(5, () -> {
           if (PARAMS.executeRobotActions) intakeSpinHold.run();
         })
-        .addTemporalCallback(20, () -> {
+        .addTemporalCallback(10, () -> {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
-        .addTemporalCallback(30, () -> {
-          if (PARAMS.executeRobotActions) cannonIdle.run();
-        })
+        .addPath(new BezierLine(pickupLoadingZoneControlPose, scorePose))
+        .setConstantHeadingInterpolation(scorePose.getHeading())
         .build();
 
     // leave
     leavePath = follower.pathBuilder()
         .addPath(new BezierLine(scorePose, leavePose))
-        .setLinearHeadingInterpolation(scorePose.getHeading(), leavePose.getHeading())
+        .setConstantHeadingInterpolation(scorePose.getHeading())
         .build();
 
     return this;
@@ -105,19 +109,12 @@ public class OptionBlueAudience extends OptionBase {
     FtcLogger.enter();
 
     if (!saveAndTest()) return;
-    robot.aprilTag.pointAtObelisk();
-    if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
-    FtcUtils.interruptibleSleep(1000, autoOpMode);
-    ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
-    if (ote != ObeliskTagEnum.UNKNOWN) {
-      robot.config.obeliskTagEnum = ote;
-      robot.config.saveToFile();
-    }
 
     // Deliver preloaded
     if (PARAMS.deliverPreloaded) {
-      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd, false);
       if (PARAMS.executeRobotActions) robot.intake.spinHold();
+      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
+      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
@@ -125,8 +122,9 @@ public class OptionBlueAudience extends OptionBase {
     // Deliver third trow
     if (!saveAndTest()) return;
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
-      if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
-      if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
+      if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 3000);
+      if (PARAMS.executeTrajectories) FtcUtils.interruptibleSleep(2000, autoOpMode);
+      if (PARAMS.executeTrajectories) runFollower(score3Path, true, 3000);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
@@ -134,8 +132,8 @@ public class OptionBlueAudience extends OptionBase {
     // Deliver loading zone
     if (!saveAndTest()) return;
     if (PARAMS.deliverLoadingZone) {
-      if (PARAMS.executeTrajectories) runFollower(pickup3Path, false, 2600);
-      if (PARAMS.executeTrajectories) runFollower(score3Path, true, 2500);
+      if (PARAMS.executeTrajectories) runFollower(pickupLoadingZonePath, false, 3000);
+      if (PARAMS.executeTrajectories) runFollower(scoreLoadingZonePath, true, 3000);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
@@ -143,7 +141,7 @@ public class OptionBlueAudience extends OptionBase {
     // Leave
     if (!saveAndTest()) return;
     if (PARAMS.leave) {
-      if (PARAMS.executeTrajectories) runFollower(leavePath, false, 4000);
+      if (PARAMS.executeTrajectories) runFollower(leavePath, false, 3000);
     }
 
     FtcLogger.exit();

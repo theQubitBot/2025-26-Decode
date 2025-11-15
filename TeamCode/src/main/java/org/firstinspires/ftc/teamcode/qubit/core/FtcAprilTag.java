@@ -32,10 +32,10 @@ import java.util.concurrent.TimeUnit;
 public class FtcAprilTag {
   static final String TAG = "FtcAprilTag";
   public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
-  public static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5440;
-  public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5000;
-  public static final double OBELISK_RED_ALLIANCE_GOAL_POSITION = 0.4375;
-  public static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4740;
+  public static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5350;
+  public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5020;
+  public static final double OBELISK_RED_ALLIANCE_GOAL_POSITION = 0.4395;
+  public static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4700;
   public static final double GOAL_POSITION = 0.4830;
   public static final double MAX_RANGE = 120.0;
   public static final double MIN_RANGE = 0.0;
@@ -159,15 +159,13 @@ public class FtcAprilTag {
     aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, APRIL_TAG_SERVO_NAME));
     aprilTagServo.setDirection(Servo.Direction.FORWARD);
 
-    if (FtcUtils.DEBUG) {
+    if (FtcUtils.DEBUG || parent == null) {
       visionPortal.resumeLiveView();
       FtcDashboard dashboard = FtcDashboard.getInstance();
       if (dashboard != null) {
         this.telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         dashboard.startCameraStream(visionPortal, 0);
       }
-    } else {
-      visionPortal.stopLiveView();
     }
 
     FtcLogger.exit();
@@ -236,6 +234,7 @@ public class FtcAprilTag {
     if (aprilTagServo != null) {
       aprilTagServo.setPosition(GOAL_POSITION);
     }
+
     FtcLogger.exit();
   }
 

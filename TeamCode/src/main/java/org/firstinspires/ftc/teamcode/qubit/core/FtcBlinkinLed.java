@@ -56,27 +56,28 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
    */
   public void operate(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
     FtcLogger.enter();
-    if (gamePad1.x || gamePad2.x || gamePad1.b || gamePad2.b) {
-      set(BlinkinPattern.TWINKLES_LAVA_PALETTE);
-    } else if (gamePad1.y || gamePad2.y) {
-      CannonControlData ccd = parent.cannon.getClosestData(46);
+    double range = parent.aprilTag.getGoalRange();
+    if (gamePad1.right_bumper || gamePad2.right_bumper) {
+      CannonControlData ccd = parent.cannon.getClosestData(109);
       if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
         set(BlinkinPattern.GREEN);
+      } else {
+        stop();
       }
-    } else if (gamePad1.a || gamePad2.a) {
-      CannonControlData ccd = parent.cannon.getClosestData(115);
+    } else if ((gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5)) {
+      CannonControlData ccd = parent.cannon.getClosestData(34);
       if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
         set(BlinkinPattern.GREEN);
+      } else {
+        stop();
       }
-    } else if ((gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5) &&
-        parent != null && parent.aprilTag != null) {
-      double range = parent.aprilTag.getGoalRange();
-      if (range >= parent.cannon.controlData.get(1).distance &&
-          range <= parent.cannon.controlData.get(parent.cannon.controlData.size() - 1).distance) {
-        CannonControlData ccd = parent.cannon.getClosestData(range);
-        if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
-          set(BlinkinPattern.GREEN);
-        }
+    } else if (range >= parent.cannon.controlData.get(1).distance &&
+        range <= parent.cannon.controlData.get(parent.cannon.controlData.size() - 1).distance) {
+      CannonControlData ccd = parent.cannon.getClosestData(range);
+      if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
+        set(BlinkinPattern.GREEN);
+      } else {
+        stop();
       }
     } else if (FtcUtils.lastNSeconds(runtime, 10)) {
       if (parent != null) {
