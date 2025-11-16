@@ -30,9 +30,9 @@ public class OptionBlueGoal extends OptionBase {
       score1Path, score2Path, score3Path;
 
   public static class Params {
-    public boolean executeTrajectories = true, executeRobotActions = true;
+    public boolean executeTrajectories = true, executeRobotActions = false;
     public boolean deliverPreloaded = true,
-        deliver1 = true, deliver2 = false, deliver3 = false,
+        deliver1 = true, deliver2 = true, deliver3 = true,
         leave = true;
   }
 
@@ -93,12 +93,12 @@ public class OptionBlueGoal extends OptionBase {
           if (PARAMS.executeRobotActions) intakeSpinIn.run();
         })
         .addPath(new BezierLine(pickup2ControlPose, pickup2Pose))
-        .setConstantHeadingInterpolation(pickup2ControlPose.getHeading())
+        .setLinearHeadingInterpolation(pickup2ControlPose.getHeading(), pickup2Pose.getHeading())
         .build();
 
     score2Path = follower.pathBuilder()
         .addPath(new BezierLine(pickup2Pose, pickup2ControlPose))
-        .setConstantHeadingInterpolation(pickup2Pose.getHeading())
+        .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2ControlPose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
         })

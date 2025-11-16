@@ -21,7 +21,7 @@ public class OptionRedAudience extends OptionBase {
   public Pose pickup3ControlPose = new Pose(24, -1, -RADIAN70);
   public Pose pickupLoadingZonePose = new Pose(16, -36, -RADIAN133);
   public Pose pickupLoadingZoneControlPose = new Pose(24, -22, -RADIAN133);
-  public Pose leavePose = new Pose(21, 0, RADIAN0);
+  public Pose leavePose = new Pose(10, -24, RADIAN0);
 
   PathChain leavePath,
       pickup3Path, pickupLoadingZonePath,
