@@ -137,6 +137,7 @@ public class AutoOp extends LinearOpMode {
     telemetry.addData(FtcUtils.TAG, "Auto Op started.");
     telemetry.update();
     if (!opModeIsActive()) return;
+    robot.sorter.startAsyncUpdater();
 
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {

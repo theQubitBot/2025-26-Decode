@@ -3,13 +3,10 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 import android.annotation.SuppressLint;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-import java.util.List;
 
 /**
  * A camera based artifact sensor.
@@ -20,21 +17,38 @@ public class LlArtifactSensor {
   private Telemetry telemetry;
   private Limelight3A limelight = null;
 
+  public enum ArtifactColor {
+    GREEN,
+    PURPLE,
+    UNKNOWN
+  }
+
   public void init(HardwareMap hardwareMap, Telemetry telemetry) {
     this.telemetry = telemetry;
     limelight = hardwareMap.get(Limelight3A.class, LIMELIGHT_NAME);
-    limelight.pipelineSwitch(0);
+    limelight.pipelineSwitch(2);
   }
 
-  public boolean isGreenVisible() {
-    boolean greenVisible = false;
+  public ArtifactColor getArtifactColor() {
+    ArtifactColor artifactColor = ArtifactColor.UNKNOWN;
     LLResult result = limelight.getLatestResult();
-    if (result.isValid()) {
-      List<LLResultTypes.ColorResult> colorResults = result.getColorResults();
-      greenVisible = colorResults != null && !colorResults.isEmpty();
+    double[] llPython = result.getPythonOutput();
+    if (llPython != null) {
+      if (llPython.length > 0) {
+        telemetry.addData("llPython", llPython[0]);
+        if (llPython[0] == 55) {
+          artifactColor = ArtifactColor.GREEN;
+        } else if (llPython[0] == 145) {
+          artifactColor = ArtifactColor.PURPLE;
+        }
+      } else {
+        telemetry.addLine("llPython.length is 0");
+      }
+    } else {
+      telemetry.addLine("llPython is null");
     }
 
-    return greenVisible;
+    return artifactColor;
   }
 
   /**
@@ -44,7 +58,7 @@ public class LlArtifactSensor {
   public void showTelemetry() {
     FtcLogger.enter();
     if (telemetryEnabled) {
-      telemetry.addData("Artifact color", isGreenVisible() ? "green" : "purple");
+      telemetry.addData("Artifact color", getArtifactColor());
     }
 
     FtcLogger.exit();

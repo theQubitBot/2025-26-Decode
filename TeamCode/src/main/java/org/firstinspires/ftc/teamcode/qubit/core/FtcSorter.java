@@ -24,6 +24,7 @@ public class FtcSorter extends FtcSubSystemBase {
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
   public FtcServo sorterServo = null;
+  private FtcSorterAsyncUpdater sorterAsyncUpdater = null;
   private final FtcBot parent;
 
   /* Constructor */
@@ -53,24 +54,30 @@ public class FtcSorter extends FtcSubSystemBase {
   }
 
   /**
+   * Operates the sorter automatically using artifact sensor
+   */
+  public void operate() {
+    LlArtifactSensor.ArtifactColor artifactColor = parent.artifactSensor.getArtifactColor();
+    if (artifactColor == LlArtifactSensor.ArtifactColor.GREEN) {
+      setGreen(false);
+    } else if (artifactColor == LlArtifactSensor.ArtifactColor.PURPLE) {
+      setPurple(false);
+    }
+  }
+
+  /**
    * Operates the sorter automatically using artifact sensor OR
    * using gamepads.
    *
    * @param gamePad1 Gamepad1 to use.
    * @param gamePad2 Gamepad2 to use.
    */
-
   public void operate(Gamepad gamePad1, Gamepad gamePad2) {
     FtcLogger.enter();
-
     if (gamePad1.a || gamePad2.a) {
       setStraight(false);
-    } else if (parent != null && parent.artifactSensor != null) {
-      if (parent.artifactSensor.isGreenVisible()) {
-        setGreen(false);
-      } else {
-        setPurple(false);
-      }
+    } else {
+      operate();
     }
 
     FtcLogger.exit();
@@ -150,11 +157,25 @@ public class FtcSorter extends FtcSubSystemBase {
     FtcLogger.exit();
   }
 
+  public void startAsyncUpdater() {
+    if (sorterAsyncUpdater != null) {
+      sorterAsyncUpdater.stop();
+    }
+
+    sorterAsyncUpdater = new FtcSorterAsyncUpdater(this);
+    Thread sorterUpdaterThread = new Thread(sorterAsyncUpdater);
+    sorterUpdaterThread.start();
+  }
+
   /**
    * Stops the sorter.
    */
   public void stop() {
     FtcLogger.enter();
+    if (sorterAsyncUpdater != null) {
+      sorterAsyncUpdater.stop();
+    }
+
     FtcLogger.exit();
   }
 }

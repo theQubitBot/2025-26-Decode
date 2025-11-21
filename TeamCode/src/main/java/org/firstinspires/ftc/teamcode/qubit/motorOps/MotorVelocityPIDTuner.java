@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 @Disabled
 @Config
 @TeleOp(group = "TestOp")
-public class NoahVelocityPIDTuner extends LinearOpMode {
+public class MotorVelocityPIDTuner extends LinearOpMode {
   public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(50, 0, 1, 12.5);
 
   private final FtcDashboard dashboard = FtcDashboard.getInstance();

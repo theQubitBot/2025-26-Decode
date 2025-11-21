@@ -43,6 +43,8 @@ public class FtcAprilTag {
   public static final int CAMERA_GAIN = 40;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
+  private FtcAprilTagAsyncUpdater updater;
+
   public int currentExposure, minExposure, maxExposure;
   public int currentGain, minGain, maxGain;
   public boolean telemetryEnabled = true;
@@ -55,11 +57,7 @@ public class FtcAprilTag {
   }
 
   private List<AprilTagDetection> getAllDetections() {
-    List<AprilTagDetection> detections = null;
-    if (aprilTagProcessor != null) {
-      detections = aprilTagProcessor.getDetections();
-    }
-
+    List<AprilTagDetection> detections = updater.getAllDetections();
     return detections;
   }
 
@@ -168,6 +166,11 @@ public class FtcAprilTag {
       }
     }
 
+    // Process tags on a background thread
+    updater = new FtcAprilTagAsyncUpdater(aprilTagProcessor);
+    Thread updaterThread = new Thread(updater);
+    updaterThread.start();
+
     FtcLogger.exit();
   }
 
@@ -199,10 +202,10 @@ public class FtcAprilTag {
       double position = aprilTagServo.getPosition();
       telemetry.addData(TAG, "Servo %5.4f (%s)",
           position,
-          position == OBELISK_BLUE_ALLIANCE_GOAL_POSITION ? "Blue LT obelisk" :
-              position == OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION ? "Blue ST obelisk" :
-                  position == OBELISK_RED_ALLIANCE_GOAL_POSITION ? "Red LT obelisk" :
-                      position == OBELISK_RED_ALLIANCE_AUDIENCE_POSITION ? "Red ST obelisk" :
+          position == OBELISK_BLUE_ALLIANCE_GOAL_POSITION ? "Blue goal obelisk" :
+              position == OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION ? "Blue audience obelisk" :
+                  position == OBELISK_RED_ALLIANCE_GOAL_POSITION ? "Red goal obelisk" :
+                      position == OBELISK_RED_ALLIANCE_AUDIENCE_POSITION ? "Red audience obelisk" :
                           position == GOAL_POSITION ? "Goal" : "Unknown");
       List<AprilTagDetection> aprilTagDetections = getAllDetections();
       telemetry.addData("AprilTags count", aprilTagDetections.size());
