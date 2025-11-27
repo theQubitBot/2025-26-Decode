@@ -4,13 +4,15 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
-public class TuningController {
+public class MotorTuningController {
   public static double MOTOR_TICKS_PER_REV = 28;
-  public static double MOTOR_MAX_RPM = 2000;
+  public static double MOTOR_MAX_RPM = 1600;
+  public static double MOTOR_TEST_RPM1 = 820;
+  public static double MOTOR_TEST_RPM2 = 1440;
   public static double MOTOR_GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
 
-  public static double TESTING_MAX_SPEED = 1.0 * MOTOR_MAX_RPM;
-  public static double TESTING_MIN_SPEED = 0.2 * MOTOR_MAX_RPM;
+  public static double TESTING_MAX_RPM = 1.0 * MOTOR_MAX_RPM;
+  public static double TESTING_MIN_RPM = 0.25 * MOTOR_MAX_RPM;
 
   // These are prefixed with "STATE1", "STATE2", etc. because Dashboard displays variables in
   // alphabetical order. Thus, we preserve the actual order of the process
@@ -50,7 +52,7 @@ public class TuningController {
     if (currentState == State.RAMPING_UP) {
       if (stateTimer.seconds() <= ZSTATE1_RAMPING_UP_DURATION) {
         double progress = stateTimer.seconds() / ZSTATE1_RAMPING_UP_DURATION;
-        double target = progress * (TESTING_MAX_SPEED - TESTING_MIN_SPEED) + TESTING_MIN_SPEED;
+        double target = progress * (TESTING_MAX_RPM - TESTING_MIN_RPM) + TESTING_MIN_RPM;
         targetVelocity = rpmToTicksPerSecond(target);
       } else {
         currentState = State.COASTING_1;
@@ -58,7 +60,7 @@ public class TuningController {
       }
     } else if (currentState == State.COASTING_1) {
       if (stateTimer.seconds() <= ZSTATE2_COASTING_1_DURATION) {
-        targetVelocity = rpmToTicksPerSecond(TESTING_MAX_SPEED);
+        targetVelocity = rpmToTicksPerSecond(TESTING_MAX_RPM);
       } else {
         currentState = State.RAMPING_DOWN;
         stateTimer.reset();
@@ -66,7 +68,7 @@ public class TuningController {
     } else if (currentState == State.RAMPING_DOWN) {
       if (stateTimer.seconds() <= ZSTATE3_RAMPING_DOWN_DURATION) {
         double progress = stateTimer.seconds() / ZSTATE3_RAMPING_DOWN_DURATION;
-        double target = TESTING_MAX_SPEED - progress * (TESTING_MAX_SPEED - TESTING_MIN_SPEED);
+        double target = TESTING_MAX_RPM - progress * (TESTING_MAX_RPM - TESTING_MIN_RPM);
         targetVelocity = rpmToTicksPerSecond(target);
       } else {
         currentState = State.COASTING_2;
@@ -74,11 +76,11 @@ public class TuningController {
       }
     } else if (currentState == State.COASTING_2) {
       if (stateTimer.seconds() <= ZSTATE4_COASTING_2_DURATION) {
-        targetVelocity = rpmToTicksPerSecond(TESTING_MIN_SPEED);
+        targetVelocity = rpmToTicksPerSecond(TESTING_MIN_RPM);
       } else {
         currentState = State.RANDOM_1;
         stateTimer.reset();
-        targetVelocity = rpmToTicksPerSecond(Math.random() * (TESTING_MAX_SPEED - TESTING_MIN_SPEED) + TESTING_MIN_SPEED);
+        targetVelocity = rpmToTicksPerSecond(MOTOR_TEST_RPM1);
       }
     } else if (currentState == State.RANDOM_1) {
       if (stateTimer.seconds() <= ZSTATE5_RANDOM_1_DURATION) {
@@ -86,7 +88,7 @@ public class TuningController {
       } else {
         currentState = State.RANDOM_2;
         stateTimer.reset();
-        targetVelocity = rpmToTicksPerSecond(Math.random() * (TESTING_MAX_SPEED - TESTING_MIN_SPEED) + TESTING_MIN_SPEED);
+        targetVelocity = rpmToTicksPerSecond(MOTOR_TEST_RPM1);
       }
     } else if (currentState == State.RANDOM_2) {
       if (stateTimer.seconds() <= ZSTATE6_RANDOM_2_DURATION) {
@@ -94,7 +96,7 @@ public class TuningController {
       } else {
         currentState = State.RANDOM_3;
         stateTimer.reset();
-        targetVelocity = rpmToTicksPerSecond(Math.random() * (TESTING_MAX_SPEED - TESTING_MIN_SPEED) + TESTING_MIN_SPEED);
+        targetVelocity = rpmToTicksPerSecond(MOTOR_TEST_RPM2);
       }
     } else if (currentState == State.RANDOM_3) {
       if (stateTimer.seconds() <= ZSTATE7_RANDOM_3_DURATION) {

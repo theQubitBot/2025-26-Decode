@@ -38,12 +38,23 @@ public class FtcSorter extends FtcSubSystemBase {
    * @param hardwareMap The hardware map to use for initialization.
    * @param telemetry   The telemetry to use.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
     if (sorterEnabled) {
       sorterServo = new FtcServo(hardwareMap.get(Servo.class, SORTER_SERVO_NAME));
       sorterServo.setDirection(Servo.Direction.FORWARD);
+
+      if (autoOp) {
+        if (sorterAsyncUpdater != null) {
+          sorterAsyncUpdater.stop();
+        }
+
+        sorterAsyncUpdater = new FtcSorterAsyncUpdater(this);
+        Thread sorterUpdaterThread = new Thread(sorterAsyncUpdater);
+        sorterUpdaterThread.start();
+      }
+
       showTelemetry();
       telemetry.addData(TAG, "initialized");
     } else {
@@ -54,7 +65,8 @@ public class FtcSorter extends FtcSubSystemBase {
   }
 
   /**
-   * Operates the sorter automatically using artifact sensor
+   * Operates the sorter automatically using artifact sensor.
+   * Used primarily by autoOp via asyncUpdater.
    */
   public void operate() {
     LlArtifactSensor.ArtifactColor artifactColor = parent.artifactSensor.getArtifactColor();
@@ -157,16 +169,6 @@ public class FtcSorter extends FtcSubSystemBase {
     FtcLogger.exit();
   }
 
-  public void startAsyncUpdater() {
-    if (sorterAsyncUpdater != null) {
-      sorterAsyncUpdater.stop();
-    }
-
-    sorterAsyncUpdater = new FtcSorterAsyncUpdater(this);
-    Thread sorterUpdaterThread = new Thread(sorterAsyncUpdater);
-    sorterUpdaterThread.start();
-  }
-
   /**
    * Stops the sorter.
    */
@@ -174,6 +176,7 @@ public class FtcSorter extends FtcSubSystemBase {
     FtcLogger.enter();
     if (sorterAsyncUpdater != null) {
       sorterAsyncUpdater.stop();
+      sorterAsyncUpdater = null;
     }
 
     FtcLogger.exit();

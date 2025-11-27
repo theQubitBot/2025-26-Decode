@@ -16,8 +16,8 @@ public class FtcIntake extends FtcSubSystemBase {
   private static final String TAG = "FtcIntake";
   public static final String LEFT_INTAKE_MOTOR_NAME = "leftIntakeMotor";
   public static final String RIGHT_INTAKE_MOTOR_NAME = "rightIntakeMotor";
-  public static final double INTAKE_POWER = 0.90;
-  public static final double OUTTAKE_POWER = -0.70;
+  public static final double INTAKE_POWER = 0.99;
+  public static final double OUTTAKE_POWER = -INTAKE_POWER;
   public static final double HOLD_POWER = 0.30;
   public static final double STOP_POWER = FtcMotor.ZERO_POWER;
   public static final long ARTIFACT_INTAKE_TIME = 1000; // milliseconds

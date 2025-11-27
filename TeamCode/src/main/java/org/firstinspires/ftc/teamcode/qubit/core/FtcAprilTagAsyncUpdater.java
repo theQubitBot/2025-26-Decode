@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,14 +13,17 @@ public class FtcAprilTagAsyncUpdater implements Runnable {
   public static final String TAG = "FtcSorterAsyncUpdater";
   private final AprilTagProcessor processor;
   private boolean stopRequested;
-  private List<AprilTagDetection> detections, detectionsCopy;
+  private List<AprilTagDetection> detections;
+  private final List<AprilTagDetection> detectionsCopy;
 
   public FtcAprilTagAsyncUpdater(AprilTagProcessor processor) {
     FtcLogger.enter();
     this.processor = processor;
     stopRequested = false;
     detections = null;
-    detectionsCopy = null;
+
+    // There are 5 tags on the field
+    detectionsCopy = new ArrayList<>(5);
     FtcLogger.exit();
   }
 

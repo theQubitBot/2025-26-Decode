@@ -29,18 +29,21 @@ public class FtcCannon extends FtcSubSystemBase {
   public static final String RIGHT_CANNON_MOTOR_NAME = "rightCannonMotor";
   public static final double CANNON_ZERO_VELOCITY = 0;
   public static final double CANNON_IDLE_VELOCITY = 400;
-  public static final long CANNON_RAMP_UP_TIME = 800; // milliseconds
+  public static final long CANNON_RAMP_UP_TIME = 750; // milliseconds
   public static final String LEFT_TRIGGER_SERVO_NAME = "leftTriggerServo";
   public static final String RIGHT_TRIGGER_SERVO_NAME = "rightTriggerServo";
   public static final double LEFT_TRIGGER_UP_POSITION = 0.5745;
   public static final double LEFT_TRIGGER_DOWN_POSITION = 0.5050;
   public static final double RIGHT_TRIGGER_UP_POSITION = 0.4365;
   public static final double RIGHT_TRIGGER_DOWN_POSITION = 0.5020;
-  public static final int TRIGGER_MOVE_TIME = 800; // milliseconds
+  public static final int TRIGGER_MOVE_TIME = 750; // milliseconds
   public static double MIN_VELOCITY = CANNON_ZERO_VELOCITY;
   public static double MAX_VELOCITY = 1700.0;
   public static final double FIRING_VELOCITY_MARGIN = 25;
-  private static final PIDFCoefficients CANNON_PIDF = new PIDFCoefficients(60, 0.25, 2, 12.5);
+  private static final PIDFCoefficients CANNON_PIDF = new PIDFCoefficients(60, 0.25, 2, 13.0);
+  public static final double GOAL_SWEET_SPOT_DISTANCE = 45;
+  public static final double GOAL_MAX_DISTANCE = 75;
+  public static final double AUDIENCE_DISTANCE = 115;
 
   private final boolean cannonEnabled = true;
   public boolean telemetryEnabled = true;
@@ -58,16 +61,16 @@ public class FtcCannon extends FtcSubSystemBase {
     // camera distance, motor power, motor velocity
     controlData.add(new CannonControlData(0, CANNON_IDLE_VELOCITY)); // idle
     controlData.add(new CannonControlData(29, 820));
-    controlData.add(new CannonControlData(34, 820)); // goal auto
-    controlData.add(new CannonControlData(44, 840)); // g
-    controlData.add(new CannonControlData(49, 860)); //g
-    controlData.add(new CannonControlData(54.2, 920)); //g
-    controlData.add(new CannonControlData(59.1, 1000)); //g
-    controlData.add(new CannonControlData(69.5, 1040)); //g
-    controlData.add(new CannonControlData(74.5, 1080)); //g
-    controlData.add(new CannonControlData(109, 1400)); //g
-    controlData.add(new CannonControlData(113, 1420)); // audience side
-    controlData.add(new CannonControlData(122.7, 1460)); //
+    controlData.add(new CannonControlData(34, 820)); //g
+    controlData.add(new CannonControlData(GOAL_SWEET_SPOT_DISTANCE, 840)); // g
+    controlData.add(new CannonControlData(50, 860)); //g
+    controlData.add(new CannonControlData(55, 920)); //g
+    controlData.add(new CannonControlData(60, 1000)); //g
+    controlData.add(new CannonControlData(70, 1040)); //g
+    controlData.add(new CannonControlData(GOAL_MAX_DISTANCE, 1080)); //g
+    controlData.add(new CannonControlData(110, 1400)); //a
+    controlData.add(new CannonControlData(AUDIENCE_DISTANCE, 1400)); // audience side
+    controlData.add(new CannonControlData(125, 1440)); //a
   }
 
   public void coast() {
@@ -127,9 +130,11 @@ public class FtcCannon extends FtcSubSystemBase {
     CannonControlData closestData = controlData.get(0);
     double minDifference = Math.abs(distance - closestData.distance);
     for (int i = 1; i < controlData.size(); i++) {
-      double currentDifference = Math.abs(distance - controlData.get(i).distance);
+      CannonControlData currentData = controlData.get(i);
+      double currentDifference = Math.abs(distance - currentData.distance);
       if (currentDifference < minDifference) {
-        closestData = controlData.get(i);
+        //minDifference = currentDifference;
+        closestData = currentData;
       }
     }
 
@@ -233,12 +238,16 @@ public class FtcCannon extends FtcSubSystemBase {
       if (leftCannonMotor != null && rightCannonMotor != null) {
         CannonControlData ccd = getClosestData(0);
         if (gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5) {
-          ccd = getClosestData(44);
+          ccd = getClosestData(GOAL_SWEET_SPOT_DISTANCE);
         } else if (gamePad1.right_bumper || gamePad2.right_bumper) {
-          ccd = getClosestData(113);
-        } else if (gamePad1.y || gamePad2.y) {
+          ccd = getClosestData(AUDIENCE_DISTANCE);
+        } else {
           if (parent != null && parent.aprilTag != null) {
-            ccd = getClosestData(parent.aprilTag.getGoalRange());
+            double range = parent.aprilTag.getGoalRange();
+            if (range <= GOAL_MAX_DISTANCE) {
+              // Ramping up when far slows the drivetrain down
+              ccd = getClosestData(range);
+            }
           }
         }
 
@@ -327,9 +336,8 @@ public class FtcCannon extends FtcSubSystemBase {
     FtcLogger.enter();
     if (cannonEnabled && telemetryEnabled) {
       if (leftCannonMotor != null && rightCannonMotor != null) {
-        telemetry.addData(TAG, String.format(Locale.US, "Left: %.2f (%4.0f), Right: %.2f (%.0f)",
-            leftCannonMotor.getPower(), leftCannonMotor.getVelocity(),
-            rightCannonMotor.getPower(), rightCannonMotor.getVelocity()));
+        telemetry.addData(TAG, String.format(Locale.US, "%4.0f",
+            leftCannonMotor.getVelocity()));
       }
 
       if (leftTriggerServo != null && rightTriggerServo != null) {

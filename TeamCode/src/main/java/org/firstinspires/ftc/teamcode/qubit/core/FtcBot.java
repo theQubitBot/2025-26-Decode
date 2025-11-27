@@ -122,7 +122,7 @@ public class FtcBot extends FtcSubSystemBase {
       intake.init(hardwareMap, telemetry);
 
       sorter = new FtcSorter(this);
-      sorter.init(hardwareMap, telemetry);
+      sorter.init(hardwareMap, telemetry, autoOp);
     } else if (trollBot == TrollBotEnum.TrollBotC) {
       bulkRead = new FtcBulkRead();
       bulkRead.init(hardwareMap, telemetry);

@@ -23,6 +23,7 @@ public class OptionBase {
   protected static final double RADIAN0;
   protected static final double RADIAN15;
   protected static final double RADIAN20;
+  protected static final double RADIAN21;
   protected static final double RADIAN30;
   protected static final double RADIAN45;
   protected static final double RADIAN60;
@@ -42,12 +43,13 @@ public class OptionBase {
   protected final Pose startPose = new Pose(0, 0, 0);
 
   protected Runnable intakeSpinIn, intakeSpinOut, intakeSpinHold,
-      sorterStraight, cannonIdle;
+      sorterGreen, sorterPurple, sorterStraight, cannonIdle;
 
   static {
     RADIAN0 = Math.toRadians(0);
     RADIAN15 = Math.toRadians(15);
     RADIAN20 = Math.toRadians(20);
+    RADIAN21 = Math.toRadians(21);
     RADIAN30 = Math.toRadians(30);
     RADIAN45 = Math.toRadians(45);
     RADIAN60 = Math.toRadians(60);
@@ -78,6 +80,8 @@ public class OptionBase {
     intakeSpinOut = () -> robot.intake.spinOut(false);
     intakeSpinHold = () -> robot.intake.spinHold();
 
+    sorterGreen = () -> robot.sorter.setGreen(false);
+    sorterPurple = () -> robot.sorter.setPurple(false);
     sorterStraight = () -> robot.sorter.setStraight(false);
     cannonIdle = () -> robot.cannon.setVelocity(FtcCannon.CANNON_IDLE_VELOCITY, false);
   }

@@ -8,6 +8,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 
@@ -17,21 +18,20 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 public class OptionRedGoal extends OptionBase {
   public Pose scorePose = new Pose(-44, 0, RADIAN0);
   public Pose pickup1Pose = new Pose(-24, -29, -RADIAN45);
-  public Pose pickup1ControlPose = new Pose(-42, -8, -RADIAN45);
-  public Pose pickup2Pose = new Pose(-37, -50, -RADIAN45);
-  public Pose pickup2ControlPose = new Pose(-57, -25, -RADIAN45);
-  public Pose pickup3Pose = new Pose(-52, -57, -RADIAN45);
-  public Pose pickup3ControlPose = new Pose(-73, -43, -RADIAN45);
-  public Pose leavePose = new Pose(-44, -24, -RADIAN45);
+  public Pose pickup1ControlPose = new Pose(-42, -10, -RADIAN45);
+  public Pose pickup2Pose = new Pose(-35, -50, -RADIAN45);
+  public Pose pickup2ControlPose = new Pose(-59, -27, -RADIAN45);
+  public Pose leavePose = new Pose(-44, -12, RADIAN0);
 
-  PathChain scorePreloadPath, leavePath,
-      pickup1Path, pickup2Path, pickup3Path,
-      score1Path, score2Path, score3Path;
+  PathChain scorePreloadPath,
+      pickup11Path, pickup12Path, score1Path,
+      pickup21Path, pickup22Path, score21Path, score22Path,
+      leavePath;
 
   public static class Params {
     public boolean executeTrajectories = true, executeRobotActions = true;
     public boolean deliverPreloaded = true,
-        deliver1 = true, deliver2 = false, deliver3 = false,
+        deliver1 = true, deliver2 = true,
         leave = true;
   }
 
@@ -40,7 +40,7 @@ public class OptionRedGoal extends OptionBase {
   public OptionRedGoal(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
-    ccd = robot.cannon.getClosestData(44);
+    ccd = robot.cannon.getClosestData(FtcCannon.GOAL_SWEET_SPOT_DISTANCE);
   }
 
   public OptionRedGoal init() {
@@ -49,25 +49,28 @@ public class OptionRedGoal extends OptionBase {
         .addPath(new BezierLine(startPose, scorePose))
         .setConstantHeadingInterpolation(startPose.getHeading())
         .addTemporalCallback(1, () -> {
-          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
+          if (PARAMS.executeRobotActions) robot.intake.spinHold();
         })
         .addTemporalCallback(5, () -> {
-          if (PARAMS.executeRobotActions) robot.aprilTag.pointAtObelisk();
-        })
-        .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) robot.intake.spinHold();
+          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
         })
         .build();
 
     // first artifact row
-    pickup1Path = follower.pathBuilder()
+    pickup11Path = follower.pathBuilder()
         .addPath(new BezierLine(scorePose, pickup1ControlPose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1ControlPose.getHeading())
-        .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinIn.run();
-        })
+        .build();
+
+    pickup12Path = follower.pathBuilder()
         .addPath(new BezierLine(pickup1ControlPose, pickup1Pose))
         .setConstantHeadingInterpolation(pickup1ControlPose.getHeading())
+        .addTemporalCallback(1, () -> {
+          if (PARAMS.executeRobotActions) intakeSpinIn.run();
+        })
+        .addParametricCallback(0.9, () -> {
+          if (PARAMS.executeRobotActions) sorterGreen.run();
+        })
         .build();
 
     score1Path = follower.pathBuilder()
@@ -85,17 +88,20 @@ public class OptionRedGoal extends OptionBase {
         .build();
 
     // second artifact row
-    pickup2Path = follower.pathBuilder()
+    pickup21Path = follower.pathBuilder()
         .addPath(new BezierLine(scorePose, pickup2ControlPose))
         .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2ControlPose.getHeading())
-        .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinIn.run();
-        })
-        .addPath(new BezierLine(pickup2ControlPose, pickup2Pose))
-        .setConstantHeadingInterpolation(pickup2ControlPose.getHeading())
         .build();
 
-    score2Path = follower.pathBuilder()
+    pickup22Path = follower.pathBuilder()
+        .addPath(new BezierCurve(pickup2ControlPose, pickup2Pose))
+        .setConstantHeadingInterpolation(pickup2ControlPose.getHeading())
+        .addTemporalCallback(1, () -> {
+          if (PARAMS.executeRobotActions) intakeSpinIn.run();
+        })
+        .build();
+
+    score21Path = follower.pathBuilder()
         .addPath(new BezierLine(pickup2Pose, pickup2ControlPose))
         .setConstantHeadingInterpolation(pickup2Pose.getHeading())
         .addTemporalCallback(1, () -> {
@@ -107,33 +113,11 @@ public class OptionRedGoal extends OptionBase {
         .addTemporalCallback(10, () -> {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
+        .build();
+
+    score22Path = follower.pathBuilder()
         .addPath(new BezierLine(pickup2ControlPose, scorePose))
         .setLinearHeadingInterpolation(pickup2ControlPose.getHeading(), scorePose.getHeading())
-        .build();
-
-    // third artifact rwo
-    pickup3Path = follower.pathBuilder()
-        .addPath(new BezierLine(scorePose, pickup3ControlPose))
-        .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3ControlPose.getHeading())
-        .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinIn.run();
-        })
-        .addPath(new BezierLine(pickup3ControlPose, pickup3Pose))
-        .setConstantHeadingInterpolation(pickup3ControlPose.getHeading())
-        .build();
-
-    score3Path = follower.pathBuilder()
-        .addPath(new BezierCurve(pickup3Pose, pickup3ControlPose, scorePose))
-        .setLinearHeadingInterpolation(pickup3ControlPose.getHeading(), scorePose.getHeading())
-        .addTemporalCallback(1, () -> {
-          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
-        })
-        .addTemporalCallback(5, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinHold.run();
-        })
-        .addTemporalCallback(10, () -> {
-          if (PARAMS.executeRobotActions) sorterStraight.run();
-        })
         .build();
 
     // leave
@@ -169,7 +153,8 @@ public class OptionRedGoal extends OptionBase {
     // Deliver first row
     if (!saveAndTest()) return;
     if (PARAMS.deliver1) {
-      if (PARAMS.executeTrajectories) runFollower(pickup1Path, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(pickup11Path, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(pickup12Path, true, 3000);
       if (PARAMS.executeTrajectories) runFollower(score1Path, true, 3000);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
@@ -178,25 +163,18 @@ public class OptionRedGoal extends OptionBase {
     // Deliver second row
     if (!saveAndTest()) return;
     if (PARAMS.deliver2) {
-      if (PARAMS.executeTrajectories) runFollower(pickup2Path, true, 3000);
-      if (PARAMS.executeTrajectories) runFollower(score2Path, true, 3000);
-      if (PARAMS.executeRobotActions)
-        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
-    }
-
-    // Deliver third row
-    if (!saveAndTest()) return;
-    if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
-      if (PARAMS.executeTrajectories) runFollower(pickup3Path, true, 3000);
-      if (PARAMS.executeTrajectories) runFollower(score3Path, true, 3000);
-      if (PARAMS.executeRobotActions)
-        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeTrajectories) runFollower(pickup21Path, true, 3000);
+//      if (PARAMS.executeTrajectories) runFollower(pickup22Path, true, 3000);
+//      if (PARAMS.executeTrajectories) runFollower(score21Path, false, 3000);
+//      if (PARAMS.executeTrajectories) runFollower(score22Path, true, 3000);
+//      if (PARAMS.executeRobotActions)
+//        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Leave
     if (!saveAndTest()) return;
     if (PARAMS.leave) {
-      if (PARAMS.executeTrajectories) runFollower(leavePath, false, 3000);
+//      if (PARAMS.executeTrajectories) runFollower(leavePath, false, 3000);
     }
 
     FtcLogger.exit();

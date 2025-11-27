@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 @Config
 @TeleOp(group = "TestOp")
 public class MotorVelocityPIDTuner extends LinearOpMode {
-  public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(50, 0, 1, 12.5);
+  public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(60, 0.25, 2, 13.0);
 
   private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -50,7 +50,7 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
     rightCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
     setPIDFCoefficients(rightCannonMotor, MOTOR_VELO_PID);
 
-    TuningController tuningController = new TuningController();
+    MotorTuningController tuningController = new MotorTuningController();
 
     double lastKp = 0.0;
     double lastKi = 0.0;
@@ -78,7 +78,7 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
       telemetry.addData("velocity", motorVelocity);
       telemetry.addData("error", targetVelocity - motorVelocity);
 
-      telemetry.addData("upperBound", TuningController.rpmToTicksPerSecond(TuningController.TESTING_MAX_SPEED * 1.15));
+      telemetry.addData("upperBound", MotorTuningController.rpmToTicksPerSecond(MotorTuningController.TESTING_MAX_RPM * 1.15));
       telemetry.addData("lowerBound", 0);
 
       if (lastKp != MOTOR_VELO_PID.p || lastKi != MOTOR_VELO_PID.i || lastKd != MOTOR_VELO_PID.d || lastKf != MOTOR_VELO_PID.f) {
@@ -103,6 +103,6 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
 
   public static double getMotorVelocityF() {
     // see https://docs.google.com/document/d/1tyWrXDfMidwYyP_5H4mZyVgaEswhOC35gvdmP-V-5hA/edit#heading=h.61g9ixenznbx
-    return 32767 * 60.0 / (TuningController.MOTOR_MAX_RPM * TuningController.MOTOR_TICKS_PER_REV);
+    return 32767 * 60.0 / (MotorTuningController.MOTOR_MAX_RPM * MotorTuningController.MOTOR_TICKS_PER_REV);
   }
 }

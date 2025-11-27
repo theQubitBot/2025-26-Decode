@@ -35,7 +35,6 @@ public class LlArtifactSensor {
     double[] llPython = result.getPythonOutput();
     if (llPython != null) {
       if (llPython.length > 0) {
-        telemetry.addData("llPython", llPython[0]);
         if (llPython[0] == 55) {
           artifactColor = ArtifactColor.GREEN;
         } else if (llPython[0] == 145) {
