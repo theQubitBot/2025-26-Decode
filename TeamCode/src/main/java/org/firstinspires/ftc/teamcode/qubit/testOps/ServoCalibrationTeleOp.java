@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -10,20 +9,20 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcIntake;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcSorter;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
 public class ServoCalibrationTeleOp extends OpMode {
   // Declare OpMode members
   ElapsedTime runtime = null;
   ElapsedTime loopTime = null;
-  static final int CYCLE_MS = 50;           // period of each cycle
   FtcAprilTag aprilTag;
-  FtcServo aprilTagServo, sorterServo, leftTriggerServo, rightTriggerServo;
+  FtcServo aprilTagServo, sorterServo, lightServo, leftTriggerServo, rightTriggerServo;
   FtcServo currentServo;
   double servoPosition;
   String servoName;
@@ -40,9 +39,10 @@ public class ServoCalibrationTeleOp extends OpMode {
     aprilTag.init(hardwareMap, telemetry);
 
     aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, FtcAprilTag.APRIL_TAG_SERVO_NAME));
+    sorterServo = new FtcServo(hardwareMap.get(Servo.class, FtcSorter.SORTER_SERVO_NAME));
+    lightServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.LIGHT_SERVO_NAME));
     leftTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.LEFT_TRIGGER_SERVO_NAME));
     rightTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.RIGHT_TRIGGER_SERVO_NAME));
-    sorterServo = new FtcServo(hardwareMap.get(Servo.class, FtcSorter.SORTER_SERVO_NAME));
 
     if (aprilTagServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
       aprilTagServo.getController().pwmEnable();
@@ -60,11 +60,16 @@ public class ServoCalibrationTeleOp extends OpMode {
       sorterServo.getController().pwmEnable();
     }
 
+    if (lightServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+      lightServo.getController().pwmEnable();
+    }
+
     servoPosition = FtcServo.MID_POSITION;
     aprilTagServo.setPosition(servoPosition);
     leftTriggerServo.setPosition(servoPosition);
     rightTriggerServo.setPosition(servoPosition);
     sorterServo.setPosition(servoPosition);
+    lightServo.setPosition(0);
     currentServo = aprilTagServo;
     servoName = FtcAprilTag.APRIL_TAG_SERVO_NAME;
     FtcLogger.exit();
@@ -114,6 +119,9 @@ public class ServoCalibrationTeleOp extends OpMode {
     } else if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
       currentServo = sorterServo;
       servoName = FtcSorter.SORTER_SERVO_NAME;
+    } else if (gamepad1.right_trigger > 0.5 || gamepad2.right_trigger > 0.5) {
+      currentServo = lightServo;
+      servoName = FtcIntake.LIGHT_SERVO_NAME;
     }
 
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
@@ -131,18 +139,21 @@ public class ServoCalibrationTeleOp extends OpMode {
       currentServo.setPosition(servoPosition);
     }
 
-    telemetry.addData("large increment/decrement", "dPad up/down");
-    telemetry.addData("small increment/decrement", "dPad left/right");
-    telemetry.addLine();
-    telemetry.addData("a", "artifact sensor servo");
+    telemetry.addLine("Menu");
+    telemetry.addData("y", "aprilTag servo");
     telemetry.addData("x", "left trigger servo");
     telemetry.addData("b", "right trigger servo");
-    telemetry.addData("y", "aprilTag servo");
+    telemetry.addData("a", "artifact sensor servo");
+    telemetry.addData("right trigger", "light servo");
+    telemetry.addLine();
+    telemetry.addData("large +/-", "dPad up/down");
+    telemetry.addData("small +/-", "dPad left/right");
+    telemetry.addLine();
     telemetry.addData("Servo", "%s %5.4f", servoName, servoPosition);
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
-    FtcUtils.sleep(CYCLE_MS);
+    FtcUtils.sleep(FtcUtils.CYCLE_MS);
   }
 
   /*

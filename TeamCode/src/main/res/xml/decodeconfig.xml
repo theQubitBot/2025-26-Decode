@@ -20,6 +20,7 @@
             <goBILDA5202SeriesMotor name="leftCannonMotor" port="3" />
             <Servo name="leftTriggerServo" port="0" />
             <Servo name="sorterServo" port="2" />
+            <Servo name="lightServo" port="4" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>

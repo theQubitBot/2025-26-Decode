@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.qubit.core;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -22,12 +23,16 @@ public class FtcIntake extends FtcSubSystemBase {
   public static final double STOP_POWER = FtcMotor.ZERO_POWER;
   public static final long ARTIFACT_INTAKE_TIME = 1000; // milliseconds
   public static final long ARTIFACT_OUTTAKE_TIME = 1000; // milliseconds
+  public static final String LIGHT_SERVO_NAME = "lightServo";
+  public static final double LIGHTS_ON = 0.5;
+  public static final double LIGHTS_OFF = 0.0;
 
   private final boolean intakeEnabled = true;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
   public FtcMotor leftIntakeMotor = null;
   public FtcMotor rightIntakeMotor = null;
+  public FtcServo lightServo = null;
 
   /**
    * Initialize standard Hardware interfaces.
@@ -49,6 +54,8 @@ public class FtcIntake extends FtcSubSystemBase {
       rightIntakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
       rightIntakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
+      lightServo = new FtcServo(hardwareMap.get(Servo.class, LIGHT_SERVO_NAME));
+
       showTelemetry();
       telemetry.addData(TAG, "initialized");
     } else {
@@ -56,6 +63,14 @@ public class FtcIntake extends FtcSubSystemBase {
     }
 
     FtcLogger.exit();
+  }
+
+  public void lightsOff() {
+    lightServo.setPosition(LIGHTS_OFF);
+  }
+
+  public void lightsOn() {
+    lightServo.setPosition(LIGHTS_ON);
   }
 
   /**
@@ -95,6 +110,7 @@ public class FtcIntake extends FtcSubSystemBase {
     if (intakeEnabled) {
       leftIntakeMotor.setPower(HOLD_POWER);
       rightIntakeMotor.setPower(HOLD_POWER);
+      lightsOff();
     }
 
     FtcLogger.exit();
@@ -108,6 +124,7 @@ public class FtcIntake extends FtcSubSystemBase {
     if (intakeEnabled) {
       leftIntakeMotor.setPower(INTAKE_POWER);
       rightIntakeMotor.setPower(INTAKE_POWER);
+      lightsOn();
       if (waitTillCompletion) {
         FtcUtils.sleep(ARTIFACT_INTAKE_TIME);
       }
@@ -124,6 +141,7 @@ public class FtcIntake extends FtcSubSystemBase {
     if (intakeEnabled) {
       leftIntakeMotor.setPower(OUTTAKE_POWER);
       rightIntakeMotor.setPower(OUTTAKE_POWER);
+      lightsOff();
       if (waitTillCompletion) {
         FtcUtils.sleep(ARTIFACT_OUTTAKE_TIME);
       }
@@ -164,6 +182,7 @@ public class FtcIntake extends FtcSubSystemBase {
     if (intakeEnabled) {
       leftIntakeMotor.setPower(STOP_POWER);
       rightIntakeMotor.setPower(STOP_POWER);
+      lightsOff();
     }
 
     FtcLogger.exit();

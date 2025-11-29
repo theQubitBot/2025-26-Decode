@@ -37,7 +37,7 @@ public class LlArtifactSensor {
       if (llPython.length > 0) {
         if (llPython[0] == 55) {
           artifactColor = ArtifactColor.GREEN;
-        } else if (llPython[0] == 145) {
+        } else if (llPython[0] == 115) {
           artifactColor = ArtifactColor.PURPLE;
         }
       } else {

@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.qubit.core.FtcIntake;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.LlArtifactSensor;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.LlArtifactSensor;
 //@Disabled
 @TeleOp(group = "TestOp")
 public class LlArtifactSensorTeleOp extends OpMode {
+  private FtcIntake intake = null;
   private LlArtifactSensor artifactSensor;
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
@@ -21,6 +23,8 @@ public class LlArtifactSensorTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
 
+    intake = new FtcIntake();
+    intake.init(hardwareMap, telemetry);
     artifactSensor = new LlArtifactSensor();
     artifactSensor.init(hardwareMap, telemetry);
     FtcLogger.exit();
@@ -45,6 +49,7 @@ public class LlArtifactSensorTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Starting...");
     telemetry.update();
     artifactSensor.start();
+    intake.lightsOn();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     FtcLogger.exit();
@@ -73,6 +78,7 @@ public class LlArtifactSensorTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
+    intake.stop();
     artifactSensor.stop();
     telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     telemetry.update();

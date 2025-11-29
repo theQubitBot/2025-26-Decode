@@ -13,12 +13,12 @@ line = int(1)
 # --- Define color ranges in HSV ---
 COLOR_RANGES = {
     "green": ((55, 145, 50), (95, 255, 255)),
-    "purple": ((145, 0, 0), (165, 255, 255)),
+    "purple": ((115, 0, 0), (165, 255, 255)),
 }
 
 COLOR_THRESHOLDS = {
-    "green": 10,
-    "purple": 5
+    "green": 60,
+    "purple": 50
 }
 
 
@@ -35,7 +35,7 @@ def drawText(frame, message):
 
 def runPipeline(frame, llrobot):
     dominantColor = "none"
-    threshhold = 0
+    threshold = 0
     highestPercent = 0
     largestContour = np.array([[]])
     x, y, w, h = 0, 0, 0, 0
@@ -60,9 +60,8 @@ def runPipeline(frame, llrobot):
         # 'iterations' determines how many times the dilation is applied
         dilated_image = cv2.dilate(mask, kernel, iterations=1)
         matchPercent = 100 * (cv2.countNonZero(dilated_image) / dilated_image.size)
-        threshhold = COLOR_THRESHOLDS[colorName]
-        if matchPercent >= threshhold and matchPercent > highestPercent:
-            highestPercent = matchPercent
+        threshold = COLOR_THRESHOLDS[colorName]
+        if matchPercent >= threshold:
             dominantColor = colorName
             llPython[0] = lowerRange[0]
             llPython[5] = matchPercent
