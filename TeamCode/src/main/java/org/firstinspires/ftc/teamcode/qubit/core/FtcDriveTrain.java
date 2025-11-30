@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -7,6 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
@@ -86,6 +89,9 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
   // When true, joystick position is mapped to (0, slo mode power, max power)
   private final boolean useStepPowerFunction = true;
+  private Follower follower = null;
+  private Pose startingPose = null;
+  public static double TAG_HEADING_ERROR = -1.0;
 
   public FtcDriveTrain(FtcBot robot) {
     parent = robot;
@@ -164,6 +170,10 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
       }
 
+      follower = Constants.createFollower(hardwareMap);
+      startingPose = new Pose(0, 0, 0);
+      follower.setStartingPose(startingPose);
+
       showTelemetry();
       telemetry.addData(TAG, "initialized");
     } else {
@@ -209,6 +219,27 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
       stop();
       return;
+    }
+
+    if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
+      if (follower.isBusy()) follower.breakFollowing();
+      follower.setStartingPose(startingPose);
+      double bearing = parent.aprilTag.getBearing() + TAG_HEADING_ERROR;
+      follower.turnToDegrees(bearing);
+      return;
+    } else if (gamePad1.dpad_up || gamePad2.dpad_up) {
+      follower.update();
+      return;
+    } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
+      if (follower.isBusy()) follower.breakFollowing();
+      follower.setStartingPose(startingPose);
+      follower.holdPoint(follower.getPose());
+      return;
+    } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
+      follower.update();
+      return;
+    } else {
+      if (follower.isBusy()) follower.breakFollowing();
     }
 
     if (powerMagnitude > JITTER) {
@@ -301,6 +332,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     }
 
     setDrivePowerSmooth(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower, loopTime);
+
     FtcLogger.exit();
   }
 

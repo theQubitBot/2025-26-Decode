@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
  * A class to implement autonomous objective
  */
 public class OptionBlueAudience extends OptionBase {
-  public Pose scorePose = new Pose(2, -2, RADIAN21);
+  public Pose scorePose = new Pose(2, -2, RADIAN22);
   public Pose pickup3Pose = new Pose(30, 44, RADIAN90);
   public Pose pickup3ControlPose = new Pose(30, 12, RADIAN90);
   public Pose leavePose = new Pose(4, 20, RADIAN0);

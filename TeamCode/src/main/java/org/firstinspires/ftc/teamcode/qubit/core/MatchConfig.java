@@ -32,6 +32,7 @@ public class MatchConfig {
   public RobotPositionEnum robotPosition;
   public long delayInSeconds;
   public ObeliskTagEnum obeliskTagEnum;
+  public boolean deliverSecondRow = true;
   public boolean deliverThirdRow = true;
 
   /**
@@ -93,6 +94,7 @@ public class MatchConfig {
         robotPosition = savedMatchConfig.robotPosition;
         delayInSeconds = savedMatchConfig.delayInSeconds;
         obeliskTagEnum = savedMatchConfig.obeliskTagEnum;
+        deliverSecondRow = savedMatchConfig.deliverSecondRow;
         deliverThirdRow = savedMatchConfig.deliverThirdRow;
       } catch (IOException e) {
         reset();
@@ -114,6 +116,7 @@ public class MatchConfig {
     robotPosition = RobotPositionEnum.AUDIENCE;
     delayInSeconds = 0;
     obeliskTagEnum = ObeliskTagEnum.GPP;
+    deliverSecondRow = true;
     deliverThirdRow = true;
     gamePad1Connected = gamePad2Connected = false;
     configIsComplete = !configFeatureEnabled;
@@ -143,12 +146,18 @@ public class MatchConfig {
       } else if (gamePad1.dpadRightWasPressed() || gamePad2.dpadRightWasPressed()) {
         robotPosition = RobotPositionEnum.AUDIENCE;
       }
+
       // Configure initial delay
-      else if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
+      if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
         delayInSeconds = Math.min(delayInSeconds + 1, MAX_START_DELAY_SECONDS);
       } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
         delayInSeconds = Math.max(delayInSeconds - 1, 0);
-      } else if (gamePad1.aWasPressed() || gamePad2.aWasPressed()) {
+      }
+
+      // Configure extra row delivery
+      if (gamePad1.circleWasPressed() || gamePad2.circleWasPressed()) {
+        deliverSecondRow = !deliverSecondRow;
+      } else if (gamePad1.crossWasPressed() || gamePad2.crossWasPressed()) {
         deliverThirdRow = !deliverThirdRow;
       }
 
@@ -200,7 +209,10 @@ public class MatchConfig {
       telemetry.addData("Trigger", "RED alliance");
       telemetry.addData("dPad", "left: GOAL, right: AUDIENCE position");
       telemetry.addData("Start delay", "dPad up/down: +/-");
-      telemetry.addData("Deliver 3rd row", "a: toggle yes/no");
+      telemetry.addData("Deliver 2nd row", String.format("%s: toggle yes/no",
+          StringUtils.Circle));
+      telemetry.addData("Deliver 3rd row", String.format("%s: toggle yes/no",
+          StringUtils.Cross));
     }
   }
 }

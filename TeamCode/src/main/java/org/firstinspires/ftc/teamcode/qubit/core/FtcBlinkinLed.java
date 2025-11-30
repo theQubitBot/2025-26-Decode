@@ -56,7 +56,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
    */
   public void operate(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
     FtcLogger.enter();
-    double range = parent.aprilTag.getGoalRange();
+    double range = parent.aprilTag.getRange();
     if (gamePad1.right_bumper || gamePad2.right_bumper) {
       CannonControlData ccd = parent.cannon.getClosestData(109);
       if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {

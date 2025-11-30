@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.StringUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 
@@ -75,7 +76,8 @@ public class DriveTrainTeleOp extends OpMode {
     // Show the elapsed game time and wheel power.
     loopTime.reset();
 
-    telemetry.addData(FtcUtils.TAG, "a: FWD POV, b: RWD POV, x: MecanumDrive FOD, y: AWD POV");
+    telemetry.addData(FtcUtils.TAG, String.format("%s: FWD POV, %s: RWD POV, %s: MecanumDrive FOD, %s: AWD POV",
+        StringUtils.Cross, StringUtils.Circle, StringUtils.Square, StringUtils.Triangle));
     if (gamepad1.aWasPressed()) {
       robot.driveTrain.setDriveTypeAndMode(
           DriveTrainEnum.FRONT_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);

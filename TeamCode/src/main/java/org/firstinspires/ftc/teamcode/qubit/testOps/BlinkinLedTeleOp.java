@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcBlinkinLed;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.StringUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DisplayMode;
 
 import java.util.concurrent.TimeUnit;
@@ -79,7 +80,8 @@ public class BlinkinLedTeleOp extends OpMode {
   public void loop() {
     FtcLogger.enter();
     loopTime.reset();
-    telemetry.addData(FtcUtils.TAG, "a: Auto, b: Manual");
+    telemetry.addData(FtcUtils.TAG, String.format("%s: Auto, %s: Manual",
+        StringUtils.Cross, StringUtils.Circle));
     telemetry.addLine();
     handleGamepad();
 

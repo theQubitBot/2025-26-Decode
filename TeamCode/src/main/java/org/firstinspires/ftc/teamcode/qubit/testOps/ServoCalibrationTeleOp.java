@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,8 +15,9 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcSorter;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.StringUtils;
 
-//@Disabled
+@Disabled
 @TeleOp(group = "TestOp")
 public class ServoCalibrationTeleOp extends OpMode {
   // Declare OpMode members
@@ -93,6 +95,7 @@ public class ServoCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(FtcUtils.TAG, "Starting...");
     telemetry.update();
+    aprilTag.start();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     FtcLogger.exit();
@@ -106,6 +109,16 @@ public class ServoCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     // Show the elapsed game time and wheel power.
     loopTime.reset();
+
+    telemetry.addData(StringUtils.Triangle, "aprilTag servo");
+    telemetry.addData(StringUtils.Square, "left trigger servo");
+    telemetry.addData(StringUtils.Circle, "right trigger servo");
+    telemetry.addData(StringUtils.Cross, "artifact sensor servo");
+    telemetry.addData("right trigger", "light servo");
+    telemetry.addLine();
+    telemetry.addData("dPad up/down", "large +/-");
+    telemetry.addData("dPad left/right", "small +/-");
+    telemetry.addLine();
 
     if (gamepad1.yWasPressed() || gamepad2.yWasPressed()) {
       currentServo = aprilTagServo;
@@ -139,16 +152,10 @@ public class ServoCalibrationTeleOp extends OpMode {
       currentServo.setPosition(servoPosition);
     }
 
-    telemetry.addLine("Menu");
-    telemetry.addData("y", "aprilTag servo");
-    telemetry.addData("x", "left trigger servo");
-    telemetry.addData("b", "right trigger servo");
-    telemetry.addData("a", "artifact sensor servo");
-    telemetry.addData("right trigger", "light servo");
-    telemetry.addLine();
-    telemetry.addData("large +/-", "dPad up/down");
-    telemetry.addData("small +/-", "dPad left/right");
-    telemetry.addLine();
+    if (currentServo == aprilTagServo) {
+      aprilTag.showTelemetry();
+    }
+
     telemetry.addData("Servo", "%s %5.4f", servoName, servoPosition);
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());

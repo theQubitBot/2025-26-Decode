@@ -243,7 +243,7 @@ public class FtcCannon extends FtcSubSystemBase {
           ccd = getClosestData(AUDIENCE_DISTANCE);
         } else {
           if (parent != null && parent.aprilTag != null) {
-            double range = parent.aprilTag.getGoalRange();
+            double range = parent.aprilTag.getRange();
             if (range <= GOAL_MAX_DISTANCE) {
               // Ramping up when far slows the drivetrain down
               ccd = getClosestData(range);

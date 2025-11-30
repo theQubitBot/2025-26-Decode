@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class FtcAprilTag {
   public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5000;
   public static final double OBELISK_RED_ALLIANCE_GOAL_POSITION = 0.4465;
   public static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4870;
-  public static final double GOAL_POSITION = 0.4970;
+  public static final double GOAL_POSITION = 0.4917;
   public static final double MAX_RANGE = 140.0;
   public static final double MIN_RANGE = 0.0;
   public static final int CAMERA_EXPOSURE = 10; // milliseconds
@@ -61,6 +62,17 @@ public class FtcAprilTag {
     return detections;
   }
 
+  public double getBearing() {
+    double bearing = 0;
+    AprilTagPoseFtc pose = getFtcPose();
+    if (pose != null) {
+      // camera is rotated, so we use elevation for bearing
+      bearing = com.qualcomm.robotcore.util.Range.clip(pose.elevation, -20, 20);
+    }
+
+    return bearing;
+  }
+
   /**
    * Gets and stores exposure and gain ranges.
    */
@@ -82,22 +94,21 @@ public class FtcAprilTag {
     }
   }
 
-  public double getGoalRange() {
-    double range = 0.0;
+  private AprilTagPoseFtc getFtcPose() {
+    AprilTagPoseFtc pose = null;
     List<AprilTagDetection> detections = getAllDetections();
     if (detections != null && !detections.isEmpty() && parent != null && parent.config != null) {
       for (AprilTagDetection detection : detections) {
         if (detection.metadata != null) {
           if ((parent.config.allianceColor == AllianceColorEnum.BLUE && detection.id == 20) ||
               (parent.config.allianceColor == AllianceColorEnum.RED && detection.id == 24)) {
-            range = detection.ftcPose.range;
+            pose = detection.ftcPose;
           }
         }
       }
     }
 
-    range = com.qualcomm.robotcore.util.Range.clip(range, MIN_RANGE, MAX_RANGE);
-    return range;
+    return pose;
   }
 
   public ObeliskTagEnum getObeliskTag() {
@@ -118,6 +129,16 @@ public class FtcAprilTag {
     }
 
     return ote;
+  }
+
+  public double getRange() {
+    double range = 0;
+    AprilTagPoseFtc pose = getFtcPose();
+    if (pose != null) {
+      range = com.qualcomm.robotcore.util.Range.clip(pose.range, MIN_RANGE, MAX_RANGE);
+    }
+
+    return range;
   }
 
   /**
@@ -215,7 +236,14 @@ public class FtcAprilTag {
         if (detection.metadata != null) {
           telemetry.addLine(String.format("Tag (ID %d) %s",
               detection.id, detection.metadata.name));
-          telemetry.addLine(String.format("Range %6.1f", detection.ftcPose.range));
+          telemetry.addLine(String.format("Range %3.1f", detection.ftcPose.range));
+          telemetry.addLine(String.format("Pitch %2.1f%s roll %2.1f%s yaw %2.1f%s",
+              detection.ftcPose.pitch, StringUtils.Degrees,
+              detection.ftcPose.roll, StringUtils.Degrees,
+              detection.ftcPose.yaw, StringUtils.Degrees));
+          telemetry.addLine(String.format("Range %3.1f\" bearing %2.1f%s elevation %2.1f%s",
+              detection.ftcPose.range, detection.ftcPose.bearing, StringUtils.Degrees,
+              detection.ftcPose.elevation, StringUtils.Degrees));
         } else {
           telemetry.addLine(String.format("Tag (ID %d) Unknown", detection.id));
         }
