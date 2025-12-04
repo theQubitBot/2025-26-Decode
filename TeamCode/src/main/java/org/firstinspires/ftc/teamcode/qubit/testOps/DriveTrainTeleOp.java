@@ -6,10 +6,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.StringUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 
@@ -19,8 +19,8 @@ public class DriveTrainTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
-  private double lastLoopTime = 0.0;
-  FtcBot robot = null;
+  private double lastLoopTime = 1;
+  BaseBot robot = null;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -30,7 +30,7 @@ public class DriveTrainTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-    robot = new FtcBot();
+    robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, false);
     robot.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     robot.driveTrain.setDriveTypeAndMode(
@@ -76,8 +76,8 @@ public class DriveTrainTeleOp extends OpMode {
     // Show the elapsed game time and wheel power.
     loopTime.reset();
 
-    telemetry.addData(FtcUtils.TAG, String.format("%s: FWD POV, %s: RWD POV, %s: MecanumDrive FOD, %s: AWD POV",
-        StringUtils.Cross, StringUtils.Circle, StringUtils.Square, StringUtils.Triangle));
+    telemetry.addData(FtcUtils.TAG, "%s: FWD POV, %s: RWD POV, %s: MecanumDrive FOD, %s: AWD POV",
+        StringUtils.Cross, StringUtils.Circle, StringUtils.Square, StringUtils.Triangle);
     if (gamepad1.aWasPressed()) {
       robot.driveTrain.setDriveTypeAndMode(
           DriveTrainEnum.FRONT_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
@@ -97,10 +97,10 @@ public class DriveTrainTeleOp extends OpMode {
     robot.driveTrain.showTelemetry();
     robot.showGamePadTelemetry(gamepad1);
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
-        loopTime.milliseconds(), runtime.seconds());
+        lastLoopTime, runtime.seconds());
     telemetry.update();
-    lastLoopTime = loopTime.milliseconds();
     FtcLogger.exit();
+    lastLoopTime = loopTime.milliseconds();
   }
 
   /*

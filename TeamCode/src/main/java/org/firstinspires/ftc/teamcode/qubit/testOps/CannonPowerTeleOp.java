@@ -14,11 +14,6 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-import java.util.Locale;
-
-// big triangle - 0.45 is max
-// small triangle - 0.65 is max
-
 @Disabled
 @TeleOp(group = "TestOp")
 public class CannonPowerTeleOp extends OpMode {
@@ -46,11 +41,11 @@ public class CannonPowerTeleOp extends OpMode {
 
     aprilTag = new FtcAprilTag(null);
     aprilTag.telemetryEnabled = true;
-    aprilTag.init(hardwareMap, telemetry);
+    aprilTag.init(hardwareMap, telemetry, false);
 
     cannon = new FtcCannon(null);
     cannon.telemetryEnabled = true;
-    cannon.init(hardwareMap, telemetry);
+    cannon.init(hardwareMap, telemetry, false);
 
     FtcLogger.exit();
   }
@@ -116,9 +111,9 @@ public class CannonPowerTeleOp extends OpMode {
       cannon.rightTriggerServo.setPosition(FtcCannon.RIGHT_TRIGGER_DOWN_POSITION);
     }
 
-    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Power %.2f", newMotorPower));
-    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Velocity %5.2f, %5.2f",
-        cannon.leftCannonMotor.getVelocity(), cannon.rightCannonMotor.getVelocity()));
+    telemetry.addData(FtcUtils.TAG, "Power %.2f", newMotorPower);
+    telemetry.addData(FtcUtils.TAG, "Velocity %5.2f, %5.2f",
+        cannon.leftCannonMotor.getVelocity(), cannon.rightCannonMotor.getVelocity());
     aprilTag.showTelemetry();
 
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",

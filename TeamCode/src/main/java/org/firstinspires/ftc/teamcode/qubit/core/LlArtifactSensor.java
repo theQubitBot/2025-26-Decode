@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import android.annotation.SuppressLint;
-
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -11,9 +8,11 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 /**
  * A camera based artifact sensor.
  */
-public class LlArtifactSensor {
+public class LlArtifactSensor extends FtcSubSystemBase {
   public boolean telemetryEnabled = true;
   public static final String LIMELIGHT_NAME = "limelight";
+  public static final double HSV_GREEN_LOW = 55.0;
+  public static final double HSV_PURPLE_LOW = 115.0;
   private Telemetry telemetry;
   private Limelight3A limelight = null;
 
@@ -23,7 +22,8 @@ public class LlArtifactSensor {
     UNKNOWN
   }
 
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  @Override
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     this.telemetry = telemetry;
     limelight = hardwareMap.get(Limelight3A.class, LIMELIGHT_NAME);
     limelight.pipelineSwitch(2);
@@ -31,20 +31,15 @@ public class LlArtifactSensor {
 
   public ArtifactColor getArtifactColor() {
     ArtifactColor artifactColor = ArtifactColor.UNKNOWN;
-    LLResult result = limelight.getLatestResult();
-    double[] llPython = result.getPythonOutput();
-    if (llPython != null) {
-      if (llPython.length > 0) {
-        if (llPython[0] == 55) {
+    if (limelight != null) {
+      double[] llPython = limelight.getLatestResult().getPythonOutput();
+      if (llPython != null && llPython.length > 0) {
+        if (FtcUtils.areEqual(llPython[0], HSV_GREEN_LOW, FtcUtils.EPSILON1)) {
           artifactColor = ArtifactColor.GREEN;
-        } else if (llPython[0] == 115) {
+        } else if (FtcUtils.areEqual(llPython[0], HSV_PURPLE_LOW, FtcUtils.EPSILON1)) {
           artifactColor = ArtifactColor.PURPLE;
         }
-      } else {
-        telemetry.addLine("llPython.length is 0");
       }
-    } else {
-      telemetry.addLine("llPython is null");
     }
 
     return artifactColor;
@@ -53,7 +48,7 @@ public class LlArtifactSensor {
   /**
    * Function to add telemetry about Artifact detection.
    */
-  @SuppressLint("DefaultLocale")
+  @Override
   public void showTelemetry() {
     FtcLogger.enter();
     if (telemetryEnabled) {
@@ -66,6 +61,7 @@ public class LlArtifactSensor {
   /**
    * Code to run ONCE when the driver hits PLAY
    */
+  @Override
   public void start() {
     FtcLogger.enter();
     limelight.start();
@@ -75,6 +71,7 @@ public class LlArtifactSensor {
   /**
    * Stops artifact detection processing.
    */
+  @Override
   public void stop() {
     FtcLogger.enter();
     limelight.stop();

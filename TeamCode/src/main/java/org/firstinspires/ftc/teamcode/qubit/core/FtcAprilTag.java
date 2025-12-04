@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainCon
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
@@ -30,8 +31,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * A class to identify and make available April Tags using the Vision Portal.
  */
-public class FtcAprilTag {
+public class FtcAprilTag extends FtcSubSystemBase {
   static final String TAG = "FtcAprilTag";
+  public static final String WEBCAM_1_NAME = "Webcam 1";
+  public static final String WEBCAM_2_NAME = "Webcam 2";
+
+  public static final int CAMERA_WIDTH = 640; // width  of wanted camera resolution
+  public static final int CAMERA_HEIGHT = 480; // height of wanted camera resolution
   public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
   public static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5380;
   public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5000;
@@ -42,23 +48,31 @@ public class FtcAprilTag {
   public static final double MIN_RANGE = 0.0;
   public static final int CAMERA_EXPOSURE = 10; // milliseconds
   public static final int CAMERA_GAIN = 40;
+  // Vision/Sensor limits
+  public static final double APRILTAG_BEARING_MIN = -20.0;
+  public static final double APRILTAG_BEARING_MAX = 20.0;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
-  private FtcAprilTagAsyncUpdater updater;
+  private FtcAprilTagAsyncUpdater asyncUpdater = null;
+  private Thread asyncUpdaterThread = null;
 
   public int currentExposure, minExposure, maxExposure;
   public int currentGain, minGain, maxGain;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry;
-  private final FtcBot parent;
+  private final BaseBot parent;
   private FtcServo aprilTagServo = null;
 
-  public FtcAprilTag(FtcBot robot) {
+  public FtcAprilTag(BaseBot robot) {
     parent = robot;
   }
 
   private List<AprilTagDetection> getAllDetections() {
-    List<AprilTagDetection> detections = updater.getAllDetections();
+    List<AprilTagDetection> detections = null;
+    if (asyncUpdater != null) {
+      detections = asyncUpdater.getAllDetections();
+    }
+
     return detections;
   }
 
@@ -67,7 +81,7 @@ public class FtcAprilTag {
     AprilTagPoseFtc pose = getFtcPose();
     if (pose != null) {
       // camera is rotated, so we use elevation for bearing
-      bearing = com.qualcomm.robotcore.util.Range.clip(pose.elevation, -20, 20);
+      bearing = com.qualcomm.robotcore.util.Range.clip(pose.elevation, APRILTAG_BEARING_MIN, APRILTAG_BEARING_MAX);
     }
 
     return bearing;
@@ -103,6 +117,7 @@ public class FtcAprilTag {
           if ((parent.config.allianceColor == AllianceColorEnum.BLUE && detection.id == 20) ||
               (parent.config.allianceColor == AllianceColorEnum.RED && detection.id == 24)) {
             pose = detection.ftcPose;
+            break;
           }
         }
       }
@@ -119,10 +134,13 @@ public class FtcAprilTag {
         if (detection.metadata != null) {
           if (detection.id == 21) {
             ote = ObeliskTagEnum.GPP;
+            break;
           } else if (detection.id == 22) {
             ote = ObeliskTagEnum.PGP;
+            break;
           } else if (detection.id == 23) {
             ote = ObeliskTagEnum.PPG;
+            break;
           }
         }
       }
@@ -144,7 +162,8 @@ public class FtcAprilTag {
   /**
    * Initialize the AprilTag detection processor.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  @Override
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
 
@@ -159,8 +178,8 @@ public class FtcAprilTag {
         .build();
 
     visionPortal = new VisionPortal.Builder()
-        .setCamera(hardwareMap.get(WebcamName.class, FtcOpenCvCam.WEBCAM_2_NAME))
-        .setCameraResolution(new Size(FtcOpenCvCam.CAMERA_WIDTH, FtcOpenCvCam.CAMERA_HEIGHT))
+        .setCamera(hardwareMap.get(WebcamName.class, WEBCAM_2_NAME))
+        .setCameraResolution(new Size(CAMERA_WIDTH, CAMERA_HEIGHT))
         .setLiveViewContainerId(0)
         .setStreamFormat(VisionPortal.StreamFormat.YUY2)
         .setAutoStopLiveView(true)
@@ -187,10 +206,8 @@ public class FtcAprilTag {
       }
     }
 
-    // Process tags on a background thread
-    updater = new FtcAprilTagAsyncUpdater(aprilTagProcessor);
-    Thread updaterThread = new Thread(updater);
-    updaterThread.start();
+    stopAsyncOperations();
+    startAsyncOperations();
 
     FtcLogger.exit();
   }
@@ -219,34 +236,39 @@ public class FtcAprilTag {
   @SuppressLint("DefaultLocale")
   public void showTelemetry() {
     FtcLogger.enter();
-    if (telemetryEnabled && aprilTagProcessor != null) {
+    if (telemetryEnabled && telemetry != null && aprilTagProcessor != null) {
       double position = aprilTagServo.getPosition();
       telemetry.addData(TAG, "Servo %5.4f (%s)",
           position,
-          position == OBELISK_BLUE_ALLIANCE_GOAL_POSITION ? "Blue goal obelisk" :
-              position == OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION ? "Blue audience obelisk" :
-                  position == OBELISK_RED_ALLIANCE_GOAL_POSITION ? "Red goal obelisk" :
-                      position == OBELISK_RED_ALLIANCE_AUDIENCE_POSITION ? "Red audience obelisk" :
-                          position == GOAL_POSITION ? "Goal" : "Unknown");
-      List<AprilTagDetection> aprilTagDetections = getAllDetections();
-      telemetry.addData("AprilTags count", aprilTagDetections.size());
+          FtcUtils.areEqual(position, OBELISK_BLUE_ALLIANCE_GOAL_POSITION, FtcUtils.EPSILON4) ? "Blue goal obelisk" :
+              FtcUtils.areEqual(position, OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION, FtcUtils.EPSILON4) ? "Blue audience obelisk" :
+                  FtcUtils.areEqual(position, OBELISK_RED_ALLIANCE_GOAL_POSITION, FtcUtils.EPSILON4) ? "Red goal obelisk" :
+                      FtcUtils.areEqual(position, OBELISK_RED_ALLIANCE_AUDIENCE_POSITION, FtcUtils.EPSILON4) ? "Red audience obelisk" :
+                          FtcUtils.areEqual(position, GOAL_POSITION, FtcUtils.EPSILON4) ? "Goal" : "Unknown");
 
-      // Step through the list of detections and set info for each one.
-      for (AprilTagDetection detection : aprilTagDetections) {
-        if (detection.metadata != null) {
-          telemetry.addLine(String.format("Tag (ID %d) %s",
-              detection.id, detection.metadata.name));
-          telemetry.addLine(String.format("Range %3.1f", detection.ftcPose.range));
-          telemetry.addLine(String.format("Pitch %2.1f%s roll %2.1f%s yaw %2.1f%s",
-              detection.ftcPose.pitch, StringUtils.Degrees,
-              detection.ftcPose.roll, StringUtils.Degrees,
-              detection.ftcPose.yaw, StringUtils.Degrees));
-          telemetry.addLine(String.format("Range %3.1f\" bearing %2.1f%s elevation %2.1f%s",
-              detection.ftcPose.range, detection.ftcPose.bearing, StringUtils.Degrees,
-              detection.ftcPose.elevation, StringUtils.Degrees));
-        } else {
-          telemetry.addLine(String.format("Tag (ID %d) Unknown", detection.id));
+      List<AprilTagDetection> detections = getAllDetections();
+      if (detections != null) {
+        telemetry.addData("AprilTags count", detections.size());
+
+        // Step through the list of detections and set info for each one.
+        for (AprilTagDetection detection : detections) {
+          if (detection.metadata != null) {
+            telemetry.addLine(String.format("Tag (ID %d) %s",
+                detection.id, detection.metadata.name));
+            telemetry.addLine(String.format("Range %3.1f", detection.ftcPose.range));
+            telemetry.addLine(String.format("Pitch %2.1f%s roll %2.1f%s yaw %2.1f%s",
+                detection.ftcPose.pitch, StringUtils.Degrees,
+                detection.ftcPose.roll, StringUtils.Degrees,
+                detection.ftcPose.yaw, StringUtils.Degrees));
+            telemetry.addLine(String.format("Range %3.1f\" bearing %2.1f%s elevation %2.1f%s",
+                detection.ftcPose.range, detection.ftcPose.bearing, StringUtils.Degrees,
+                detection.ftcPose.elevation, StringUtils.Degrees));
+          } else {
+            telemetry.addLine(String.format("Tag (ID %d) Unknown", detection.id));
+          }
         }
+      } else {
+        telemetry.addData("AprilTags count", 0);
       }
     }
 
@@ -256,6 +278,7 @@ public class FtcAprilTag {
   /**
    * Code to run ONCE when the driver hits PLAY
    */
+  @Override
   public void start() {
     FtcLogger.enter();
     if (visionPortal != null) {
@@ -263,23 +286,54 @@ public class FtcAprilTag {
     }
 
     if (aprilTagServo != null) {
+      // Move the servo for correct initialization.
+      aprilTagServo.setPosition(Servo.MIN_POSITION);
       aprilTagServo.setPosition(GOAL_POSITION);
     }
 
     FtcLogger.exit();
   }
 
+  private void startAsyncOperations() {
+    // Process tags on a background thread
+    asyncUpdater = new FtcAprilTagAsyncUpdater(aprilTagProcessor);
+    asyncUpdaterThread = new Thread(asyncUpdater, FtcAprilTagAsyncUpdater.TAG);
+    asyncUpdaterThread.setPriority(Thread.NORM_PRIORITY + 1); // Priority 6 for time-sensitive vision
+    asyncUpdaterThread.setDaemon(true); // Auto-terminate on shutdown for fast OpMode transitions
+    asyncUpdaterThread.start();
+  }
+
   /**
    * Stops the April Tag detection processing.
    */
+  @Override
   public void stop() {
     FtcLogger.enter();
+    stopAsyncOperations();
     if (visionPortal != null) {
       visionPortal.close();
       visionPortal = null;
     }
 
     FtcLogger.exit();
+  }
+
+  private void stopAsyncOperations() {
+    if (asyncUpdater != null) {
+      asyncUpdater.stop();
+
+      // Wait for thread to finish before closing vision portal
+      if (asyncUpdaterThread != null && asyncUpdaterThread.isAlive()) {
+        try {
+          asyncUpdaterThread.join(10); // Wait max 10ms
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      asyncUpdater = null;
+      asyncUpdaterThread = null;
+    }
   }
 
   /**

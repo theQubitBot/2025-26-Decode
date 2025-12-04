@@ -5,16 +5,17 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 @Disabled
 @TeleOp(group = "TestOp")
 public class SorterTeleOp extends OpMode {
-  private FtcBot robot;
+  private BaseBot robot;
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
+  private double lastLoopLime = 1;
 
   @Override
   public void init() {
@@ -22,7 +23,7 @@ public class SorterTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
 
-    robot = new FtcBot();
+    robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, false);
     FtcLogger.exit();
   }
@@ -46,6 +47,7 @@ public class SorterTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Starting...");
     telemetry.update();
     robot.artifactSensor.start();
+    robot.intake.lightsOn();
     robot.sorter.start();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -60,7 +62,7 @@ public class SorterTeleOp extends OpMode {
     FtcLogger.enter();
     loopTime.reset();
 
-    robot.sorter.operate(gamepad1, gamepad2);
+    robot.sorter.operate(gamepad1, gamepad2, lastLoopLime, runtime);
     robot.sorter.showTelemetry();
 
     // Show the elapsed game time.
@@ -68,6 +70,7 @@ public class SorterTeleOp extends OpMode {
         loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
     FtcLogger.exit();
+    lastLoopLime = loopTime.milliseconds();
   }
 
   /*

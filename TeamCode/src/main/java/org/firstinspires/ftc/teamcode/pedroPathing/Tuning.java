@@ -7,6 +7,8 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.stopRobot;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.telemetryM;
 
+import android.annotation.SuppressLint;
+
 import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
@@ -34,6 +36,7 @@ import java.util.List;
  * @author Baron Henderson - 20077 The Indubitables
  * @version 1.0, 6/26/2025
  */
+@Disabled
 @Configurable
 @TeleOp(name = "Tuning", group = "Pedro Pathing")
 public class Tuning extends SelectableOpMode {
@@ -128,13 +131,16 @@ public class Tuning extends SelectableOpMode {
  */
 class LocalizationTest extends OpMode {
     @Override
-    public void init() {}
+    public void init() {
+    }
 
-    /** This initializes the PoseUpdater, the mecanum drive motors, and the Panels telemetry. */
+    /**
+     * This initializes the PoseUpdater, the mecanum drive motors, and the Panels telemetry.
+     */
     @Override
     public void init_loop() {
         telemetryM.debug("This will print your robot's position to telemetry while "
-                + "allowing robot control through a basic mecanum drive on gamepad 1.");
+            + "allowing robot control through a basic mecanum drive on gamepad 1.");
         telemetryM.update(telemetry);
         follower.update();
         drawOnlyCurrent();
@@ -150,15 +156,16 @@ class LocalizationTest extends OpMode {
      * This updates the robot's pose estimate, the simple mecanum drive, and updates the
      * Panels telemetry with the robot's position as well as draws the robot's position.
      */
+    @SuppressLint("DefaultLocale")
     @Override
     public void loop() {
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
 
-        telemetryM.debug("x:" + follower.getPose().getX());
-        telemetryM.debug("y:" + follower.getPose().getY());
-        telemetryM.debug("heading:" + Math.toDegrees(follower.getPose().getHeading()));
-        telemetryM.debug("total heading:" + Math.toDegrees(follower.getTotalHeading()));
+        telemetryM.debug(String.format("x: %.1f", follower.getPose().getX()));
+        telemetryM.debug(String.format("y: %.1f", follower.getPose().getY()));
+        telemetryM.debug(String.format("heading: %.1f", Math.toDegrees(follower.getPose().getHeading())));
+        telemetryM.debug(String.format("total heading: %.1f", Math.toDegrees(follower.getTotalHeading())));
         telemetryM.update(telemetry);
 
         draw();

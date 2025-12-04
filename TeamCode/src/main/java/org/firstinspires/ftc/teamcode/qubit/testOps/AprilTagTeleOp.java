@@ -25,7 +25,7 @@ public class AprilTagTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
     aprilTag = new FtcAprilTag(null);
-    aprilTag.init(hardwareMap, telemetry);
+    aprilTag.init(hardwareMap, telemetry, false);
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());

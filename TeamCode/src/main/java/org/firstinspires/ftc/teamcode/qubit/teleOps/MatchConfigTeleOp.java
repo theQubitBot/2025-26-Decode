@@ -25,7 +25,7 @@ public class MatchConfigTeleOp extends OpMode {
     telemetry.update();
 
     config = new MatchConfig();
-    config.init(hardwareMap, telemetry);
+    config.init(hardwareMap, telemetry, false);
     FtcLogger.exit();
   }
 

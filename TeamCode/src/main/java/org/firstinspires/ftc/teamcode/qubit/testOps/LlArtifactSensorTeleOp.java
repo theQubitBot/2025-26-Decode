@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.qubit.testOps;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -9,7 +10,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.LlArtifactSensor;
 
-//@Disabled
+@Disabled
 @TeleOp(group = "TestOp")
 public class LlArtifactSensorTeleOp extends OpMode {
   private FtcIntake intake = null;
@@ -23,10 +24,10 @@ public class LlArtifactSensorTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
 
-    intake = new FtcIntake();
-    intake.init(hardwareMap, telemetry);
+    intake = new FtcIntake(null);
+    intake.init(hardwareMap, telemetry, false);
     artifactSensor = new LlArtifactSensor();
-    artifactSensor.init(hardwareMap, telemetry);
+    artifactSensor.init(hardwareMap, telemetry, false);
     FtcLogger.exit();
   }
 

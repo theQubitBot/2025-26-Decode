@@ -30,7 +30,8 @@ public class FtcBulkRead extends FtcSubSystemBase {
    * @param hardwareMap The hardware map to use for initialization.
    * @param telemetry   The telemetry to use.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  @Override
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
 
@@ -78,7 +79,10 @@ public class FtcBulkRead extends FtcSubSystemBase {
    */
   public void showTelemetry() {
     FtcLogger.enter();
-    telemetry.addData(TAG, "BulkCachingMode %s", cachingMode);
+    if (telemetry != null) {
+      telemetry.addData(TAG, "BulkCachingMode %s", cachingMode);
+    }
+
     FtcLogger.exit();
   }
 
@@ -87,7 +91,7 @@ public class FtcBulkRead extends FtcSubSystemBase {
    */
   public void clearBulkCache() {
     FtcLogger.enter();
-    if (cachingMode == LynxModule.BulkCachingMode.MANUAL) {
+    if (cachingMode == LynxModule.BulkCachingMode.MANUAL && allLynxModules != null) {
       for (LynxModule lynxModule : allLynxModules) {
         lynxModule.clearBulkCache();
       }

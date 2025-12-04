@@ -7,12 +7,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 
 import java.util.Arrays;
 import java.util.List;
@@ -66,17 +67,15 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   // Precision driving mode is driver controlled. Disabled at start.
   private boolean precisionDriveMode = false;
   private Telemetry telemetry = null;
-  private final FtcBot parent;
+  private final BaseBot parent;
 
   private FtcMotor leftFrontMotor = null;
   private FtcMotor leftRearMotor = null;
   private FtcMotor rightFrontMotor = null;
   private FtcMotor rightRearMotor = null;
-  public List<FtcMotor> frontMotors = null, rearMotors = null;
+  private List<FtcMotor> frontMotors = null, rearMotors = null;
   public List<FtcMotor> allMotors = null, activeMotors = null;
-  public List<DcMotorSimple.Direction> motorDirections,
-      botADirections, botBDirections, botCDirections, botDDirections,
-      botKDirections, botLDirections;
+  public List<DcMotorSimple.Direction> motorDirections = null;
 
   // These default drive train and drive type are overridden in FtcBot.init()
   public DriveTrainEnum driveTrainEnum = DriveTrainEnum.UNKNOWN;
@@ -93,33 +92,12 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   private Pose startingPose = null;
   public static double TAG_HEADING_ERROR = -1.0;
 
-  public FtcDriveTrain(FtcBot robot) {
+  public FtcDriveTrain(BaseBot robot) {
     parent = robot;
-    // leftFront, leftRear, rightFront, rightRear
-    botADirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-    botBDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-    botCDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD,
-        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-    botDDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-    botLDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-        DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-
-    if (parent.trollBot == TrollBotEnum.TrollBotA)
-      motorDirections = botADirections;
-    else if (parent.trollBot == TrollBotEnum.TrollBotB)
-      motorDirections = botBDirections;
-    else if (parent.trollBot == TrollBotEnum.TrollBotC)
-      motorDirections = botCDirections;
-    else if (parent.trollBot == TrollBotEnum.TrollBotD)
-      motorDirections = botDDirections;
-    else if (parent.trollBot == TrollBotEnum.TrollBotL)
-      motorDirections = botLDirections;
+    motorDirections = BaseBot.getMotorDirections();
   }
 
-  public double GetMaxWheelPower(double leftFrontPower, double leftRearPower,
+  public double getMaxWheelPower(double leftFrontPower, double leftRearPower,
                                  double rightFrontPower, double rightRearPower) {
     return Math.max(Math.max(Math.abs(leftFrontPower), Math.abs(leftRearPower)),
         Math.max(Math.abs(rightFrontPower), Math.abs(rightRearPower)));
@@ -131,7 +109,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    * @param hardwareMap The hardware map to use for initialization.
    * @param telemetry   The telemetry to use.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  @Override
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
 
@@ -166,8 +145,10 @@ public class FtcDriveTrain extends FtcSubSystemBase {
       }
 
       // Reset motor encoders
-      for (FtcMotor motor : activeMotors) {
-        motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      if (activeMotors != null) {
+        for (FtcMotor motor : activeMotors) {
+          motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        }
       }
 
       follower = Constants.createFollower(hardwareMap);
@@ -198,8 +179,30 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    * @param loopTime The loopTime passed in by TeleOp that determines how fast the TeleOp loop
    *                 is executing. Shorter the loopTime, shorter the anti-skid braking power step.
    */
+  @Override
   public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
+
+    if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
+      if (follower.isBusy()) follower.breakFollowing();
+      if (parent != null && parent.aprilTag != null) {
+        double bearing = parent.aprilTag.getBearing() + TAG_HEADING_ERROR;
+        follower.turnDegrees(bearing, bearing >= 0);
+      }
+      return;
+    } else if (gamePad1.dpad_up || gamePad2.dpad_up) {
+      follower.update();
+      return;
+    } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
+      if (follower.isBusy()) follower.breakFollowing();
+      follower.holdPoint(follower.getPose());
+      return;
+    } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
+      follower.update();
+      return;
+    } else {
+      if (follower.isBusy()) follower.breakFollowing();
+    }
 
     // Setup a variable for each side drive wheel to display power level for telemetry
     double leftFrontPower = FtcMotor.ZERO_POWER;
@@ -216,32 +219,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     double maxWheelPower;
     double joyStickHeading;
 
-    if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
-      stop();
-      return;
-    }
-
-    if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
-      if (follower.isBusy()) follower.breakFollowing();
-      follower.setStartingPose(startingPose);
-      double bearing = parent.aprilTag.getBearing() + TAG_HEADING_ERROR;
-      follower.turnToDegrees(bearing);
-      return;
-    } else if (gamePad1.dpad_up || gamePad2.dpad_up) {
-      follower.update();
-      return;
-    } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
-      if (follower.isBusy()) follower.breakFollowing();
-      follower.setStartingPose(startingPose);
-      follower.holdPoint(follower.getPose());
-      return;
-    } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
-      follower.update();
-      return;
-    } else {
-      if (follower.isBusy()) follower.breakFollowing();
-    }
-
     if (powerMagnitude > JITTER) {
       if (driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE) {
         // All angles are in radians, except for Gyro reading
@@ -254,7 +231,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
         if (enableMecanumPowerBoost) {
           // Boost power up to the powerMagnitude
-          maxWheelPower = GetMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
+          maxWheelPower = getMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
           if (maxWheelPower < powerMagnitude) {
             powerMagnitude *= MECANUM_POWER_BOOST_FACTOR;
             leftFrontPower = powerMagnitude * leftFrontPower / maxWheelPower;
@@ -274,6 +251,10 @@ public class FtcDriveTrain extends FtcSubSystemBase {
       }
     }
 
+    // Capture drive power BEFORE adding turn for step function check
+    // Step function should only apply to translational movement (forward/strafe), not rotation
+    double drivePowerBeforeTurn = getMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
+
     double turn = gamePad1.right_stick_x;
     double turnMagnitude = Math.abs(turn);
     if (turnMagnitude <= JITTER) {
@@ -292,7 +273,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
     // Constrain powers in the range of [-MAXIMUM_FORWARD_POWER,MAXIMUM_FORWARD_POWER]
     // Not checking may cause the robot to drive at full speed
-    maxWheelPower = GetMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
+    maxWheelPower = getMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
     if (maxWheelPower > MAXIMUM_FORWARD_POWER) {
       // Normalize drive power by dividing everything by max power.
       // It's positive so we don't need to worry about sign.
@@ -313,11 +294,12 @@ public class FtcDriveTrain extends FtcSubSystemBase {
       // Maintain last precision drive mode.
     }
 
+    // Use drivePowerBeforeTurn for step function check so rotation doesn't trigger it
     if (precisionDriveMode ||
-        (useStepPowerFunction && maxWheelPower > STEP1_FORWARD_POWER && maxWheelPower <= STEP2_FORWARD_POWER)) {
+        (useStepPowerFunction && drivePowerBeforeTurn > STEP1_FORWARD_POWER && drivePowerBeforeTurn <= STEP2_FORWARD_POWER)) {
       // E.g. Robot is turning with minimum power
       // Precision mode should not make it turn using lower than minimum power
-      maxWheelPower = GetMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
+      maxWheelPower = getMaxWheelPower(leftFrontPower, leftRearPower, rightFrontPower, rightRearPower);
       if (maxWheelPower > JITTER) {
         // No matter the joystick magnitude, the max power will be
         // FORWARD_SLO_MO_POWER or STRAFE_SLO_MO_POWER for at least one wheel.
@@ -341,7 +323,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    */
   public void setDrivePower(double leftFrontPower, double leftRearPower,
                             double rightFrontPower, double rightRearPower) {
-    FtcLogger.enter();
     if (driveTrainEnabled) {
       if (driveTrainEnum == DriveTrainEnum.FRONT_WHEEL_DRIVE ||
           driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE ||
@@ -357,8 +338,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         rightRearMotor.setPower(rightRearPower);
       }
     }
-
-    FtcLogger.exit();
   }
 
   /**
@@ -400,7 +379,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
    *                 is executing. Shorter the loopTime, shorter the braking power step.
    */
   private void setDrivePowerSmooth(FtcMotor motor, double power, double loopTime) {
-    FtcLogger.enter();
     if (driveTrainEnabled && motor != null) {
       // loopTime may not have been initialized or the bot is bare bone during development.
       // Minimum time is 1ms. A 0 value may lead to mo power increment!
@@ -420,10 +398,9 @@ public class FtcDriveTrain extends FtcSubSystemBase {
       else
         newPower = power;
 
+      newPower = Range.clip(newPower, FtcMotor.MIN_POWER, FtcMotor.MAX_POWER);
       motor.setPower(newPower);
     }
-
-    FtcLogger.exit();
   }
 
   public void setDriveTypeAndMode(DriveTrainEnum driveTrainEnum, DriveTypeEnum driveTypeEnum) {
@@ -451,9 +428,10 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   /**
    * Display driveTrain information. Helps with debugging.
    */
+  @Override
   public void showTelemetry() {
     FtcLogger.enter();
-    if (driveTrainEnabled && telemetryEnabled) {
+    if (driveTrainEnabled && telemetryEnabled && telemetry != null) {
       if (driveTrainEnum == DriveTrainEnum.FRONT_WHEEL_DRIVE ||
           driveTrainEnum == DriveTrainEnum.MECANUM_WHEEL_DRIVE ||
           driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
@@ -482,6 +460,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   /**
    * Stops the robot by sending zero power to all drive motors.
    */
+  @Override
   public void stop() {
     FtcLogger.enter();
     setDrivePower(FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER, FtcMotor.ZERO_POWER);

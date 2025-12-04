@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 //@Disabled
 @TeleOp(group = "Official")
@@ -15,8 +15,8 @@ public class DriverTeleOp extends OpMode {
   // Declare OpMode members
   private ElapsedTime runtime = null;
   private ElapsedTime loopTime = null;
-  private double lastLoopTime = 0.0;
-  FtcBot robot = null;
+  private double lastLoopTime = 1;
+  BaseBot robot = null;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -26,7 +26,7 @@ public class DriverTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-    robot = new FtcBot();
+    robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, false);
     robot.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     FtcLogger.exit();
@@ -68,15 +68,15 @@ public class DriverTeleOp extends OpMode {
    */
   @Override
   public void loop() {
-    FtcLogger.enter();
     loopTime.reset();
+    FtcLogger.enter();
     robot.operate(gamepad1, gamepad2, lastLoopTime, runtime);
 
     // Show the elapsed game time.
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
-        loopTime.milliseconds(), runtime.seconds());
-    lastLoopTime = loopTime.milliseconds();
+        lastLoopTime, runtime.seconds());
     FtcLogger.exit();
+    lastLoopTime = loopTime.milliseconds();
   }
 
   /*
@@ -85,9 +85,7 @@ public class DriverTeleOp extends OpMode {
   @Override
   public void stop() {
     FtcLogger.enter();
-    if (robot != null) {
-      robot.stop();
-    }
+    robot.stop();
 
     telemetry.addData(FtcUtils.TAG, "Tele Op stopped.");
     telemetry.update();

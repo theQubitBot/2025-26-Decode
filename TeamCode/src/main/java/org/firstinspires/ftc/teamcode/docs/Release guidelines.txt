@@ -1,0 +1,3 @@
+- Set build Variants = release
+- Set FtcUtils.DEBUG = false
+- Set FtcLogger.performanceMetricsEnabled = false;

@@ -9,15 +9,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcDriveTrain;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
-
-import java.util.Locale;
 
 @Disabled
 @TeleOp(group = "TestOp")
@@ -43,11 +41,11 @@ public class DriveFrictionTeleOp extends OpMode {
 
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-    FtcBot robot = new FtcBot();
+    BaseBot robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, false);
     driveTrain = robot.driveTrain;
     driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
-    driveTrain.init(hardwareMap, telemetry);
+    driveTrain.init(hardwareMap, telemetry, false);
     driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     FtcLogger.exit();
   }
@@ -72,7 +70,7 @@ public class DriveFrictionTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    driveTrain.telemetryEnabled = FtcUtils.DEBUG;
+    driveTrain.telemetryEnabled = true;
     FtcLogger.exit();
   }
 
@@ -105,7 +103,7 @@ public class DriveFrictionTeleOp extends OpMode {
     rfVelocity = Math.abs(driveTrain.allMotors.get(2).getVelocity());
     rrVelocity = Math.abs(driveTrain.allMotors.get(3).getVelocity());
     maxVelocity = Math.max(Math.max(lfVelocity, lrVelocity), Math.max(rfVelocity, rrVelocity));
-    telemetry.addData(FtcUtils.TAG, String.format(Locale.US, "Motor power %.2f", newMotorPower));
+    telemetry.addData(FtcUtils.TAG, "Motor power %.2f", newMotorPower);
     telemetry.addData("LF", maxVelocity - lfVelocity);
     telemetry.addData("LR", maxVelocity - lrVelocity);
     telemetry.addData("RF", maxVelocity - rfVelocity);

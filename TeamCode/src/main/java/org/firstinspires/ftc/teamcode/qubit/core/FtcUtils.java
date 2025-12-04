@@ -8,9 +8,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.internal.collections.SimpleGson;
 import org.firstinspires.ftc.robotcore.internal.system.Assert;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 
 import java.lang.reflect.Modifier;
@@ -34,6 +31,12 @@ public final class FtcUtils {
   public static final int BUZZER_DURATION = 2; // seconds
   public static final int CYCLE_MS = 50; // milliseconds
   public static final int INTERRUPTIBLE_CYCLE_MS = 5; // milliseconds
+
+  // Gamepad thresholds
+  public static final double TRIGGER_THRESHOLD = 0.5;
+
+  // Timing constants for endgame warnings
+  public static final int ENDGAME_PARK_WARNING_SECONDS = 10;
 
   /* Constructor */
   public FtcUtils() {
@@ -79,37 +82,6 @@ public final class FtcUtils {
     return Math.abs(a - b) <= epsilon;
   }
 
-  /**
-   * Copies source Rect into destination Rect
-   *
-   * @param source      The source rectangle.
-   * @param destination The destination rectangle.
-   */
-  public static void copyRect(Rect source, Rect destination) {
-    synchronized (destination) {
-      destination.x = source.x;
-      destination.y = source.y;
-      destination.height = source.height;
-      destination.width = source.width;
-    }
-  }
-
-  /**
-   * Copies source Rect into destination Rect
-   *
-   * @param source      The source rectangle.
-   * @param destination The destination rectangle.
-   */
-  public static void copyRect(RotatedRect source, RotatedRect destination) {
-    synchronized (destination) {
-      destination.center.x = source.center.x;
-      destination.center.y = source.center.y;
-      destination.size.height = source.size.height;
-      destination.size.width = source.size.width;
-      destination.angle = source.angle;
-    }
-  }
-
   public static boolean lastNSeconds(ElapsedTime runtime, int nSeconds) {
     return runtime.seconds() <= TELE_OP_DURATION && runtime.seconds() >= (TELE_OP_DURATION - nSeconds);
   }
@@ -124,27 +96,13 @@ public final class FtcUtils {
   }
 
   /**
-   * Zeros out the rect values.
+   * Determines if subsystems should stop operating (game over in non-debug mode).
    *
-   * @param rect The rectangle to zero out.
+   * @param runtime The tele op runtime.
+   * @return true if subsystems should stop, false otherwise.
    */
-  public static void zeroRect(Rect rect) {
-    synchronized (rect) {
-      rect.x = 0;
-      rect.y = 0;
-      rect.height = 0;
-      rect.width = 0;
-    }
-  }
-
-  public static void zeroRect(RotatedRect rRect) {
-    synchronized (rRect) {
-      rRect.center.x = 0;
-      rRect.center.y = 0;
-      rRect.size.height = 0;
-      rRect.size.width = 0;
-      rRect.angle = 0;
-    }
+  public static boolean shouldStopOperating(ElapsedTime runtime) {
+    return !DEBUG && gameOver(runtime);
   }
 
   /**
@@ -185,50 +143,6 @@ public final class FtcUtils {
     }
 
     return false;
-  }
-
-  public static double getMidpointX(Rect rect) {
-    synchronized (rect) {
-      return rect.x + (rect.width / 2.0);
-    }
-  }
-
-  public static double getMidpointY(Rect rect) {
-    synchronized (rect) {
-      return rect.y + (rect.height / 2.0);
-    }
-  }
-
-  public static Point getMidpoint(Rect rect) {
-    return new Point(getMidpointX(rect), getMidpointY(rect));
-  }
-
-  public static double getAspectRatio(Rect rect) {
-    synchronized (rect) {
-      if (rect.height == 0)
-        return Double.MAX_VALUE;
-      else
-        return (double) rect.width / (double) rect.height;
-    }
-  }
-
-  /**
-   * Returns ratio of width to height of the input rectangle.
-   *
-   * @param rect The input rectangle
-   * @return The aspect ratio of the rectangle.
-   */
-  public static double getAspectRatio(RotatedRect rect) {
-    synchronized (rect) {
-      if (areEqual(rect.size.height, 0, EPSILON4))
-        return Double.MAX_VALUE;
-      else
-        return rect.size.width / rect.size.height;
-    }
-  }
-
-  public static int sign(double number) {
-    return number >= 0 ? 1 : -1;
   }
 
   /**

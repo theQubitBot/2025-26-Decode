@@ -7,10 +7,9 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 /**
  * A class to implement autonomous objective
@@ -21,7 +20,7 @@ public class OptionRedGoal extends OptionBase {
   public Pose pickup1ControlPose = new Pose(-42, -10, -RADIAN45);
   public Pose pickup2Pose = new Pose(-35, -50, -RADIAN45);
   public Pose pickup2ControlPose = new Pose(-59, -27, -RADIAN45);
-  public Pose leavePose = new Pose(-44, -12, RADIAN0);
+  public Pose leavePose = new Pose(-24, -12, RADIAN0);
 
   PathChain scorePreloadPath,
       pickup11Path, pickup12Path, score1Path,
@@ -37,7 +36,7 @@ public class OptionRedGoal extends OptionBase {
 
   public static OptionRedGoal.Params PARAMS = new OptionRedGoal.Params();
 
-  public OptionRedGoal(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
+  public OptionRedGoal(LinearOpMode autoOpMode, BaseBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
     ccd = robot.cannon.getClosestData(FtcCannon.GOAL_SWEET_SPOT_DISTANCE);
@@ -140,12 +139,7 @@ public class OptionRedGoal extends OptionBase {
 
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, true, 3000);
-      ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
-      if (ote != ObeliskTagEnum.UNKNOWN) {
-        robot.config.obeliskTagEnum = ote;
-        robot.config.saveToFile();
-      }
-
+      updateMotif();
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
@@ -162,19 +156,22 @@ public class OptionRedGoal extends OptionBase {
 
     // Deliver second row
     if (!saveAndTest()) return;
-    if (PARAMS.deliver2) {
+    if (PARAMS.deliver2 && robot.config.deliverSecondRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup21Path, true, 3000);
-//      if (PARAMS.executeTrajectories) runFollower(pickup22Path, true, 3000);
-//      if (PARAMS.executeTrajectories) runFollower(score21Path, false, 3000);
-//      if (PARAMS.executeTrajectories) runFollower(score22Path, true, 3000);
-//      if (PARAMS.executeRobotActions)
-//        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
-    }
-
-    // Leave
-    if (!saveAndTest()) return;
-    if (PARAMS.leave) {
-//      if (PARAMS.executeTrajectories) runFollower(leavePath, false, 3000);
+      if (PARAMS.executeTrajectories) runFollower(pickup22Path, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(score21Path, false, 3000);
+      /* not enough time to shoot
+      if (PARAMS.executeTrajectories) runFollower(score22Path, true, 3000);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      // robot is parked
+       */
+    } else {
+      // Leave
+      if (!saveAndTest()) return;
+      if (PARAMS.leave) {
+        if (PARAMS.executeTrajectories) runFollower(leavePath, false, 3000);
+      }
     }
 
     FtcLogger.exit();

@@ -7,9 +7,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
-
-import java.util.Locale;
 
 /**
  * A class to manage the REV Blinkin LED strip.
@@ -24,9 +23,9 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   // Start with LED strip being off.
   private BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.BLACK;
   private Telemetry telemetry;
-  private final FtcBot parent;
+  private final BaseBot parent;
 
-  public FtcBlinkinLed(FtcBot robot) {
+  public FtcBlinkinLed(BaseBot robot) {
     parent = robot;
   }
 
@@ -36,7 +35,8 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
    * @param hardwareMap The hardware map to use for initialization.
    * @param telemetry   The telemetry to use.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  @Override
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     this.telemetry = telemetry;
     if (blinkinLedEnabled) {
       blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, BLINKIN_NAME);
@@ -48,39 +48,45 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   }
 
   /**
+   * Checks if cannon is ready to fire at the target distance and sets LED accordingly.
+   *
+   * @param distance The target distance to check cannon readiness for.
+   */
+  private void checkCannonReadyAndIndicate(double distance) {
+    if (parent.cannon != null) {
+      CannonControlData ccd = parent.cannon.getClosestData(distance);
+      if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
+        set(BlinkinPattern.GREEN);
+      } else {
+        stop();
+      }
+    } else {
+      stop();
+    }
+  }
+
+  /**
    * Set a LED pattern based on gameplay conditions.
    *
    * @param gamePad1 Gamepad1 to use.
    * @param gamePad2 Gamepad2 to use.
    * @param runtime  The cumulative time game has been running.
    */
-  public void operate(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
+  @Override
+  public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
-    double range = parent.aprilTag.getRange();
+    double range = parent.aprilTag != null ? parent.aprilTag.getRange() : 0;
+
     if (gamePad1.right_bumper || gamePad2.right_bumper) {
-      CannonControlData ccd = parent.cannon.getClosestData(109);
-      if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
-        set(BlinkinPattern.GREEN);
-      } else {
-        stop();
-      }
-    } else if ((gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5)) {
-      CannonControlData ccd = parent.cannon.getClosestData(34);
-      if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
-        set(BlinkinPattern.GREEN);
-      } else {
-        stop();
-      }
-    } else if (range >= parent.cannon.controlData.get(1).distance &&
+      checkCannonReadyAndIndicate(FtcCannon.AUDIENCE_DISTANCE);
+    } else if (gamePad1.right_trigger >= FtcUtils.TRIGGER_THRESHOLD || gamePad2.right_trigger >= FtcUtils.TRIGGER_THRESHOLD) {
+      checkCannonReadyAndIndicate(FtcCannon.GOAL_SWEET_SPOT_DISTANCE);
+    } else if (parent.cannon != null && !parent.cannon.controlData.isEmpty() &&
+        range >= parent.cannon.controlData.get(1).distance &&
         range <= parent.cannon.controlData.get(parent.cannon.controlData.size() - 1).distance) {
-      CannonControlData ccd = parent.cannon.getClosestData(range);
-      if (FtcUtils.areEqual(ccd.velocity, parent.cannon.getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN)) {
-        set(BlinkinPattern.GREEN);
-      } else {
-        stop();
-      }
-    } else if (FtcUtils.lastNSeconds(runtime, 10)) {
-      if (parent != null) {
+      checkCannonReadyAndIndicate(range);
+    } else if (FtcUtils.lastNSeconds(runtime, FtcUtils.ENDGAME_PARK_WARNING_SECONDS)) {
+      if (parent.config != null) {
         if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
           set(BlinkinPattern.HEARTBEAT_BLUE);
         } else {
@@ -128,22 +134,26 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
    * Displays LED telemetry. Helps with debugging.
    */
   public void showTelemetry() {
-    if (blinkinLedEnabled && telemetryEnabled && blinkinLedDriver != null) {
-      telemetry.addData(TAG, String.format(Locale.US, "%s (%d)",
-          currentPattern.toString(), currentPattern.ordinal()));
+    if (telemetryEnabled && telemetry != null) {
+      telemetry.addData(TAG, "%s (%d)",
+          currentPattern.toString(), currentPattern.ordinal());
     }
   }
 
   /**
    * Starts the current LED display pattern by setting the BLACK pattern.
    */
+  @Override
   public void start() {
+    // Change the LED position for proper initialization.
+    set(BlinkinPattern.WHITE);
     set(BlinkinPattern.BLACK);
   }
 
   /**
    * Stops the current LED display pattern by setting the BLACK pattern.
    */
+  @Override
   public void stop() {
     set(BlinkinPattern.BLACK);
   }

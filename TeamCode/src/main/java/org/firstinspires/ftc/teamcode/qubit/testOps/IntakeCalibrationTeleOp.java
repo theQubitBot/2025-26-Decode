@@ -29,8 +29,8 @@ public class IntakeCalibrationTeleOp extends OpMode {
     FtcLogger.enter();
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-    intake = new FtcIntake();
-    intake.init(hardwareMap, telemetry);
+    intake = new FtcIntake(null);
+    intake.init(hardwareMap, telemetry, false);
     intakePower = 0;
     intake.setPower(intakePower);
     FtcLogger.exit();

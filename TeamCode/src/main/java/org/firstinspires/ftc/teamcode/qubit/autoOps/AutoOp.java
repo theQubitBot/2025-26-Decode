@@ -6,17 +6,16 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 
 @Autonomous(group = "Official", preselectTeleOp = "DriverTeleOp")
 public class AutoOp extends LinearOpMode {
   private ElapsedTime runtime = null;
-  FtcBot robot = null;
+  BaseBot robot = null;
   Follower follower;
   OptionBase optionBase;
   OptionBlueGoal optionBlueGoal;
@@ -43,9 +42,10 @@ public class AutoOp extends LinearOpMode {
     telemetry.update();
 
     // Initialize robot.
-    robot = new FtcBot();
+    robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, true);
-    // Enable and reset servos
+
+    // Set subsystems at their respective start position.
     robot.start();
     robot.cannon.stop();
     robot.aprilTag.pointAtObelisk();
@@ -63,22 +63,18 @@ public class AutoOp extends LinearOpMode {
     follower = Constants.createFollower(hardwareMap);
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
-        optionBlueGoal = new OptionBlueGoal(this, robot, follower).init();
-        optionBase = optionBlueGoal;
+        optionBase = optionBlueGoal = new OptionBlueGoal(this, robot, follower).init();
       } else if (robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
-        optionBlueAudience = new OptionBlueAudience(this, robot, follower).init();
-        optionBase = optionBlueAudience;
+        optionBase = optionBlueAudience = new OptionBlueAudience(this, robot, follower).init();
       } else {
         throw new IllegalStateException(String.format("Unsupported robot position: %s",
             robot.config.robotPosition.toString()));
       }
     } else if (robot.config.allianceColor == AllianceColorEnum.RED) {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
-        optionRedGoal = new OptionRedGoal(this, robot, follower).init();
-        optionBase = optionRedGoal;
+        optionBase = optionRedGoal = new OptionRedGoal(this, robot, follower).init();
       } else if (robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
-        optionRedAudience = new OptionRedAudience(this, robot, follower).init();
-        optionBase = optionRedAudience;
+        optionBase = optionRedAudience = new OptionRedAudience(this, robot, follower).init();
       } else {
         throw new IllegalStateException(String.format("Unsupported robot position: %s",
             robot.config.robotPosition.toString()));
@@ -96,11 +92,7 @@ public class AutoOp extends LinearOpMode {
 
     while (opModeInInit()) {
       if (robot.config.robotPosition == RobotPositionEnum.AUDIENCE) {
-        ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
-        if (ote != ObeliskTagEnum.UNKNOWN) {
-          robot.config.obeliskTagEnum = ote;
-          robot.config.saveToFile();
-        }
+        optionBase.updateMotif();
       }
 
       robot.config.showConfiguration();

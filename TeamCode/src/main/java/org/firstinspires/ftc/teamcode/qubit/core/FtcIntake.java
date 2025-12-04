@@ -7,8 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-import java.util.Locale;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 /**
  * A class to manage the game element intake.
@@ -24,15 +23,20 @@ public class FtcIntake extends FtcSubSystemBase {
   public static final long ARTIFACT_INTAKE_TIME = 1000; // milliseconds
   public static final long ARTIFACT_OUTTAKE_TIME = 1000; // milliseconds
   public static final String LIGHT_SERVO_NAME = "lightServo";
-  public static final double LIGHTS_ON = 0.5;
+  public static final double LIGHTS_ON = 0.5; // Single light works with 0.5 value
   public static final double LIGHTS_OFF = 0.0;
 
   private final boolean intakeEnabled = true;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
+  private final BaseBot parent;
   public FtcMotor leftIntakeMotor = null;
   public FtcMotor rightIntakeMotor = null;
   public FtcServo lightServo = null;
+
+  public FtcIntake(BaseBot robot) {
+    parent = robot;
+  }
 
   /**
    * Initialize standard Hardware interfaces.
@@ -40,7 +44,8 @@ public class FtcIntake extends FtcSubSystemBase {
    * @param hardwareMap The hardware map to use for initialization.
    * @param telemetry   The telemetry to use.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  @Override
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
     if (intakeEnabled) {
@@ -55,6 +60,7 @@ public class FtcIntake extends FtcSubSystemBase {
       rightIntakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
       lightServo = new FtcServo(hardwareMap.get(Servo.class, LIGHT_SERVO_NAME));
+      lightsOff();
 
       showTelemetry();
       telemetry.addData(TAG, "initialized");
@@ -80,12 +86,11 @@ public class FtcIntake extends FtcSubSystemBase {
    * @param gamePad2 The second gamePad to use.
    * @param runtime  The tele op runtime.
    */
-  public void operate(Gamepad gamePad1, Gamepad gamePad2, ElapsedTime runtime) {
+  @Override
+  public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
     if (intakeEnabled) {
-      if (!FtcUtils.DEBUG && FtcUtils.gameOver(runtime)) {
-        stop();
-      } else if (gamePad1.left_trigger >= 0.5 || gamePad2.left_trigger >= 0.5) {
+      if (gamePad1.left_trigger >= FtcUtils.TRIGGER_THRESHOLD || gamePad2.left_trigger >= FtcUtils.TRIGGER_THRESHOLD) {
         spinIn(false);
       } else if (gamePad1.left_bumper || gamePad2.left_bumper) {
         spinOut(false);
@@ -110,7 +115,7 @@ public class FtcIntake extends FtcSubSystemBase {
     if (intakeEnabled) {
       leftIntakeMotor.setPower(HOLD_POWER);
       rightIntakeMotor.setPower(HOLD_POWER);
-      lightsOff();
+      lightsOn();
     }
 
     FtcLogger.exit();
@@ -139,9 +144,13 @@ public class FtcIntake extends FtcSubSystemBase {
   public void spinOut(boolean waitTillCompletion) {
     FtcLogger.enter();
     if (intakeEnabled) {
+      if (parent != null && parent.sorter != null) {
+        parent.sorter.setStraight(waitTillCompletion);
+      }
+
+      lightsOff();
       leftIntakeMotor.setPower(OUTTAKE_POWER);
       rightIntakeMotor.setPower(OUTTAKE_POWER);
-      lightsOff();
       if (waitTillCompletion) {
         FtcUtils.sleep(ARTIFACT_OUTTAKE_TIME);
       }
@@ -153,13 +162,13 @@ public class FtcIntake extends FtcSubSystemBase {
   /**
    * Displays intake telemetry. Helps with debugging.
    */
+  @Override
   public void showTelemetry() {
     FtcLogger.enter();
-    if (intakeEnabled && telemetryEnabled) {
+    if (intakeEnabled && telemetryEnabled && telemetry != null) {
       if (leftIntakeMotor != null && rightIntakeMotor != null) {
-        telemetry.addData(TAG, String.format(Locale.US,
-            "left: %.1f, right: %.1f",
-            leftIntakeMotor.getPower(), rightIntakeMotor.getPower()));
+        telemetry.addData(TAG, "left: %.1f, right: %.1f",
+            leftIntakeMotor.getPower(), rightIntakeMotor.getPower());
       }
     }
 
@@ -169,14 +178,20 @@ public class FtcIntake extends FtcSubSystemBase {
   /**
    * Code to run ONCE when the driver hits PLAY
    */
+  @Override
   public void start() {
     FtcLogger.enter();
+
+    // Move the servo left and right for initialization.
+    lightsOn();
+    lightsOff();
     FtcLogger.exit();
   }
 
   /**
    * Stops the Intake.
    */
+  @Override
   public void stop() {
     FtcLogger.enter();
     if (intakeEnabled) {

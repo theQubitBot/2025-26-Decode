@@ -6,9 +6,9 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 /**
  * A class to implement autonomous objective
@@ -30,7 +30,7 @@ public class OptionRedAudience extends OptionBase {
 
   public static OptionRedAudience.Params PARAMS = new OptionRedAudience.Params();
 
-  public OptionRedAudience(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
+  public OptionRedAudience(LinearOpMode autoOpMode, BaseBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
     ccd = robot.cannon.getClosestData(FtcCannon.AUDIENCE_DISTANCE);

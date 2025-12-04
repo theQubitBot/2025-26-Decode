@@ -8,10 +8,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.qubit.core.CannonControlData;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcBot;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -38,12 +39,13 @@ public class OptionBase {
   protected static final double RADIAN180;
   protected LinearOpMode autoOpMode;
   public CannonControlData ccd;
-  protected FtcBot robot;
+  protected BaseBot robot;
   protected Follower follower;
   protected final Pose startPose = new Pose(0, 0, 0);
 
   protected Runnable intakeSpinIn, intakeSpinOut, intakeSpinHold,
-      sorterGreen, sorterPurple, sorterStraight, cannonIdle;
+      sorterGreen, sorterPurple, sorterStraight,
+      sorterPushGreen, sorterPushPurple, cannonIdle;
 
   static {
     RADIAN0 = Math.toRadians(0);
@@ -61,7 +63,7 @@ public class OptionBase {
     RADIAN133 = Math.toRadians(133);
     RADIAN135 = Math.toRadians(135);
     RADIAN150 = Math.toRadians(150);
-    RADIAN180 = Math.toRadians(179.99);
+    RADIAN180 = Math.toRadians(179.99); // Force robot to turn clockwise
   }
 
   /**
@@ -71,7 +73,7 @@ public class OptionBase {
    * @param robot      The robot object to execute robot actions.
    * @param follower   The PP follower to execute trajectories.
    */
-  public OptionBase(LinearOpMode autoOpMode, FtcBot robot, Follower follower) {
+  public OptionBase(LinearOpMode autoOpMode, BaseBot robot, Follower follower) {
     this.autoOpMode = autoOpMode;
     this.robot = robot;
     this.follower = follower;
@@ -83,6 +85,8 @@ public class OptionBase {
     sorterGreen = () -> robot.sorter.setGreen(false);
     sorterPurple = () -> robot.sorter.setPurple(false);
     sorterStraight = () -> robot.sorter.setStraight(false);
+    sorterPushGreen = () -> robot.sorter.pushGreen(false);
+    sorterPushPurple = () -> robot.sorter.pushPurple(false);
     cannonIdle = () -> robot.cannon.setVelocity(FtcCannon.CANNON_IDLE_VELOCITY, false);
   }
 
@@ -99,7 +103,7 @@ public class OptionBase {
     FtcLogger.enter();
     ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     follower.followPath(pathChain, holdEnd);
-    if (timeout < 0) timeout = Long.MAX_VALUE;
+    if (timeout < 0) timeout = 5000; // a reasonable timeout for the path
     Deadline d = new Deadline(timeout, TimeUnit.MILLISECONDS);
     do {
       follower.update();
@@ -129,5 +133,13 @@ public class OptionBase {
 
     FtcLogger.exit();
     return opModeIsActive;
+  }
+
+  public void updateMotif() {
+    ObeliskTagEnum ote = robot.aprilTag.getObeliskTag();
+    if (ote != ObeliskTagEnum.UNKNOWN && ote != robot.config.obeliskTagEnum) {
+      robot.config.obeliskTagEnum = ote;
+      robot.config.saveToFile();
+    }
   }
 }

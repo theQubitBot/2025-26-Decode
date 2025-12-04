@@ -51,7 +51,7 @@ public class MatchConfig {
    * @param hardwareMap The hardware map to use for initialization.
    * @param telemetry   The telemetry to use.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.hardwareMap = hardwareMap;
     this.telemetry = telemetry;
@@ -189,12 +189,13 @@ public class MatchConfig {
    * Displays Match Configuration on Driver Station screen.
    */
   public void showConfiguration() {
-    if (configFeatureEnabled) {
+    if (configFeatureEnabled && telemetry != null) {
       telemetry.addData("Match configuration", "");
       telemetry.addData(FtcUtils.TAG, "%s alliance, %s position",
           allianceColor, robotPosition);
       telemetry.addData(FtcUtils.TAG, "start delay %d seconds", delayInSeconds);
-      telemetry.addData(FtcUtils.TAG, "deliver third row: %s", deliverThirdRow ? "yes" : "no");
+      telemetry.addData(FtcUtils.TAG, "deliver 2nd row: %s", deliverSecondRow ? "yes" : "no");
+      telemetry.addData(FtcUtils.TAG, "deliver 3rd row: %s", deliverThirdRow ? "yes" : "no");
       telemetry.addData(FtcUtils.TAG, "Motif %s", obeliskTagEnum);
     }
   }
@@ -203,16 +204,16 @@ public class MatchConfig {
    * Displays Match Configuration Command Menu on Driver Station screen.
    */
   public void showMenu() {
-    if (configFeatureEnabled) {
+    if (configFeatureEnabled && telemetry != null) {
       telemetry.addData("Match Configuration Command Menu", "");
       telemetry.addData("Bumper", "BLUE alliance");
       telemetry.addData("Trigger", "RED alliance");
       telemetry.addData("dPad", "left: GOAL, right: AUDIENCE position");
       telemetry.addData("Start delay", "dPad up/down: +/-");
-      telemetry.addData("Deliver 2nd row", String.format("%s: toggle yes/no",
-          StringUtils.Circle));
-      telemetry.addData("Deliver 3rd row", String.format("%s: toggle yes/no",
-          StringUtils.Cross));
+      telemetry.addData("Deliver 2nd row", "%s: toggle yes/no",
+          StringUtils.CircleOutline);
+      telemetry.addData("Deliver 3rd row", "%s: toggle yes/no",
+          StringUtils.Cross);
     }
   }
 }

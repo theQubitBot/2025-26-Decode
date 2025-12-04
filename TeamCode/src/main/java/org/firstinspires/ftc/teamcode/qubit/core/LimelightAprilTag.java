@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import android.annotation.SuppressLint;
-
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -10,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
@@ -19,7 +18,7 @@ import java.util.List;
 /**
  * A class to identify and make available April Tags using the Vision Portal.
  */
-public class LimelightAprilTag {
+public class LimelightAprilTag extends FtcSubSystemBase {
   static final String TAG = "LlAprilTag";
   public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
   public static final String LIMELIGHT_NAME = "limelight";
@@ -32,11 +31,11 @@ public class LimelightAprilTag {
   public static final double MIN_RANGE = 0.0;
   public boolean telemetryEnabled = true;
   private Telemetry telemetry;
-  private final FtcBot parent;
+  private final BaseBot parent;
   private FtcServo aprilTagServo = null;
   private Limelight3A limelight;
 
-  public LimelightAprilTag(FtcBot robot) {
+  public LimelightAprilTag(BaseBot robot) {
     parent = robot;
   }
 
@@ -92,7 +91,8 @@ public class LimelightAprilTag {
   /**
    * Initialize the AprilTag detection processor.
    */
-  public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+  @Override
+  public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
 
@@ -127,7 +127,7 @@ public class LimelightAprilTag {
   /**
    * Function to add telemetry about AprilTag detections.
    */
-  @SuppressLint("DefaultLocale")
+  @Override
   public void showTelemetry() {
     FtcLogger.enter();
     if (telemetryEnabled) {
@@ -146,8 +146,8 @@ public class LimelightAprilTag {
         telemetry.addData("AprilTags count", fiducialResults.size());
         for (LLResultTypes.FiducialResult result : fiducialResults) {
           Position tagPosition = result.getTargetPoseRobotSpace().getPosition();
-          telemetry.addData("Tag", String.format("ID %d, x: %.1f y: %.1f",
-              result.getFiducialId(), tagPosition.x, tagPosition.y));
+          telemetry.addData("Tag", "ID %d, x: %.1f y: %.1f",
+              result.getFiducialId(), tagPosition.x, tagPosition.y);
         }
       } else {
         telemetry.addData("AprilTags count", 0);
@@ -160,6 +160,7 @@ public class LimelightAprilTag {
   /**
    * Code to run ONCE when the driver hits PLAY
    */
+  @Override
   public void start() {
     FtcLogger.enter();
     if (aprilTagServo != null) {
@@ -172,6 +173,7 @@ public class LimelightAprilTag {
   /**
    * Stops the April Tag detection processing.
    */
+  @Override
   public void stop() {
     FtcLogger.enter();
     if (limelight != null) {

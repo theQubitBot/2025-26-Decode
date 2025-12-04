@@ -22,6 +22,7 @@ public class FtcMotor implements DcMotorEx {
   // Motor power writes takes about 4.1 ms.
   // Use a simple and effective motor power caching mechanism.
   private double currentPower = 0;
+  private double targetVelocity = 0;
 
   public FtcMotor(DcMotorEx motor) {
     this.motor = motor;
@@ -44,12 +45,18 @@ public class FtcMotor implements DcMotorEx {
 
   @Override
   public void setVelocity(double angularRate) {
-    motor.setVelocity(angularRate);
+    if (!FtcUtils.areEqual(targetVelocity, angularRate, FtcUtils.EPSILON3)) {
+      motor.setVelocity(angularRate);
+      targetVelocity = angularRate;
+    }
   }
 
   @Override
   public void setVelocity(double angularRate, AngleUnit unit) {
-    motor.setVelocity(angularRate, unit);
+    if (!FtcUtils.areEqual(targetVelocity, angularRate, FtcUtils.EPSILON3)) {
+      motor.setVelocity(angularRate, unit);
+      targetVelocity = angularRate;
+    }
   }
 
   @Override
@@ -63,7 +70,8 @@ public class FtcMotor implements DcMotorEx {
   }
 
   @Override
-  public void setPIDCoefficients(RunMode mode, PIDCoefficients pidCoefficients) {
+  public void setPIDCoefficients(RunMode mode, PIDCoefficients pidCoefficients) throws UnsupportedOperationException {
+    throw new UnsupportedOperationException("This method is deprecated.");
   }
 
   @Override
@@ -213,6 +221,7 @@ public class FtcMotor implements DcMotorEx {
 
   @Override
   public double getPower() {
+    currentPower = motor.getPower();
     return currentPower;
   }
 

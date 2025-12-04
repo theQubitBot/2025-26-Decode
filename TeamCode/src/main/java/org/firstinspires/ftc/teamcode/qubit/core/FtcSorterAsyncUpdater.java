@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * A class to asynchronously operate the sorter.
  */
 public class FtcSorterAsyncUpdater implements Runnable {
   public static final String TAG = "FtcSorterAsyncUpdater";
   private final FtcSorter ftcSorter;
-  private boolean stopRequested;
+  private final AtomicBoolean stopRequested;
 
   /**
    * Constructor.
@@ -16,19 +18,19 @@ public class FtcSorterAsyncUpdater implements Runnable {
   public FtcSorterAsyncUpdater(FtcSorter ftcSorter) {
     FtcLogger.enter();
     this.ftcSorter = ftcSorter;
-    stopRequested = false;
+    stopRequested = new AtomicBoolean(false);
     FtcLogger.exit();
   }
 
-  private synchronized boolean keepRunning() {
-    return !stopRequested;
+  private boolean keepRunning() {
+    return !stopRequested.get();
   }
 
   /**
    * Requests a non-blocking sorter stop.
    */
-  public synchronized void stop() {
-    stopRequested = true;
+  public void stop() {
+    stopRequested.set(true);
   }
 
   /**

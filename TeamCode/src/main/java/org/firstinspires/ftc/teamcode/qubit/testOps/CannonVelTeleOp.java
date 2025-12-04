@@ -13,8 +13,6 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 
-import java.util.Locale;
-
 @Disabled
 @TeleOp(group = "TestOp")
 public class CannonVelTeleOp extends OpMode {
@@ -40,11 +38,11 @@ public class CannonVelTeleOp extends OpMode {
 
     aprilTag = new FtcAprilTag(null);
     aprilTag.telemetryEnabled = true;
-    aprilTag.init(hardwareMap, telemetry);
+    aprilTag.init(hardwareMap, telemetry, false);
 
     cannon = new FtcCannon(null);
     cannon.telemetryEnabled = true;
-    cannon.init(hardwareMap, telemetry);
+    cannon.init(hardwareMap, telemetry, false);
 
     FtcLogger.exit();
   }
@@ -110,10 +108,10 @@ public class CannonVelTeleOp extends OpMode {
       cannon.rightTriggerServo.setPosition(FtcCannon.RIGHT_TRIGGER_DOWN_POSITION);
     }
 
-    telemetry.addData("Power", String.format(Locale.US, "%.2f",
-        cannon.leftCannonMotor.getPower()));
-    telemetry.addData("Velocity", String.format(Locale.US, "expected %5.2f, actual %5.2f",
-        expectedVelocity, cannon.rightCannonMotor.getVelocity()));
+    telemetry.addData("Power", "%.2f",
+        cannon.leftCannonMotor.getPower());
+    telemetry.addData("Velocity", "expected %5.2f, actual %5.2f",
+        expectedVelocity, cannon.rightCannonMotor.getVelocity());
     aprilTag.showTelemetry();
 
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",

@@ -44,8 +44,8 @@ public class BlinkinLedTeleOp extends OpMode {
   public void init() {
     FtcLogger.enter();
     blinkinLed = new FtcBlinkinLed(null);
-    blinkinLed.init(hardwareMap, telemetry);
-    blinkinLed.telemetryEnabled = FtcUtils.DEBUG;
+    blinkinLed.init(hardwareMap, telemetry, false);
+    blinkinLed.telemetryEnabled = true;
     FtcLogger.exit();
   }
 
@@ -80,8 +80,8 @@ public class BlinkinLedTeleOp extends OpMode {
   public void loop() {
     FtcLogger.enter();
     loopTime.reset();
-    telemetry.addData(FtcUtils.TAG, String.format("%s: Auto, %s: Manual",
-        StringUtils.Cross, StringUtils.Circle));
+    telemetry.addData(FtcUtils.TAG, "%s: Auto, %s: Manual",
+        StringUtils.Cross, StringUtils.Circle);
     telemetry.addLine();
     handleGamepad();
 

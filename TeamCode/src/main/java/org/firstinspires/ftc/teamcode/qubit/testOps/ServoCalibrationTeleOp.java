@@ -26,7 +26,7 @@ public class ServoCalibrationTeleOp extends OpMode {
   FtcAprilTag aprilTag;
   FtcServo aprilTagServo, sorterServo, lightServo, leftTriggerServo, rightTriggerServo;
   FtcServo currentServo;
-  double servoPosition;
+  double servoPosition, multiplier;
   String servoName;
 
   /*
@@ -38,7 +38,7 @@ public class ServoCalibrationTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
     aprilTag = new FtcAprilTag(null);
-    aprilTag.init(hardwareMap, telemetry);
+    aprilTag.init(hardwareMap, telemetry, false);
 
     aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, FtcAprilTag.APRIL_TAG_SERVO_NAME));
     sorterServo = new FtcServo(hardwareMap.get(Servo.class, FtcSorter.SORTER_SERVO_NAME));
@@ -96,6 +96,7 @@ public class ServoCalibrationTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Starting...");
     telemetry.update();
     aprilTag.start();
+    multiplier = 1.0;
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     FtcLogger.exit();
@@ -123,28 +124,33 @@ public class ServoCalibrationTeleOp extends OpMode {
     if (gamepad1.yWasPressed() || gamepad2.yWasPressed()) {
       currentServo = aprilTagServo;
       servoName = FtcAprilTag.APRIL_TAG_SERVO_NAME;
+      multiplier = 1.0;
     } else if (gamepad1.xWasPressed() || gamepad2.xWasPressed()) {
       currentServo = leftTriggerServo;
       servoName = FtcCannon.LEFT_TRIGGER_SERVO_NAME;
+      multiplier = 1.0;
     } else if (gamepad1.bWasPressed() || gamepad2.bWasPressed()) {
       currentServo = rightTriggerServo;
       servoName = FtcCannon.RIGHT_TRIGGER_SERVO_NAME;
+      multiplier = 1.0;
     } else if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
       currentServo = sorterServo;
       servoName = FtcSorter.SORTER_SERVO_NAME;
+      multiplier = 1.0;
     } else if (gamepad1.right_trigger > 0.5 || gamepad2.right_trigger > 0.5) {
       currentServo = lightServo;
       servoName = FtcIntake.LIGHT_SERVO_NAME;
+      multiplier = 100;
     }
 
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
-      servoPosition = currentServo.getPosition() + FtcServo.LARGE_INCREMENT;
+      servoPosition = currentServo.getPosition() + FtcServo.LARGE_INCREMENT * multiplier;
     } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
-      servoPosition = currentServo.getPosition() + FtcServo.SMALL_INCREMENT;
+      servoPosition = currentServo.getPosition() + FtcServo.SMALL_INCREMENT * multiplier;
     } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
-      servoPosition = currentServo.getPosition() - FtcServo.LARGE_INCREMENT;
+      servoPosition = currentServo.getPosition() - FtcServo.LARGE_INCREMENT * multiplier;
     } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
-      servoPosition = currentServo.getPosition() - FtcServo.SMALL_INCREMENT;
+      servoPosition = currentServo.getPosition() - FtcServo.SMALL_INCREMENT * multiplier;
     }
 
     if (currentServo != null) {

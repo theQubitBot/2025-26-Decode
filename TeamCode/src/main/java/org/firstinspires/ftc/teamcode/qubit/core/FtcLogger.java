@@ -17,7 +17,7 @@ public final class FtcLogger {
 
   // PERFORMANCE
   // Set to false for official runs.
-  private static final boolean performanceMetricsEnabled = true;
+  private static final boolean performanceMetricsEnabled = false;
   private static HashMap<String, Double> performanceMetricsMap = null;
 
   /* Constructor */
