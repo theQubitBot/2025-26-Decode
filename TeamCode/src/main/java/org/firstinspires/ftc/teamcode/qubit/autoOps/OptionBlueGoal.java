@@ -20,7 +20,7 @@ public class OptionBlueGoal extends OptionBase {
   public Pose pickup1ControlPose = new Pose(-42, 10, RADIAN45);
   public Pose pickup2Pose = new Pose(-35, 50, RADIAN45);
   public Pose pickup2ControlPose = new Pose(-59, 27, RADIAN45);
-  public Pose leavePose = new Pose(-24, 12, RADIAN0);
+  public Pose leavePose = new Pose(-24, 13, RADIAN0);
 
   PathChain scorePreloadPath,
       pickup11Path, pickup12Path, score1Path,

@@ -26,6 +26,7 @@ import java.util.List;
 public abstract class BaseBot extends FtcSubSystemBase {
   public static final TrollBotEnum trollBot = TrollBotEnum.TrollBotA;
   // robot sub systems
+  public List<DcMotorSimple.Direction> motorDirections = null;
   public FtcAprilTag aprilTag = null;
   public LlArtifactSensor artifactSensor = null;
   public FtcBlinkinLed blinkinLed = null;
@@ -44,55 +45,32 @@ public abstract class BaseBot extends FtcSubSystemBase {
         break;
       case TrollBotA:
         bot = new BotA();
+        bot.motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
+            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
         break;
       case TrollBotB:
         bot = new BotB();
+        bot.motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
+            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
         break;
       case TrollBotC:
         bot = new BotC();
+        bot.motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD,
+            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
         break;
       case TrollBotD:
         bot = new BotD();
+        bot.motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
+            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
         break;
       case TrollBotL:
         bot = new BotL();
+        bot.motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
+            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
         break;
     }
 
     return bot;
-  }
-
-  public static List<DcMotorSimple.Direction> getMotorDirections() {
-    List<DcMotorSimple.Direction> motorDirections = null;
-    // leftFront, leftRear, rightFront, rightRear
-
-    switch (trollBot) {
-      case Unknown:
-      case TrollBotK:
-        break;
-      case TrollBotA:
-        motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-        break;
-      case TrollBotB:
-        motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-        break;
-      case TrollBotC:
-        motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD,
-            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-        break;
-      case TrollBotD:
-        motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-        break;
-      case TrollBotL:
-        motorDirections = Arrays.asList(DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.REVERSE,
-            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.FORWARD);
-        break;
-    }
-
-    return motorDirections;
   }
 
   /**

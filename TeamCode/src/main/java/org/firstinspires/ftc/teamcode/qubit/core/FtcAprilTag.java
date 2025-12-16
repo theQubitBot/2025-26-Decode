@@ -80,8 +80,8 @@ public class FtcAprilTag extends FtcSubSystemBase {
     double bearing = 0;
     AprilTagPoseFtc pose = getFtcPose();
     if (pose != null) {
-      // camera is rotated, so we use elevation for bearing
-      bearing = com.qualcomm.robotcore.util.Range.clip(pose.elevation, APRILTAG_BEARING_MIN, APRILTAG_BEARING_MAX);
+      // camera is rotated, so we use pitch for bearing
+      bearing = com.qualcomm.robotcore.util.Range.clip(pose.pitch, APRILTAG_BEARING_MIN, APRILTAG_BEARING_MAX);
     }
 
     return bearing;

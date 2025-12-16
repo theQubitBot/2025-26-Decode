@@ -36,13 +36,11 @@ public class FtcBulkRead extends FtcSubSystemBase {
     this.telemetry = telemetry;
 
     // Get a list of Control/Expansion Hub modules to manage caching support.
-    if (hardwareMap != null) {
-      allLynxModules = hardwareMap.getAll(LynxModule.class);
-      if (allLynxModules != null && !allLynxModules.isEmpty()) {
-        // MANUAL mode is recommended since AUTO suffers
-        // from performance issues in certain cases.
-        setCachingMode(LynxModule.BulkCachingMode.MANUAL);
-      }
+    allLynxModules = hardwareMap.getAll(LynxModule.class);
+    if (autoOp) {
+      setCachingMode(LynxModule.BulkCachingMode.AUTO);
+    } else {
+      setCachingMode(LynxModule.BulkCachingMode.MANUAL);
     }
 
     FtcLogger.exit();
@@ -63,7 +61,7 @@ public class FtcBulkRead extends FtcSubSystemBase {
    */
   public void setCachingMode(LynxModule.BulkCachingMode newCachingMode) {
     FtcLogger.enter();
-    if (allLynxModules != null) {
+    if (allLynxModules != null && !allLynxModules.isEmpty()) {
       for (LynxModule lynxModule : allLynxModules) {
         lynxModule.setBulkCachingMode(newCachingMode);
       }
@@ -91,7 +89,8 @@ public class FtcBulkRead extends FtcSubSystemBase {
    */
   public void clearBulkCache() {
     FtcLogger.enter();
-    if (cachingMode == LynxModule.BulkCachingMode.MANUAL && allLynxModules != null) {
+    if (cachingMode == LynxModule.BulkCachingMode.MANUAL &&
+        allLynxModules != null && !allLynxModules.isEmpty()) {
       for (LynxModule lynxModule : allLynxModules) {
         lynxModule.clearBulkCache();
       }

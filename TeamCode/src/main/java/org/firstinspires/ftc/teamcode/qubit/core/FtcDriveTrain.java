@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
+import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +38,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   // and noting the min power at which the robot begins to move/turn.
   // Robot weight distribution would impact rotational inertia, which would impact
   // the turn value most.
-  public static final double MAXIMUM_TURN_POWER = 0.90;
+  public static final double MAXIMUM_TURN_POWER = 0.60;
   public static final double MINIMUM_TURN_POWER = 0.25;
   public static final double FORWARD_SLO_MO_POWER = 0.25;
   public static final double STRAFE_SLO_MO_POWER = 0.40;
@@ -75,7 +76,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   private FtcMotor rightRearMotor = null;
   private List<FtcMotor> frontMotors = null, rearMotors = null;
   public List<FtcMotor> allMotors = null, activeMotors = null;
-  public List<DcMotorSimple.Direction> motorDirections = null;
 
   // These default drive train and drive type are overridden in FtcBot.init()
   public DriveTrainEnum driveTrainEnum = DriveTrainEnum.UNKNOWN;
@@ -94,7 +94,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
   public FtcDriveTrain(BaseBot robot) {
     parent = robot;
-    motorDirections = BaseBot.getMotorDirections();
   }
 
   public double getMaxWheelPower(double leftFrontPower, double leftRearPower,
@@ -120,8 +119,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
           driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
         leftFrontMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "leftFrontMotor"));
         rightFrontMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "rightFrontMotor"));
-        leftFrontMotor.setDirection(motorDirections.get(0));
-        rightFrontMotor.setDirection(motorDirections.get(2));
+        leftFrontMotor.setDirection(parent.motorDirections.get(0));
+        rightFrontMotor.setDirection(parent.motorDirections.get(2));
         frontMotors = Arrays.asList(leftFrontMotor, rightFrontMotor);
         activeMotors = frontMotors;
       }
@@ -131,8 +130,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
           driveTrainEnum == DriveTrainEnum.TRACTION_OMNI_WHEEL_DRIVE) {
         leftRearMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "leftRearMotor"));
         rightRearMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, "rightRearMotor"));
-        leftRearMotor.setDirection(motorDirections.get(1));
-        rightRearMotor.setDirection(motorDirections.get(3));
+        leftRearMotor.setDirection(parent.motorDirections.get(1));
+        rightRearMotor.setDirection(parent.motorDirections.get(3));
         rearMotors = Arrays.asList(leftRearMotor, rightRearMotor);
         activeMotors = rearMotors;
       }
@@ -151,9 +150,12 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         }
       }
 
-      follower = Constants.createFollower(hardwareMap);
-      startingPose = new Pose(0, 0, 0);
-      follower.setStartingPose(startingPose);
+      if(BaseBot.trollBot == TrollBotEnum.TrollBotA) {
+        follower = Constants.createFollower(hardwareMap);
+        startingPose = new Pose(0, 0, 0);
+        follower.setStartingPose(startingPose);
+        follower.update();
+      }
 
       showTelemetry();
       telemetry.addData(TAG, "initialized");
@@ -183,25 +185,30 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
 
-    if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
-      if (follower.isBusy()) follower.breakFollowing();
-      if (parent != null && parent.aprilTag != null) {
-        double bearing = parent.aprilTag.getBearing() + TAG_HEADING_ERROR;
-        follower.turnDegrees(bearing, bearing >= 0);
+//    if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
+//      if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+//      follower.update();
+//      if (parent != null && parent.aprilTag != null) {
+//        double bearing = parent.aprilTag.getBearing();// + TAG_HEADING_ERROR;
+//        follower.turnDegrees(Math.abs(bearing), bearing >= 0);
+//      }
+//      return;
+//    } else if (gamePad1.dpad_up || gamePad2.dpad_up) {
+//      follower.update();
+//      return;
+//    } else
+    if(BaseBot.trollBot == TrollBotEnum.TrollBotA) {
+      if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
+        if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+        follower.update();
+        follower.holdPoint(follower.getPose());
+        return;
+      } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
+        follower.update();
+        return;
+      } else {
+        if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
       }
-      return;
-    } else if (gamePad1.dpad_up || gamePad2.dpad_up) {
-      follower.update();
-      return;
-    } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
-      if (follower.isBusy()) follower.breakFollowing();
-      follower.holdPoint(follower.getPose());
-      return;
-    } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
-      follower.update();
-      return;
-    } else {
-      if (follower.isBusy()) follower.breakFollowing();
     }
 
     // Setup a variable for each side drive wheel to display power level for telemetry

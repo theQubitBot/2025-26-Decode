@@ -16,11 +16,11 @@ import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
  */
 public class OptionRedGoal extends OptionBase {
   public Pose scorePose = new Pose(-44, 0, RADIAN0);
-  public Pose pickup1Pose = new Pose(-24, -29, -RADIAN45);
-  public Pose pickup1ControlPose = new Pose(-42, -10, -RADIAN45);
-  public Pose pickup2Pose = new Pose(-35, -50, -RADIAN45);
-  public Pose pickup2ControlPose = new Pose(-59, -27, -RADIAN45);
-  public Pose leavePose = new Pose(-24, -12, RADIAN0);
+  public Pose pickup1Pose = new Pose(-25.5, -29.5, -RADIAN45);
+  public Pose pickup1ControlPose = new Pose(-45, -10, -RADIAN45);
+  public Pose pickup2Pose = new Pose(-37.5, -52, -RADIAN45);
+  public Pose pickup2ControlPose = new Pose(-61, -27, -RADIAN45);
+  public Pose leavePose = new Pose(-24, -13, RADIAN0);
 
   PathChain scorePreloadPath,
       pickup11Path, pickup12Path, score1Path,

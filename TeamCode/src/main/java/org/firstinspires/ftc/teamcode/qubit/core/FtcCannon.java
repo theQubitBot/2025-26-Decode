@@ -33,15 +33,16 @@ public class FtcCannon extends FtcSubSystemBase {
   public static final long CANNON_RAMP_UP_TIME = 750; // milliseconds
   public static final String LEFT_TRIGGER_SERVO_NAME = "leftTriggerServo";
   public static final String RIGHT_TRIGGER_SERVO_NAME = "rightTriggerServo";
-  public static final double LEFT_TRIGGER_UP_POSITION = 0.5745;
-  public static final double LEFT_TRIGGER_DOWN_POSITION = 0.5050;
-  public static final double RIGHT_TRIGGER_UP_POSITION = 0.4365;
-  public static final double RIGHT_TRIGGER_DOWN_POSITION = 0.5020;
-  public static final int TRIGGER_MOVE_TIME = 750; // milliseconds
+  public static final double LEFT_TRIGGER_UP_POSITION = 0.8400;
+  public static final double LEFT_TRIGGER_DOWN_POSITION = 0.5550;
+  public static final double RIGHT_TRIGGER_UP_POSITION = 0.2600;
+  public static final double RIGHT_TRIGGER_DOWN_POSITION = 0.5700;
+  public static final int TRIGGER_MOVE_UP_TIME = 250; // milliseconds
+  public static final int TRIGGER_MOVE_DOWN_TIME = 250; // milliseconds
   public static double MIN_VELOCITY = CANNON_ZERO_VELOCITY;
   public static double MAX_VELOCITY = 1700.0;
   public static final double FIRING_VELOCITY_MARGIN = 25;
-  private static final PIDFCoefficients CANNON_PIDF = new PIDFCoefficients(60, 0.25, 2, 13.0);
+  private static final PIDFCoefficients CANNON_VELOCITY_PIDF = new PIDFCoefficients(60, 0.25, 2, 13.0);
   public static final double GOAL_SWEET_SPOT_DISTANCE = 45;
   public static final double GOAL_MAX_DISTANCE = 75;
   public static final double AUDIENCE_DISTANCE = 115;
@@ -54,7 +55,7 @@ public class FtcCannon extends FtcSubSystemBase {
   public FtcMotor leftCannonMotor = null, rightCannonMotor = null;
   public FtcServo leftTriggerServo = null, rightTriggerServo = null;
 
-  public List<CannonControlData> controlData = new ArrayList<>(10);
+  public List<CannonControlData> controlData = new ArrayList<>(16);
 
   /* Constructor */
   public FtcCannon(BaseBot robot) {
@@ -118,21 +119,27 @@ public class FtcCannon extends FtcSubSystemBase {
   public void fireLeft(CannonControlData ccd, boolean waitTillDown, LinearOpMode autoOpMode) {
     setVelocity(ccd, true);
     leftTriggerServo.setPosition(LEFT_TRIGGER_UP_POSITION);
-    FtcUtils.interruptibleSleep(TRIGGER_MOVE_TIME, autoOpMode);
+    FtcUtils.interruptibleSleep(TRIGGER_MOVE_UP_TIME, autoOpMode);
     leftTriggerServo.setPosition(LEFT_TRIGGER_DOWN_POSITION);
     if (waitTillDown) {
-      FtcUtils.interruptibleSleep(TRIGGER_MOVE_TIME, autoOpMode);
+      FtcUtils.interruptibleSleep(TRIGGER_MOVE_DOWN_TIME, autoOpMode);
     }
   }
 
   public void fireRight(CannonControlData ccd, boolean waitTillDown, LinearOpMode autoOpMode) {
     setVelocity(ccd, true);
     rightTriggerServo.setPosition(RIGHT_TRIGGER_UP_POSITION);
-    FtcUtils.interruptibleSleep(TRIGGER_MOVE_TIME, autoOpMode);
+    FtcUtils.interruptibleSleep(TRIGGER_MOVE_UP_TIME, autoOpMode);
     rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
     if (waitTillDown) {
-      FtcUtils.interruptibleSleep(TRIGGER_MOVE_TIME, autoOpMode);
+      FtcUtils.interruptibleSleep(TRIGGER_MOVE_DOWN_TIME, autoOpMode);
     }
+  }
+
+  private long getCannonRampUpTime(double startVelocity, double endVelocity) {
+    long rampUpTime = (long) ((endVelocity - startVelocity) * 0.5);
+    if (rampUpTime < 0) rampUpTime = 0;
+    return rampUpTime;
   }
 
   /**
@@ -226,7 +233,7 @@ public class FtcCannon extends FtcSubSystemBase {
       rightCannonMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
       rightCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
-      setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, CANNON_PIDF);
+      setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, CANNON_VELOCITY_PIDF);
 
       leftTriggerServo = new FtcServo(hardwareMap.get(Servo.class, LEFT_TRIGGER_SERVO_NAME));
       leftTriggerServo.setDirection(Servo.Direction.FORWARD);
@@ -338,9 +345,11 @@ public class FtcCannon extends FtcSubSystemBase {
       leftCannonMotor.setVelocity(velocity);
       rightCannonMotor.setVelocity(velocity);
       if (waitTillCompletion) {
-        Deadline d = new Deadline(CANNON_RAMP_UP_TIME, TimeUnit.MILLISECONDS);
-        while (!d.hasExpired() && !FtcUtils.areEqual(getVelocity(), velocity, FIRING_VELOCITY_MARGIN)) {
+        double currentVelocity = getVelocity();
+        Deadline d = new Deadline(getCannonRampUpTime(currentVelocity, velocity), TimeUnit.MILLISECONDS);
+        while (!d.hasExpired() && !FtcUtils.areEqual(currentVelocity, velocity, FIRING_VELOCITY_MARGIN)) {
           FtcUtils.sleep(FtcUtils.INTERRUPTIBLE_CYCLE_MS);
+          currentVelocity = getVelocity();
         }
       }
     }
