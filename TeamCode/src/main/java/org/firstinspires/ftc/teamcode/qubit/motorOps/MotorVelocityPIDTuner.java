@@ -12,7 +12,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.qubit.core.CsvWriter;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 
 @Disabled
@@ -50,7 +52,7 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
     rightCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
     setPIDFCoefficients(rightCannonMotor, MOTOR_VELO_PID);
 
-    MotorTuningController tuningController = new MotorTuningController();
+    MotorVelocityController stateManager = new MotorVelocityController();
 
     double lastKp = 0.0;
     double lastKi = 0.0;
@@ -65,20 +67,24 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
 
     waitForStart();
     if (isStopRequested()) return;
-    tuningController.start();
+    stateManager.start();
+
+    CsvWriter writer = new CsvWriter("velocityData.txt");
+    ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     while (!isStopRequested() && opModeIsActive()) {
-      double targetVelocity = tuningController.getTargetVelocity();
+      double targetVelocity = stateManager.getTargetVelocity();
       leftCannonMotor.setVelocity(targetVelocity);
       rightCannonMotor.setVelocity(targetVelocity);
 
       telemetry.addData("targetVelocity", targetVelocity);
 
       double motorVelocity = leftCannonMotor.getVelocity();
+      writer.append(runtime.milliseconds()).append(motorVelocity).flush();
       telemetry.addData("velocity", motorVelocity);
       telemetry.addData("error", targetVelocity - motorVelocity);
 
-      telemetry.addData("upperBound", MotorTuningController.rpmToTicksPerSecond(MotorTuningController.TESTING_MAX_RPM * 1.15));
+      telemetry.addData("upperBound", MotorVelocityController.rpmToTicksPerSecond(MotorVelocityController.TESTING_MAX_RPM));
       telemetry.addData("lowerBound", 0);
 
       if (lastKp != MOTOR_VELO_PID.p || lastKi != MOTOR_VELO_PID.i || lastKd != MOTOR_VELO_PID.d || lastKf != MOTOR_VELO_PID.f) {
@@ -93,6 +99,8 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
 
       telemetry.update();
     }
+
+    writer.close();
   }
 
   private void setPIDFCoefficients(DcMotorEx motor, PIDFCoefficients coefficients) {
@@ -103,6 +111,6 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
 
   public static double getMotorVelocityF() {
     // see https://docs.google.com/document/d/1tyWrXDfMidwYyP_5H4mZyVgaEswhOC35gvdmP-V-5hA/edit#heading=h.61g9ixenznbx
-    return 32767 * 60.0 / (MotorTuningController.MOTOR_MAX_RPM * MotorTuningController.MOTOR_TICKS_PER_REV);
+    return 32767 * 60.0 / (MotorVelocityController.MOTOR_MAX_RPM * MotorVelocityController.MOTOR_TICKS_PER_REV);
   }
 }

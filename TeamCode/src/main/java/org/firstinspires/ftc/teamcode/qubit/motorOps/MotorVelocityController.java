@@ -4,15 +4,15 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
-public class MotorTuningController {
+public class MotorVelocityController {
   public static double MOTOR_TICKS_PER_REV = 28;
-  public static double MOTOR_MAX_RPM = 1600;
-  public static double MOTOR_TEST_RPM1 = 820;
-  public static double MOTOR_TEST_RPM2 = 1440;
+  public static double MOTOR_MAX_RPM = 1440 * 60 / MOTOR_TICKS_PER_REV;
+  public static double MOTOR_TEST_RPM1 = 1080 * 60 / MOTOR_TICKS_PER_REV;
+  public static double MOTOR_TEST_RPM2 = 400 * 60 / MOTOR_TICKS_PER_REV;
   public static double MOTOR_GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
 
-  public static double TESTING_MAX_RPM = 1.0 * MOTOR_MAX_RPM;
-  public static double TESTING_MIN_RPM = 0.25 * MOTOR_MAX_RPM;
+  public static double TESTING_MAX_RPM = MOTOR_MAX_RPM;
+  public static double TESTING_MIN_RPM = 200 * 60 / MOTOR_TICKS_PER_REV;
 
   // These are prefixed with "STATE1", "STATE2", etc. because Dashboard displays variables in
   // alphabetical order. Thus, we preserve the actual order of the process
