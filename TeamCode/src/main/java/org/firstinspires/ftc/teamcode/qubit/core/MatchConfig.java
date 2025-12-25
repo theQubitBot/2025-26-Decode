@@ -35,6 +35,9 @@ public class MatchConfig {
   public boolean deliverSecondRow = true;
   public boolean deliverThirdRow = true;
 
+  // Robot pose information
+  public double x, y, heading; // radians
+
   /**
    * Constructor
    */
@@ -56,7 +59,6 @@ public class MatchConfig {
     this.hardwareMap = hardwareMap;
     this.telemetry = telemetry;
     readFromFile();
-
     FtcLogger.exit();
   }
 
@@ -96,6 +98,9 @@ public class MatchConfig {
         obeliskTagEnum = savedMatchConfig.obeliskTagEnum;
         deliverSecondRow = savedMatchConfig.deliverSecondRow;
         deliverThirdRow = savedMatchConfig.deliverThirdRow;
+        x = savedMatchConfig.x;
+        y = savedMatchConfig.y;
+        heading = savedMatchConfig.heading;
       } catch (IOException e) {
         reset();
       } catch (Exception e) {
@@ -118,6 +123,9 @@ public class MatchConfig {
     obeliskTagEnum = ObeliskTagEnum.GPP;
     deliverSecondRow = true;
     deliverThirdRow = true;
+    x = 0;
+    y = 0;
+    heading = 0;
     gamePad1Connected = gamePad2Connected = false;
     configIsComplete = !configFeatureEnabled;
     FtcLogger.exit();
@@ -197,6 +205,7 @@ public class MatchConfig {
       telemetry.addData(FtcUtils.TAG, "deliver 2nd row: %s", deliverSecondRow ? "yes" : "no");
       telemetry.addData(FtcUtils.TAG, "deliver 3rd row: %s", deliverThirdRow ? "yes" : "no");
       telemetry.addData(FtcUtils.TAG, "Motif %s", obeliskTagEnum);
+      telemetry.addData(FtcUtils.TAG, "Robot pose (%.1f, %.1f, %.1f)", x, y, heading);
     }
   }
 

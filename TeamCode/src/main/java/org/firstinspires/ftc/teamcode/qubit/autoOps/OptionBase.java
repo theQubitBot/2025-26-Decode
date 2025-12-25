@@ -38,12 +38,12 @@ public class OptionBase {
   protected static final double RADIAN150;
   protected static final double RADIAN180;
   protected LinearOpMode autoOpMode;
-  public CannonControlData ccd;
+  public CannonControlData ccd, ccd3;
   protected BaseBot robot;
   protected Follower follower;
   protected final Pose startPose = new Pose(0, 0, 0);
 
-  protected Runnable intakeSpinIn, intakeSpinOut, intakeSpinHold,
+  protected Runnable intakeSpinIn, intakeSpinHold,
       sorterGreen, sorterPurple, sorterStraight,
       sorterPushGreen, sorterPushPurple, cannonIdle;
 
@@ -63,7 +63,7 @@ public class OptionBase {
     RADIAN133 = Math.toRadians(133);
     RADIAN135 = Math.toRadians(135);
     RADIAN150 = Math.toRadians(150);
-    RADIAN180 = Math.toRadians(179.99); // Force robot to turn clockwise
+    RADIAN180 = Math.toRadians(179.999); // Force robot to turn anti clockwise (looking down from above)
   }
 
   /**
@@ -79,7 +79,6 @@ public class OptionBase {
     this.follower = follower;
 
     intakeSpinIn = () -> robot.intake.spinIn(false);
-    intakeSpinOut = () -> robot.intake.spinOut(false);
     intakeSpinHold = () -> robot.intake.spinHold();
 
     sorterGreen = () -> robot.sorter.setGreen(false);
@@ -122,13 +121,16 @@ public class OptionBase {
    *
    * @return True if Op is still active.
    */
-  public boolean saveAndTest() {
+  public boolean saveAndTest(boolean forceSave) {
     FtcLogger.enter();
-    boolean opModeIsActive;
-    if (autoOpMode.opModeIsActive()) {
-      opModeIsActive = true;
-    } else {
-      opModeIsActive = false;
+    boolean opModeIsActive = autoOpMode.opModeIsActive();
+    if (!opModeIsActive || forceSave) {
+      follower.updatePose();
+      Pose robotPose = follower.getPose();
+      robot.config.x = robotPose.getX();
+      robot.config.y = robotPose.getY();
+      robot.config.heading = robotPose.getHeading();
+      robot.config.saveToFile();
     }
 
     FtcLogger.exit();

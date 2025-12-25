@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
@@ -14,7 +15,14 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+@Config
 public class Constants {
+  // brakingStart of 0.2 for score path end
+  // 1 for start and 1 for strength is good for intake
+  public static double HARD_BRAKE_STRENGTH = 1.1; // higher value -> more braking
+  public static double SOFT_BRAKE_STRENGTH = 1.0;
+  public static double HARD_BRAKE_START = 0.9; // lower value -> late braking
+  public static double SOFT_BRAKE_START = 1.0;
 
   public static FollowerConstants followerConstants = new FollowerConstants()
       .mass(12.7)
@@ -26,7 +34,7 @@ public class Constants {
       .centripetalScaling(0.0005)
       .holdPointTranslationalScaling(0.99)
       .holdPointHeadingScaling(0.75)
-      .turnHeadingErrorThreshold(0.017453)
+      .turnHeadingErrorThreshold(0.01745329251994329576923690768489) // 1 degree
       .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0, 0))
       .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0, 0))
       .drivePIDFCoefficients(
@@ -62,8 +70,8 @@ public class Constants {
   public static PathConstraints pathConstraints = new PathConstraints(
       0.995,
       1000,
-      1,
-      1
+      SOFT_BRAKE_STRENGTH,
+      SOFT_BRAKE_START
   );
 
   public static Follower createFollower(HardwareMap hardwareMap) {

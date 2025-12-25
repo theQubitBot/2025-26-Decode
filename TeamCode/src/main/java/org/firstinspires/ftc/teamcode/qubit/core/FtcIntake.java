@@ -144,10 +144,6 @@ public class FtcIntake extends FtcSubSystemBase {
   public void spinOut(boolean waitTillCompletion) {
     FtcLogger.enter();
     if (intakeEnabled) {
-      if (parent != null && parent.sorter != null) {
-        parent.sorter.setStraight(waitTillCompletion);
-      }
-
       lightsOff();
       leftIntakeMotor.setPower(OUTTAKE_POWER);
       rightIntakeMotor.setPower(OUTTAKE_POWER);

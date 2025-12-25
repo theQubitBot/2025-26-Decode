@@ -22,6 +22,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
 
   // Start with LED strip being off.
   private BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.BLACK;
+  private BlinkinPattern parkingPattern;
   private Telemetry telemetry;
   private final BaseBot parent;
 
@@ -41,6 +42,17 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
     if (blinkinLedEnabled) {
       blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, BLINKIN_NAME);
       set(currentPattern);
+
+      if (parent.config != null) {
+        if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
+          parkingPattern = BlinkinPattern.HEARTBEAT_BLUE;
+        } else {
+          parkingPattern = BlinkinPattern.HEARTBEAT_RED;
+        }
+      } else {
+        parkingPattern = BlinkinPattern.HEARTBEAT_WHITE;
+      }
+
       telemetry.addData(TAG, "initialized");
     } else {
       telemetry.addData(TAG, "not enabled");
@@ -75,26 +87,15 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   @Override
   public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
-    double range = parent.aprilTag != null ? parent.aprilTag.getRange() : 0;
-
     if (gamePad1.right_bumper || gamePad2.right_bumper) {
       checkCannonReadyAndIndicate(FtcCannon.AUDIENCE_DISTANCE);
     } else if (gamePad1.right_trigger >= FtcUtils.TRIGGER_THRESHOLD || gamePad2.right_trigger >= FtcUtils.TRIGGER_THRESHOLD) {
       checkCannonReadyAndIndicate(FtcCannon.GOAL_SWEET_SPOT_DISTANCE);
-    } else if (parent.cannon != null && !parent.cannon.controlData.isEmpty() &&
-        range >= parent.cannon.controlData.get(1).distance &&
-        range <= parent.cannon.controlData.get(parent.cannon.controlData.size() - 1).distance) {
-      checkCannonReadyAndIndicate(range);
     } else if (FtcUtils.lastNSeconds(runtime, FtcUtils.ENDGAME_PARK_WARNING_SECONDS)) {
-      if (parent.config != null) {
-        if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
-          set(BlinkinPattern.HEARTBEAT_BLUE);
-        } else {
-          set(BlinkinPattern.HEARTBEAT_RED);
-        }
-      } else {
-        set(BlinkinPattern.HEARTBEAT_WHITE);
-      }
+      set(parkingPattern);
+    } else if (parent.localizer != null && parent.localizer.isValidShootingDistance() &&
+        parent.localizer.isValidShootingHeading()) {
+      checkCannonReadyAndIndicate(parent.localizer.getGoalDistance());
     } else {
       stop();
     }
@@ -121,7 +122,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
    *
    * @param pattern The display pattern to set to.
    */
-  public void set(RevBlinkinLedDriver.BlinkinPattern pattern) {
+  private void set(RevBlinkinLedDriver.BlinkinPattern pattern) {
     if (blinkinLedEnabled && blinkinLedDriver != null) {
       if (currentPattern != pattern) {
         currentPattern = pattern;

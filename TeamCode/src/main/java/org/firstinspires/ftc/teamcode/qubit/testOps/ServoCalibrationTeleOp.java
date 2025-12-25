@@ -41,10 +41,18 @@ public class ServoCalibrationTeleOp extends OpMode {
     aprilTag.init(hardwareMap, telemetry, false);
 
     aprilTagServo = new FtcServo(hardwareMap.get(Servo.class, FtcAprilTag.APRIL_TAG_SERVO_NAME));
+    aprilTagServo.setDirection(Servo.Direction.FORWARD);
+
     sorterServo = new FtcServo(hardwareMap.get(Servo.class, FtcSorter.SORTER_SERVO_NAME));
+    sorterServo.setDirection(Servo.Direction.FORWARD);
+
     lightServo = new FtcServo(hardwareMap.get(Servo.class, FtcIntake.LIGHT_SERVO_NAME));
+
     leftTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.LEFT_TRIGGER_SERVO_NAME));
+    leftTriggerServo.setDirection(Servo.Direction.FORWARD);
+
     rightTriggerServo = new FtcServo(hardwareMap.get(Servo.class, FtcCannon.RIGHT_TRIGGER_SERVO_NAME));
+    rightTriggerServo.setDirection(Servo.Direction.FORWARD);
 
     if (aprilTagServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
       aprilTagServo.getController().pwmEnable();

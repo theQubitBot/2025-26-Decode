@@ -44,11 +44,13 @@ public class AutoOp extends LinearOpMode {
     // Initialize robot.
     robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, true);
+    if (isStopRequested()) return;
 
     // Set subsystems at their respective start position.
     robot.start();
     robot.cannon.stop();
     robot.aprilTag.pointAtObelisk();
+    if (isStopRequested()) return;
 
     if (FtcUtils.DEBUG) {
       robot.enableTelemetry();
@@ -61,6 +63,7 @@ public class AutoOp extends LinearOpMode {
     // Must initialize this after robot.driveTrain initialization since driveTrain
     // sets the motors to run without encoders.
     follower = Constants.createFollower(hardwareMap);
+    if (isStopRequested()) return;
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
         optionBase = optionBlueGoal = new OptionBlueGoal(this, robot, follower).init();
@@ -115,7 +118,7 @@ public class AutoOp extends LinearOpMode {
     if (robot.config.delayInSeconds > 0) {
       long countDown = robot.config.delayInSeconds;
       while (countDown > 0) {
-        if (!opModeIsActive()) return;
+        if (!optionBase.saveAndTest(false)) return;
         telemetry.addData(FtcUtils.TAG, "Delaying start by %d seconds",
             robot.config.delayInSeconds);
         telemetry.addData(FtcUtils.TAG, "Countdown %d seconds", countDown);
@@ -125,10 +128,9 @@ public class AutoOp extends LinearOpMode {
       }
     }
 
-    if (!opModeIsActive()) return;
+    if (!optionBase.saveAndTest(false)) return;
     telemetry.addData(FtcUtils.TAG, "Auto Op started.");
     telemetry.update();
-    if (!opModeIsActive()) return;
 
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
@@ -160,7 +162,7 @@ public class AutoOp extends LinearOpMode {
       autoOpExecutionDuration = Math.round(runtime.seconds());
     }
 
-    while (optionBase != null && optionBase.saveAndTest()) {
+    while (optionBase != null && optionBase.saveAndTest(true)) {
       telemetry.addData(FtcUtils.TAG, "Auto Op took %.0f seconds.", autoOpExecutionDuration);
       telemetry.addData(FtcUtils.TAG, "Waiting for auto Op to end.");
       telemetry.update();

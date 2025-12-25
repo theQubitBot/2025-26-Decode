@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcSorter;
 import org.firstinspires.ftc.teamcode.qubit.core.LlArtifactSensor;
 import org.firstinspires.ftc.teamcode.qubit.core.MatchConfig;
+import org.firstinspires.ftc.teamcode.qubit.core.TeleOpLocalizer;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
 
@@ -32,6 +33,7 @@ public class BotA extends BaseBot {
     cannon.telemetryEnabled = false;
     driveTrain.telemetryEnabled = false;
     intake.telemetryEnabled = false;
+    localizer.telemetryEnabled = false;
     sorter.telemetryEnabled = false;
     FtcLogger.exit();
   }
@@ -45,6 +47,7 @@ public class BotA extends BaseBot {
     cannon.telemetryEnabled = true;
     driveTrain.telemetryEnabled = true;
     intake.telemetryEnabled = true;
+    localizer.telemetryEnabled = true;
     sorter.telemetryEnabled = true;
     FtcLogger.exit();
   }
@@ -53,6 +56,10 @@ public class BotA extends BaseBot {
     FtcLogger.enter();
     this.hardwareMap = hardwareMap;
     this.telemetry = telemetry;
+
+    // Initialize config first since it is used by other sub systems' init.
+    config = new MatchConfig();
+    config.init(hardwareMap, telemetry, autoOp);
 
     aprilTag = new FtcAprilTag(this);
     aprilTag.init(hardwareMap, telemetry, autoOp);
@@ -69,8 +76,8 @@ public class BotA extends BaseBot {
     cannon = new FtcCannon(this);
     cannon.init(hardwareMap, telemetry, autoOp);
 
-    config = new MatchConfig();
-    config.init(hardwareMap, telemetry, autoOp);
+    localizer = new TeleOpLocalizer(this);
+    localizer.init(hardwareMap, telemetry, autoOp);
 
     driveTrain = new FtcDriveTrain(this);
     driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
@@ -95,6 +102,7 @@ public class BotA extends BaseBot {
     driveTrain.operate(gamePad1, gamePad2, loopTime, runtime);
     intake.operate(gamePad1, gamePad2, loopTime, runtime);
     sorter.operate(gamePad1, gamePad2, loopTime, runtime);
+    localizer.operate(gamePad1, gamePad2, loopTime, runtime);
 
     aprilTag.showTelemetry();
     blinkinLed.showTelemetry();
@@ -102,6 +110,7 @@ public class BotA extends BaseBot {
     driveTrain.showTelemetry();
     intake.showTelemetry();
     sorter.showTelemetry();
+    localizer.showTelemetry();
     showGamePadTelemetry(gamePad1);
 
     FtcLogger.exit();
@@ -115,6 +124,7 @@ public class BotA extends BaseBot {
     cannon.start();
     intake.start();
     sorter.start();
+    localizer.start();
     FtcLogger.exit();
   }
 
@@ -127,6 +137,7 @@ public class BotA extends BaseBot {
     driveTrain.stop();
     intake.stop();
     sorter.stop();
+    localizer.stop();
     FtcLogger.exit();
   }
 }

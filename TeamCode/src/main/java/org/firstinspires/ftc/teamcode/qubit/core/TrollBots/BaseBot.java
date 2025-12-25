@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcSorter;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcSubSystemBase;
 import org.firstinspires.ftc.teamcode.qubit.core.LlArtifactSensor;
 import org.firstinspires.ftc.teamcode.qubit.core.MatchConfig;
+import org.firstinspires.ftc.teamcode.qubit.core.TeleOpLocalizer;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 
 import java.util.Arrays;
@@ -36,6 +37,7 @@ public abstract class BaseBot extends FtcSubSystemBase {
   public FtcDriveTrain driveTrain = null;
   public FtcIntake intake = null;
   public FtcSorter sorter = null;
+  public TeleOpLocalizer localizer = null;
 
   public static BaseBot getBot() {
     BaseBot bot = null;

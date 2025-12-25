@@ -35,6 +35,7 @@ public class DriveTrainTeleOp extends OpMode {
     robot.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     robot.driveTrain.setDriveTypeAndMode(
         DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.POINT_OF_VIEW_DRIVE);
+    robot.enableTelemetry();
     FtcLogger.exit();
   }
 
@@ -58,12 +59,6 @@ public class DriveTrainTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    if (FtcUtils.DEBUG) {
-      robot.enableTelemetry();
-    } else {
-      robot.disableTelemetry();
-    }
-
     FtcLogger.exit();
   }
 

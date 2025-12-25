@@ -46,11 +46,16 @@ The team code is organized under `org.firstinspires.ftc.teamcode` with the follo
 #### `qubit` Package - Main Robot Code
 
 - **core** - Core robot subsystems and utilities
-  - `FtcBot` - Main robot class using composite pattern to manage all subsystems
+  - **TrollBots/** - Robot configuration architecture
+    - `BaseBot` - Abstract base robot class using composite pattern to manage all subsystems
+    - `BotA` - Full competition robot with all subsystems enabled
+    - `BotB`, `BotC`, `BotD`, `BotL` - Various test/practice robot configurations
   - `FtcDriveTrain` - Mecanum drive train control
   - `FtcCannon` - Cannon/launcher mechanism
+  - `CannonControlData` - Distance-to-velocity mapping for cannon shooting
   - `FtcIntake` - Intake mechanism
   - `FtcSorter` - Game element sorting mechanism
+  - `TeleOpLocalizer` - Pedro Pathing-based localization for TeleOp (goal tracking, auto-parking)
   - `FtcAprilTag` - AprilTag vision processing
   - `LlArtifactSensor` - Limelight artifact detection
   - `VpArtifactSensor` - Vision processor artifact detection
@@ -93,15 +98,25 @@ Color space conversion utilities for vision processing.
 
 ### Robot Subsystem Architecture
 
-The robot uses a **composite design pattern** where:
-1. `FtcBot` is the composite that contains all subsystems
-2. Each subsystem extends `FtcSubSystemBase` and implements `FtcSubSystemInterface`
-3. Robot-level operations (init, start, stop, operate) are invoked on all subsystems through `FtcBot`
+The robot uses a **composite design pattern** with inheritance-based robot configurations:
+
+1. `BaseBot` - Abstract base class that contains all subsystems
+   - Each subsystem extends `FtcSubSystemBase` and implements `FtcSubSystemInterface`
+   - Robot-level operations (init, start, stop, operate) are invoked on all subsystems
+   - Factory method `BaseBot.getBot()` returns the appropriate robot instance based on `trollBot` setting
+
+2. **Robot Implementations** - Concrete classes extending `BaseBot`:
+   - `BotA` - Full competition robot (all subsystems including TeleOpLocalizer)
+   - `BotB`, `BotC`, `BotD`, `BotL` - Test/practice robots with varying configurations
+
+3. **Robot Selection** - Set via `BaseBot.trollBot` (defaults to `TrollBotEnum.TrollBotA`)
 
 This design allows:
 - Clean separation of concerns per subsystem
 - Easy addition of new subsystems
 - Unified lifecycle management
+- Multiple robot configurations without code duplication
+- Different motor directions per robot configuration
 
 ### OpMode Types and Lifecycle
 
@@ -109,12 +124,12 @@ This design allows:
 - Extend `LinearOpMode`
 - Use `runOpMode()` with `waitForStart()`
 - Typically use Pedro Pathing for navigation
-- Initialize with `robot.init(hardwareMap, telemetry, true)` (autoOp=true)
+- Initialize with `robot = BaseBot.getBot(); robot.init(hardwareMap, telemetry, true)` (autoOp=true)
 
 **TeleOp OpModes** (`@TeleOp`):
 - Extend `OpMode`
 - Implement `init()`, `init_loop()`, `start()`, `loop()`, `stop()`
-- Initialize with `robot.init(hardwareMap, telemetry, false)` (autoOp=false)
+- Initialize with `robot = BaseBot.getBot(); robot.init(hardwareMap, telemetry, false)` (autoOp=false)
 - Use `robot.operate(gamepad1, gamepad2, lastLoopTime, runtime)` in loop
 
 ### Configuration System
@@ -132,13 +147,26 @@ Configuration is:
 - Edited via `MatchConfigTeleOp`
 - Read automatically during robot initialization
 
-### TrollBot System
+### TeleOp Localization
 
-The codebase supports multiple robot configurations through `TrollBotEnum`:
-- **TrollBotA** - Full competition robot with all subsystems
-- **TrollBotB, C, D, L** - Various test/practice robot configurations
+The `TeleOpLocalizer` subsystem integrates Pedro Pathing into TeleOp for:
 
-The active robot is set in `FtcBot.trollBot`. Different configurations enable/disable subsystems accordingly.
+**Goal Tracking**:
+- `getGoalDistance()` - Returns distance to goal based on alliance/position
+- `getGoalHeading()` - Returns heading to goal in radians
+- `isValidShootingDistance()` - Checks if distance is within valid shooting range
+
+**Driver Assistance** (via gamepad controls):
+- D-pad Up: Auto-turn to face goal
+- D-pad Down: Hold current position
+- Share button (during endgame): Auto-park at designated parking position
+
+**Distance Source**:
+- Controlled by `CannonControlData.useCameraForGoalDistance` flag
+- `false` (default): Uses Pedro Pathing localizer distance
+- `true`: Uses camera-based distance measurement
+
+The localizer initializes starting pose from `MatchConfig` and sets goal/parking poses based on alliance color and robot position.
 
 ### Vision Systems
 
@@ -186,16 +214,17 @@ Each subsystem has a `telemetryEnabled` flag. During competition:
 1. Create new class in appropriate package (autoOps/teleOps/testOps)
 2. Extend `LinearOpMode` (auto) or `OpMode` (teleop)
 3. Add `@Autonomous` or `@TeleOp` annotation with name and group
-4. Initialize robot: `robot = new FtcBot(); robot.init(hardwareMap, telemetry, autoOp)`
+4. Initialize robot: `robot = BaseBot.getBot(); robot.init(hardwareMap, telemetry, autoOp)`
 5. Remove `@Disabled` annotation to make visible in Driver Station
 
 ### Modifying Subsystems
 
 1. Subsystem classes are in `qubit/core/`
 2. Implement required interface methods from `FtcSubSystemInterface`
-3. Update `FtcBot.init()` to initialize new subsystems
-4. Update `FtcBot.enableTelemetry()` / `disableTelemetry()` if subsystem has telemetry
-5. Handle subsystem in appropriate `TrollBotEnum` configurations
+3. Update robot implementation (e.g., `BotA.init()`) to initialize new subsystems
+4. Update `enableTelemetry()` / `disableTelemetry()` if subsystem has telemetry
+5. Add subsystem to `BaseBot` as a public field
+6. Handle subsystem in appropriate robot configurations (BotA, BotB, etc.)
 
 ### Tuning Autonomous Paths
 
@@ -211,11 +240,35 @@ Each subsystem has a `telemetryEnabled` flag. During competition:
 3. Test pipelines with test OpModes (e.g., `DrawRectPipelineTeleOp`)
 4. Vision processing results are exposed through subsystem interfaces
 
+### Cannon Control and Distance-Based Shooting
+
+The `FtcCannon` subsystem uses distance-to-velocity mapping for accurate shooting:
+
+1. **CannonControlData** - Stores distance ranges and corresponding velocities
+   - Camera distances (C0-C125) for camera-based measurements
+   - Localizer distances (L0-L125) for Pedro Pathing-based measurements
+   - `useCameraForGoalDistance` flag switches between distance sources
+
+2. **Shooting Workflow**:
+   - Get distance to goal (via camera or localizer)
+   - Validate distance is within acceptable range
+   - Look up appropriate cannon velocity for that distance
+   - Execute shot with calculated velocity
+
+3. **Valid Shooting Ranges**:
+   - Close range: 0-75 inches
+   - Far range: 100-125 inches
+   - Gap at 75-100 inches represents unreliable shooting zone
+
 ## Important Notes
 
 - The FTC SDK and FtcRobotController module should not be modified
 - All team code belongs in the TeamCode module under the `qubit` package
+- Robot configuration is selected via `BaseBot.trollBot` - change this to switch between robot configurations
 - Match configuration persists across OpMode switches - use MatchConfigTeleOp to change settings
 - Bulk reads are used for sensor access optimization via `FtcBulkRead`
-- Pedro Pathing requires careful initialization after driveTrain setup (which sets motors to run without encoders)
+- Pedro Pathing requires careful initialization:
+  - In autonomous: Initialize after driveTrain setup (which sets motors to run without encoders)
+  - In TeleOp: `TeleOpLocalizer` must be initialized after driveTrain for proper follower setup
 - The codebase uses inches for distance measurements and radians for angles in path following
+- Motor directions are configured per robot in `BaseBot.getBot()` factory method

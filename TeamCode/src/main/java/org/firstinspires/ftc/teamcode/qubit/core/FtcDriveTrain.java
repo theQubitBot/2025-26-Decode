@@ -1,20 +1,15 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTrainEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.DriveTypeEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.TrollBotEnum;
 
 import java.util.Arrays;
 import java.util.List;
@@ -88,9 +83,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
 
   // When true, joystick position is mapped to (0, slo mode power, max power)
   private final boolean useStepPowerFunction = true;
-  private Follower follower = null;
-  private Pose startingPose = null;
-  public static double TAG_HEADING_ERROR = -1.0;
 
   public FtcDriveTrain(BaseBot robot) {
     parent = robot;
@@ -150,13 +142,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
         }
       }
 
-      if(BaseBot.trollBot == TrollBotEnum.TrollBotA) {
-        follower = Constants.createFollower(hardwareMap);
-        startingPose = new Pose(0, 0, 0);
-        follower.setStartingPose(startingPose);
-        follower.update();
-      }
-
       showTelemetry();
       telemetry.addData(TAG, "initialized");
     } else {
@@ -184,32 +169,6 @@ public class FtcDriveTrain extends FtcSubSystemBase {
   @Override
   public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
-
-//    if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
-//      if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
-//      follower.update();
-//      if (parent != null && parent.aprilTag != null) {
-//        double bearing = parent.aprilTag.getBearing();// + TAG_HEADING_ERROR;
-//        follower.turnDegrees(Math.abs(bearing), bearing >= 0);
-//      }
-//      return;
-//    } else if (gamePad1.dpad_up || gamePad2.dpad_up) {
-//      follower.update();
-//      return;
-//    } else
-    if(BaseBot.trollBot == TrollBotEnum.TrollBotA) {
-      if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
-        if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
-        follower.update();
-        follower.holdPoint(follower.getPose());
-        return;
-      } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
-        follower.update();
-        return;
-      } else {
-        if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
-      }
-    }
 
     // Setup a variable for each side drive wheel to display power level for telemetry
     double leftFrontPower = FtcMotor.ZERO_POWER;
@@ -457,6 +416,7 @@ public class FtcDriveTrain extends FtcSubSystemBase {
             rightRearMotor.getPower(), rightRearMotor.getCurrentPosition());
       }
 
+      telemetry.addLine();
       telemetry.addData(FtcUtils.TAG, "%s, %s", driveTrainEnum.name(),
           driveTypeEnum.name());
     }

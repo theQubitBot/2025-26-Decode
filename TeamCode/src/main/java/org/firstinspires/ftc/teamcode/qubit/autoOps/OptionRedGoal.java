@@ -4,6 +4,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -16,21 +17,25 @@ import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
  */
 public class OptionRedGoal extends OptionBase {
   public Pose scorePose = new Pose(-44, 0, RADIAN0);
-  public Pose pickup1Pose = new Pose(-25.5, -29.5, -RADIAN45);
-  public Pose pickup1ControlPose = new Pose(-45, -10, -RADIAN45);
-  public Pose pickup2Pose = new Pose(-37.5, -52, -RADIAN45);
-  public Pose pickup2ControlPose = new Pose(-61, -27, -RADIAN45);
+  public Pose score3Pose = new Pose(-32, 18, -RADIAN22);
+  public Pose pickup1Pose = new Pose(-24.2, -28.4, -RADIAN45);
+  public Pose pickup1ControlPose = new Pose(-42, -10, -RADIAN45);
+  public Pose pickup2Pose = new Pose(-35.6, -51.2, -RADIAN45);
+  public Pose pickup2ControlPose = new Pose(-59.5, -27.9, -RADIAN45);
+  public Pose pickup3Pose = new Pose(-52.7, -66.9, -RADIAN45);
+  public Pose pickup3ControlPose = new Pose(-75.7, -44.7, -RADIAN45);
   public Pose leavePose = new Pose(-24, -13, RADIAN0);
 
   PathChain scorePreloadPath,
-      pickup11Path, pickup12Path, score1Path,
-      pickup21Path, pickup22Path, score21Path, score22Path,
+      pickup11Path, score1Path,
+      pickup21Path, score21Path,
+      pickup31Path, score31Path,
       leavePath;
 
   public static class Params {
     public boolean executeTrajectories = true, executeRobotActions = true;
     public boolean deliverPreloaded = true,
-        deliver1 = true, deliver2 = true,
+        deliver1 = true, deliver2 = true, deliver3 = true,
         leave = true;
   }
 
@@ -40,6 +45,7 @@ public class OptionRedGoal extends OptionBase {
     super(autoOpMode, robot, follower);
     follower.setStartingPose(startPose);
     ccd = robot.cannon.getClosestData(FtcCannon.GOAL_SWEET_SPOT_DISTANCE);
+    ccd3 = robot.cannon.getClosestData(FtcCannon.GOAL_SWEET_SPOT_DISTANCE3);
   }
 
   public OptionRedGoal init() {
@@ -57,18 +63,24 @@ public class OptionRedGoal extends OptionBase {
 
     // first artifact row
     pickup11Path = follower.pathBuilder()
-        .addPath(new BezierLine(scorePose, pickup1ControlPose))
-        .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1ControlPose.getHeading())
-        .build();
-
-    pickup12Path = follower.pathBuilder()
-        .addPath(new BezierLine(pickup1ControlPose, pickup1Pose))
-        .setConstantHeadingInterpolation(pickup1ControlPose.getHeading())
+        .addPath(BezierCurve.through(scorePose, pickup1ControlPose, pickup1Pose))
+        .setHeadingInterpolation(HeadingInterpolator.piecewise(
+            new HeadingInterpolator.PiecewiseNode(
+                0,
+                .2,
+                HeadingInterpolator.linear(scorePose.getHeading(), pickup1ControlPose.getHeading())
+            ),
+            new HeadingInterpolator.PiecewiseNode(
+                .21,
+                1,
+                HeadingInterpolator.constant(pickup1ControlPose.getHeading())
+            ))
+        )
         .addTemporalCallback(1, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinIn.run();
+          if (PARAMS.executeRobotActions) sorterPurple.run();
         })
-        .addParametricCallback(0.9, () -> {
-          if (PARAMS.executeRobotActions) sorterGreen.run();
+        .addTemporalCallback(500, () -> {
+          if (PARAMS.executeRobotActions) intakeSpinIn.run();
         })
         .build();
 
@@ -78,45 +90,84 @@ public class OptionRedGoal extends OptionBase {
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
         })
-        .addTemporalCallback(5, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinHold.run();
-        })
         .addTemporalCallback(10, () -> {
           if (PARAMS.executeRobotActions) sorterStraight.run();
+        })
+        .addTemporalCallback(1000, () -> {
+          if (PARAMS.executeRobotActions) intakeSpinHold.run();
         })
         .build();
 
     // second artifact row
     pickup21Path = follower.pathBuilder()
-        .addPath(new BezierLine(scorePose, pickup2ControlPose))
-        .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2ControlPose.getHeading())
-        .build();
-
-    pickup22Path = follower.pathBuilder()
-        .addPath(new BezierCurve(pickup2ControlPose, pickup2Pose))
-        .setConstantHeadingInterpolation(pickup2ControlPose.getHeading())
+        .addPath(BezierCurve.through(scorePose, pickup2ControlPose, pickup2Pose))
+        .setHeadingInterpolation(HeadingInterpolator.piecewise(
+                new HeadingInterpolator.PiecewiseNode(
+                    0,
+                    .29,
+                    HeadingInterpolator.linear(scorePose.getHeading(), pickup2ControlPose.getHeading())
+                ),
+                new HeadingInterpolator.PiecewiseNode(
+                    .3,
+                    1,
+                    HeadingInterpolator.constant(pickup2ControlPose.getHeading())
+                )
+            )
+        )
         .addTemporalCallback(1, () -> {
+          if (PARAMS.executeRobotActions) sorterPurple.run();
+        })
+        .addTemporalCallback(1000, () -> {
           if (PARAMS.executeRobotActions) intakeSpinIn.run();
         })
         .build();
 
     score21Path = follower.pathBuilder()
-        .addPath(new BezierLine(pickup2Pose, pickup2ControlPose))
-        .setConstantHeadingInterpolation(pickup2Pose.getHeading())
+        .addPath(BezierCurve.through(pickup2Pose, pickup2ControlPose, scorePose))
+        .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
         .addTemporalCallback(1, () -> {
           if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, false);
-        })
-        .addTemporalCallback(5, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinHold.run();
         })
         .addTemporalCallback(10, () -> {
           if (PARAMS.executeRobotActions) sorterStraight.run();
         })
+        .addTemporalCallback(1000, () -> {
+          if (PARAMS.executeRobotActions) intakeSpinHold.run();
+        })
         .build();
 
-    score22Path = follower.pathBuilder()
-        .addPath(new BezierLine(pickup2ControlPose, scorePose))
-        .setLinearHeadingInterpolation(pickup2ControlPose.getHeading(), scorePose.getHeading())
+    // third artifact row
+    pickup31Path = follower.pathBuilder()
+        .addPath(BezierCurve.through(scorePose, pickup3ControlPose, pickup3Pose))
+        .setHeadingInterpolation(HeadingInterpolator.piecewise(
+                new HeadingInterpolator.PiecewiseNode(
+                    0, .39, HeadingInterpolator.linear(scorePose.getHeading(), pickup3ControlPose.getHeading())
+                ),
+                new HeadingInterpolator.PiecewiseNode(
+                    .4, 1, HeadingInterpolator.constant(pickup3ControlPose.getHeading())
+                )
+            )
+        )
+        .addTemporalCallback(1, () -> {
+          if (PARAMS.executeRobotActions) sorterGreen.run();
+        })
+        .addTemporalCallback(1000, () -> {
+          if (PARAMS.executeRobotActions) intakeSpinIn.run();
+        })
+        .build();
+
+    score31Path = follower.pathBuilder()
+        .addPath(new BezierCurve(pickup3Pose, pickup3ControlPose, score3Pose))
+        .setLinearHeadingInterpolation(pickup3Pose.getHeading(), score3Pose.getHeading())
+        .addTemporalCallback(1, () -> {
+          if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd3.velocity, false);
+        })
+        .addTemporalCallback(10, () -> {
+          if (PARAMS.executeRobotActions) sorterStraight.run();
+        })
+        .addTemporalCallback(1000, () -> {
+          if (PARAMS.executeRobotActions) intakeSpinHold.run();
+        })
         .build();
 
     // leave
@@ -135,7 +186,7 @@ public class OptionRedGoal extends OptionBase {
     FtcLogger.enter();
 
     // Deliver preloaded artifacts
-    if (!saveAndTest()) return;
+    if (!saveAndTest(false)) return;
 
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, true, 3000);
@@ -145,30 +196,33 @@ public class OptionRedGoal extends OptionBase {
     }
 
     // Deliver first row
-    if (!saveAndTest()) return;
+    if (!saveAndTest(false)) return;
     if (PARAMS.deliver1) {
       if (PARAMS.executeTrajectories) runFollower(pickup11Path, true, 3000);
-      if (PARAMS.executeTrajectories) runFollower(pickup12Path, true, 3000);
       if (PARAMS.executeTrajectories) runFollower(score1Path, true, 3000);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Deliver second row
-    if (!saveAndTest()) return;
+    if (!saveAndTest(false)) return;
     if (PARAMS.deliver2 && robot.config.deliverSecondRow) {
       if (PARAMS.executeTrajectories) runFollower(pickup21Path, true, 3000);
-      if (PARAMS.executeTrajectories) runFollower(pickup22Path, true, 3000);
       if (PARAMS.executeTrajectories) runFollower(score21Path, false, 3000);
-      /* not enough time to shoot
-      if (PARAMS.executeTrajectories) runFollower(score22Path, true, 3000);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
-      // robot is parked
-       */
+    }
+
+    // Deliver third row
+    if (!saveAndTest(false)) return;
+    if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
+      if (PARAMS.executeTrajectories) runFollower(pickup31Path, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(score31Path, false, 3000);
+      if (PARAMS.executeRobotActions)
+        robot.cannon.fire(ccd3, robot.config.obeliskTagEnum, autoOpMode);
     } else {
       // Leave
-      if (!saveAndTest()) return;
+      if (!saveAndTest(false)) return;
       if (PARAMS.leave) {
         if (PARAMS.executeTrajectories) runFollower(leavePath, false, 3000);
       }

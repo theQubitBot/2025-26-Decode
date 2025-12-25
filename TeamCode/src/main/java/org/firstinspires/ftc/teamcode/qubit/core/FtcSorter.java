@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -7,6 +8,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.qubit.core.LlArtifactSensor.ArtifactColor;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 /**
@@ -69,10 +71,10 @@ public class FtcSorter extends FtcSubSystemBase {
    */
   public void operate() {
     if (parent != null && parent.artifactSensor != null) {
-      LlArtifactSensor.ArtifactColor artifactColor = parent.artifactSensor.getArtifactColor();
-      if (artifactColor == LlArtifactSensor.ArtifactColor.GREEN) {
+      ArtifactColor artifactColor = parent.artifactSensor.getArtifactColor();
+      if (artifactColor == ArtifactColor.GREEN) {
         setGreen(false);
-      } else if (artifactColor == LlArtifactSensor.ArtifactColor.PURPLE) {
+      } else if (artifactColor == ArtifactColor.PURPLE) {
         setPurple(false);
       } // else - don't move if no artifact is detected.
     }
@@ -88,7 +90,11 @@ public class FtcSorter extends FtcSubSystemBase {
   @Override
   public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
-    if (gamePad1.a || gamePad2.a) {
+
+    // Can't invoke buttonWasPressed() multiple times in a loop.
+    // b & x are handled in Cannon.operate()
+    if (gamePad1.aWasPressed() || gamePad2.aWasPressed() ||
+        gamePad1.left_bumper || gamePad2.left_bumper) {
       setStraight(false);
     } else {
       operate();
@@ -239,6 +245,32 @@ public class FtcSorter extends FtcSubSystemBase {
 
       asyncUpdater = null;
       asyncUpdaterThread = null;
+    }
+  }
+
+  public void tapGreen(LinearOpMode autoOp) {
+    if (sorterEnabled && sorterServo != null) {
+      for (int i = 0; i < 2; i++) {
+        pushGreen(false);
+        FtcUtils.interruptibleSleep(FtcUtils.CYCLE_MS * 2, autoOp);
+        setStraight(false);
+        FtcUtils.interruptibleSleep(FtcUtils.CYCLE_MS * 2, autoOp);
+      }
+
+      pushGreen(true);
+    }
+  }
+
+  public void tapPurple(LinearOpMode autoOp) {
+    if (sorterEnabled && sorterServo != null) {
+      for (int i = 0; i < 2; i++) {
+        pushPurple(false);
+        FtcUtils.interruptibleSleep(FtcUtils.CYCLE_MS * 2, autoOp);
+        setStraight(false);
+        FtcUtils.interruptibleSleep(FtcUtils.CYCLE_MS * 2, autoOp);
+      }
+
+      pushPurple(true);
     }
   }
 }

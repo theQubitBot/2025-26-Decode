@@ -32,25 +32,25 @@ import java.util.concurrent.TimeUnit;
  * A class to identify and make available April Tags using the Vision Portal.
  */
 public class FtcAprilTag extends FtcSubSystemBase {
-  static final String TAG = "FtcAprilTag";
+  public static final String TAG = "FtcAprilTag";
   public static final String WEBCAM_1_NAME = "Webcam 1";
   public static final String WEBCAM_2_NAME = "Webcam 2";
 
   public static final int CAMERA_WIDTH = 640; // width  of wanted camera resolution
   public static final int CAMERA_HEIGHT = 480; // height of wanted camera resolution
   public static final String APRIL_TAG_SERVO_NAME = "aprilTagServo";
-  public static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5380;
-  public static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5000;
-  public static final double OBELISK_RED_ALLIANCE_GOAL_POSITION = 0.4465;
-  public static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4870;
-  public static final double GOAL_POSITION = 0.4917;
-  public static final double MAX_RANGE = 140.0;
-  public static final double MIN_RANGE = 0.0;
-  public static final int CAMERA_EXPOSURE = 10; // milliseconds
-  public static final int CAMERA_GAIN = 40;
+  private static final double OBELISK_BLUE_ALLIANCE_GOAL_POSITION = 0.5380;
+  private static final double OBELISK_BLUE_ALLIANCE_AUDIENCE_POSITION = 0.5000;
+  private static final double OBELISK_RED_ALLIANCE_GOAL_POSITION = 0.4465;
+  private static final double OBELISK_RED_ALLIANCE_AUDIENCE_POSITION = 0.4870;
+  private static final double GOAL_POSITION = 0.4917;
+  private static final double MAX_RANGE = 140.0;
+  private static final double MIN_RANGE = 0.0;
+  private static final int CAMERA_EXPOSURE = 10; // milliseconds
+  private static final int CAMERA_GAIN = 40;
   // Vision/Sensor limits
-  public static final double APRILTAG_BEARING_MIN = -20.0;
-  public static final double APRILTAG_BEARING_MAX = 20.0;
+  private static final double APRILTAG_BEARING_MIN = -20.0;
+  private static final double APRILTAG_BEARING_MAX = 20.0;
   private AprilTagProcessor aprilTagProcessor;
   private VisionPortal visionPortal;
   private FtcAprilTagAsyncUpdater asyncUpdater = null;
@@ -74,17 +74,6 @@ public class FtcAprilTag extends FtcSubSystemBase {
     }
 
     return detections;
-  }
-
-  public double getBearing() {
-    double bearing = 0;
-    AprilTagPoseFtc pose = getFtcPose();
-    if (pose != null) {
-      // camera is rotated, so we use pitch for bearing
-      bearing = com.qualcomm.robotcore.util.Range.clip(pose.pitch, APRILTAG_BEARING_MIN, APRILTAG_BEARING_MAX);
-    }
-
-    return bearing;
   }
 
   /**
@@ -126,6 +115,27 @@ public class FtcAprilTag extends FtcSubSystemBase {
     return pose;
   }
 
+  public double getGoalDistance() {
+    double distance = 0;
+    AprilTagPoseFtc pose = getFtcPose();
+    if (pose != null) {
+      distance = com.qualcomm.robotcore.util.Range.clip(pose.range, MIN_RANGE, MAX_RANGE);
+    }
+
+    return distance;
+  }
+
+  public double getHeading() {
+    double heading = 0;
+    AprilTagPoseFtc pose = getFtcPose();
+    if (pose != null) {
+      // camera is rotated, so we use pitch for heading
+      heading = com.qualcomm.robotcore.util.Range.clip(pose.pitch, APRILTAG_BEARING_MIN, APRILTAG_BEARING_MAX);
+    }
+
+    return heading;
+  }
+
   public ObeliskTagEnum getObeliskTag() {
     ObeliskTagEnum ote = ObeliskTagEnum.UNKNOWN;
     List<AprilTagDetection> detections = getAllDetections();
@@ -147,16 +157,6 @@ public class FtcAprilTag extends FtcSubSystemBase {
     }
 
     return ote;
-  }
-
-  public double getRange() {
-    double range = 0;
-    AprilTagPoseFtc pose = getFtcPose();
-    if (pose != null) {
-      range = com.qualcomm.robotcore.util.Range.clip(pose.range, MIN_RANGE, MAX_RANGE);
-    }
-
-    return range;
   }
 
   /**
@@ -362,5 +362,10 @@ public class FtcAprilTag extends FtcSubSystemBase {
     }
 
     FtcLogger.exit();
+  }
+
+  public boolean isValidShootingDistance(double distance) {
+    return (distance > CannonControlData.C0 && distance <= CannonControlData.C75) ||
+        (distance >= CannonControlData.C100 && distance <= CannonControlData.C120);
   }
 }
