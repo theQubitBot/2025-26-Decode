@@ -25,7 +25,6 @@ public class MatchConfig {
   private boolean gamePad1Connected, gamePad2Connected;
   public boolean configIsComplete;
   private final boolean configFeatureEnabled = true;
-  private HardwareMap hardwareMap = null;
   private Telemetry telemetry = null;
 
   public AllianceColorEnum allianceColor;
@@ -51,12 +50,12 @@ public class MatchConfig {
    * Initialize standard Hardware interfaces.
    * Reads match configuration from the configuration file.
    *
-   * @param hardwareMap The hardware map to use for initialization.
+   * @param hardwareMap Not used.
    * @param telemetry   The telemetry to use.
+   * @param autoOp      Not used.
    */
   public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
-    this.hardwareMap = hardwareMap;
     this.telemetry = telemetry;
     readFromFile();
     FtcLogger.exit();
@@ -123,9 +122,7 @@ public class MatchConfig {
     obeliskTagEnum = ObeliskTagEnum.GPP;
     deliverSecondRow = true;
     deliverThirdRow = true;
-    x = 0;
-    y = 0;
-    heading = 0;
+    x = y = heading = 0;
     gamePad1Connected = gamePad2Connected = false;
     configIsComplete = !configFeatureEnabled;
     FtcLogger.exit();
@@ -177,6 +174,9 @@ public class MatchConfig {
       if (!gamePad2Connected) {
         gamePad2Connected = isGamePadConnected(gamePad2);
       }
+
+      // When running config, erase previously saved robot pose
+      x = y = heading = 0;
     }
   }
 

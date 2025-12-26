@@ -8,6 +8,7 @@ import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
@@ -16,15 +17,15 @@ import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
  * A class to implement autonomous objective
  */
 public class OptionBlueGoal extends OptionBase {
-  public Pose scorePose = new Pose(-44, 0, RADIAN0);
-  public Pose score3Pose = new Pose(-32, -18, RADIAN22);
-  public Pose pickup1Pose = new Pose(-24.2, 28.4, RADIAN45);
-  public Pose pickup1ControlPose = new Pose(-42, 10, RADIAN45);
-  public Pose pickup2Pose = new Pose(-35.6, 51.2, RADIAN45);
-  public Pose pickup2ControlPose = new Pose(-59.5, 27.9, RADIAN45);
-  public Pose pickup3Pose = new Pose(-52.7, 66.9, RADIAN45);
-  public Pose pickup3ControlPose = new Pose(-75.7, 44.7, RADIAN45);
-  public Pose leavePose = new Pose(-24, 13, RADIAN0);
+  public Pose scorePose = new Pose(20.5, 18.5, FtcField.RADIAN45);
+  public Pose score3Pose = new Pose(44, 15, FtcField.RADIAN67);
+  public Pose pickup1Pose = new Pose(14.5, 52.5, FtcField.RADIAN90);
+  public Pose pickup1ControlPose = new Pose(14.5, 26, FtcField.RADIAN90);
+  public Pose pickup2Pose = new Pose(-10.5, 60.5, FtcField.RADIAN90);
+  public Pose pickup2ControlPose = new Pose(-10.5, 25.5, FtcField.RADIAN90);
+  public Pose pickup3Pose = new Pose(-33.5, 60.5, FtcField.RADIAN90);
+  public Pose pickup3ControlPose = new Pose(-33.5, 24.5, FtcField.RADIAN90);
+  public Pose leavePose = new Pose(30, 50, FtcField.RADIAN45);
 
   PathChain scorePreloadPath,
       pickup11Path, score1Path,
@@ -43,6 +44,7 @@ public class OptionBlueGoal extends OptionBase {
 
   public OptionBlueGoal(LinearOpMode autoOpMode, BaseBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
+    startPose = FtcField.blueGoalStartPose;
     follower.setStartingPose(startPose);
     ccd = robot.cannon.getClosestData(FtcCannon.GOAL_SWEET_SPOT_DISTANCE);
     ccd3 = robot.cannon.getClosestData(FtcCannon.GOAL_SWEET_SPOT_DISTANCE3);

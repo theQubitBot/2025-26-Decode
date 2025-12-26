@@ -240,6 +240,11 @@ public class FtcCannon extends FtcSubSystemBase {
     FtcLogger.exit();
   }
 
+  public boolean isPrimed(double distance) {
+    CannonControlData ccd = getClosestData(distance);
+    return FtcUtils.areEqual(ccd.velocity, getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN);
+  }
+
   /**
    * Operates the cannon using the gamePads.
    *
@@ -254,10 +259,9 @@ public class FtcCannon extends FtcSubSystemBase {
         ccd = getClosestData(GOAL_SWEET_SPOT_DISTANCE);
       } else if (gamePad1.right_bumper || gamePad2.right_bumper) {
         ccd = getClosestData(AUDIENCE_DISTANCE);
-      } else {
-        if (parent.localizer.isValidShootingDistance()) {
-          ccd = getClosestData(parent.localizer.getGoalDistance());
-        }
+      } else if (parent.localizer.robotWithinLaunchZone() &&
+          parent.localizer.robotPointingAtGoal()) {
+        ccd = getClosestData(parent.localizer.getGoalDistance());
       }
 
       if (ccd.velocity == CANNON_IDLE_VELOCITY) {

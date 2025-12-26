@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.qubit.autoOps.OptionBase;
+import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 /**
@@ -17,9 +18,9 @@ import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
  */
 @Config
 public class PedroTestGoal extends OptionBase {
-  public Pose control1Pose = new Pose(24, 24, RADIAN0);
-  public Pose control2Pose = new Pose(48, 24, RADIAN0);
-  public Pose scorePose = new Pose(72, 0, RADIAN0);
+  public Pose control1Pose = new Pose(24, 24, FtcField.RADIAN0);
+  public Pose control2Pose = new Pose(48, 24, FtcField.RADIAN0);
+  public Pose scorePose = new Pose(72, 0, FtcField.RADIAN0);
 
   public static double brakingStart = Constants.pathConstraints.getBrakingStart();
   public static double brakingStrength = Constants.pathConstraints.getBrakingStrength();

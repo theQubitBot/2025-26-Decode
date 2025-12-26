@@ -21,50 +21,15 @@ import java.util.concurrent.TimeUnit;
  * A base class to provide common variables and methods.
  */
 public class OptionBase {
-  protected static final double RADIAN0;
-  protected static final double RADIAN15;
-  protected static final double RADIAN20;
-  protected static final double RADIAN22;
-  protected static final double RADIAN30;
-  protected static final double RADIAN45;
-  protected static final double RADIAN60;
-  protected static final double RADIAN70;
-  protected static final double RADIAN75;
-  protected static final double RADIAN90;
-  protected static final double RADIAN105;
-  protected static final double RADIAN120;
-  protected static final double RADIAN133;
-  protected static final double RADIAN135;
-  protected static final double RADIAN150;
-  protected static final double RADIAN180;
   protected LinearOpMode autoOpMode;
-  public CannonControlData ccd, ccd3;
   protected BaseBot robot;
   protected Follower follower;
-  protected final Pose startPose = new Pose(0, 0, 0);
+  protected Pose startPose;
+  public CannonControlData ccd, ccd3;
 
   protected Runnable intakeSpinIn, intakeSpinHold,
       sorterGreen, sorterPurple, sorterStraight,
       sorterPushGreen, sorterPushPurple, cannonIdle;
-
-  static {
-    RADIAN0 = Math.toRadians(0);
-    RADIAN15 = Math.toRadians(15);
-    RADIAN20 = Math.toRadians(20);
-    RADIAN22 = Math.toRadians(22);
-    RADIAN30 = Math.toRadians(30);
-    RADIAN45 = Math.toRadians(45);
-    RADIAN60 = Math.toRadians(60);
-    RADIAN70 = Math.toRadians(70);
-    RADIAN75 = Math.toRadians(75);
-    RADIAN90 = Math.toRadians(90);
-    RADIAN105 = Math.toRadians(105);
-    RADIAN120 = Math.toRadians(120);
-    RADIAN133 = Math.toRadians(133);
-    RADIAN135 = Math.toRadians(135);
-    RADIAN150 = Math.toRadians(150);
-    RADIAN180 = Math.toRadians(179.999); // Force robot to turn anti clockwise (looking down from above)
-  }
 
   /**
    * A Base AutoOp option class to hold all the common variables.

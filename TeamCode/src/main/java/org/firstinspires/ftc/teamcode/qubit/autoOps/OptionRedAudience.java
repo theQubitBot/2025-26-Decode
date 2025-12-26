@@ -8,6 +8,7 @@ import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
@@ -16,12 +17,12 @@ import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
  * A class to implement autonomous objective
  */
 public class OptionRedAudience extends OptionBase {
-  public Pose scorePose = new Pose(3, 0, -RADIAN22);
-  public Pose pickup3Pose = new Pose(28.5, -44.7, -RADIAN90);
-  public Pose pickup3ControlPose = new Pose(29.5, -10.8, -RADIAN90);
-  public Pose pickupLandingZonePose = new Pose(5, -47.3, -RADIAN180);
-  public Pose pickupLandingZoneControlPose = new Pose(23, -38, -RADIAN135);
-  public Pose leavePose = new Pose(4, -20, RADIAN0);
+  public Pose scorePose = new Pose(-56, -16, -FtcField.RADIAN22);
+  public Pose pickup3Pose = new Pose(-33, -60.5, -FtcField.RADIAN90);
+  public Pose pickup3ControlPose = new Pose(-33, -24.5, -FtcField.RADIAN90);
+  public Pose pickupLandingZonePose = new Pose(-57.5, -62, -FtcField.RADIAN180);
+  public Pose pickupLandingZoneControlPose = new Pose(-41, -53, -FtcField.RADIAN135);
+  public Pose leavePose = new Pose(-62, -39, FtcField.RADIAN0);
 
   PathChain scorePreloadPath,
       pickup3Path, score3Path,
@@ -38,6 +39,7 @@ public class OptionRedAudience extends OptionBase {
 
   public OptionRedAudience(LinearOpMode autoOpMode, BaseBot robot, Follower follower) {
     super(autoOpMode, robot, follower);
+    startPose = FtcField.redAudienceStartPose;
     follower.setStartingPose(startPose);
     ccd = robot.cannon.getClosestData(FtcCannon.AUDIENCE_DISTANCE);
   }

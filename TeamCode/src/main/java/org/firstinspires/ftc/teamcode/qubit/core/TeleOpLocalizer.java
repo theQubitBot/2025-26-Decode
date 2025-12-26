@@ -11,27 +11,19 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
-import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
 
 /**
  * A class to manage robot operations in Tele Op using Pedro Pathing
  */
 public class TeleOpLocalizer extends FtcSubSystemBase {
   private static final String TAG = "TeleOpLocalizer";
-  private Follower follower = null; // set in init
-  private Pose startingPose = new Pose(0, 0, 0); // default, overridden in init
-  private final Pose parkPoseForBlueAudience = new Pose(25.5, -50.5, Math.toRadians(90));
-  private final Pose parkPoseForBlueGoal = new Pose(-121, 1.6, Math.toRadians(45));
-  private final Pose parkPoseForRedAudience = new Pose(27.2, 50.5, Math.toRadians(-90));
-  private final Pose parkPoseForRedGoal = new Pose(-121, -1.6, Math.toRadians(-45));
-  private Pose parkingPose = parkPoseForBlueGoal; // default, overridden in init
-  private final Pose tagPoseForBlueAudience = new Pose(128, 47, Math.toRadians(45));
-  private final Pose tagPoseForBlueGoal = new Pose(8, 0, 0);
-  private final Pose tagPoseForRedAudience = new Pose(128, -47, Math.toRadians(-45));
-  private final Pose tagPoseForRedGoal = new Pose(8, 0, 0);
-  private Pose tagPose = tagPoseForBlueGoal; // default, overridden in init
+  private Follower follower;
+  private Pose startingPose;
+  private Pose parkingPose;
+  private Pose tagPose;
 
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
@@ -50,8 +42,8 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
    */
   public double getGoalDistance() {
     follower.updatePose();
-    Pose roboPose = follower.getPose();
-    return roboPose.distanceFrom(tagPose);
+    Pose robotPose = follower.getPose();
+    return robotPose.distanceFrom(tagPose);
   }
 
   /**
@@ -60,12 +52,10 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
    * @return Goal heading in radians.
    */
   public double getGoalHeading() {
-    double heading = 0;
     follower.updatePose();
     Pose robotPose = follower.getPose();
-    heading = MathFunctions.normalizeAngle(Math.atan2(
+    return MathFunctions.normalizeAngle(Math.atan2(
         tagPose.getY() - robotPose.getY(), tagPose.getX() - robotPose.getX()));
-    return heading;
   }
 
   /**
@@ -93,21 +83,11 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     if (parent != null && parent.config != null) {
       startingPose = new Pose(parent.config.x, parent.config.y, parent.config.heading);
       if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
-        if (parent.config.robotPosition == RobotPositionEnum.GOAL) {
-          parkingPose = parkPoseForBlueGoal;
-          tagPose = tagPoseForBlueGoal;
-        } else {
-          parkingPose = parkPoseForBlueAudience;
-          tagPose = tagPoseForBlueAudience;
-        }
+        parkingPose = FtcField.blueParkingPose;
+        tagPose = FtcField.blueGoalPose;
       } else {
-        if (parent.config.robotPosition == RobotPositionEnum.GOAL) {
-          parkingPose = parkPoseForRedGoal;
-          tagPose = tagPoseForRedGoal;
-        } else {
-          parkingPose = parkPoseForRedAudience;
-          tagPose = tagPoseForRedAudience;
-        }
+        parkingPose = FtcField.redParkingPose;
+        tagPose = FtcField.redGoalPose;
       }
     }
 
@@ -118,7 +98,7 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   }
 
   /**
-   * Operates the cannon using the gamePads.
+   * Operates the localizer using the gamePads.
    *
    * @param gamePad1 The first gamePad to use.
    * @param gamePad2 The second gamePad to use.
@@ -165,15 +145,15 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   }
 
   /*
-   * Displays cannon telemetry. Helps with debugging.
+   * Displays telemetry. Helps with debugging.
    */
   @Override
   public void showTelemetry() {
     FtcLogger.enter();
     if (telemetryEnabled && telemetry != null) {
       follower.updatePose();
-      Pose pose = follower.getPose();
-      telemetry.addData("Pose", "%.1f %.1f %.1f", pose.getX(), pose.getY(), pose.getHeading());
+      Pose robotPose = follower.getPose();
+      telemetry.addData("Pose", "%.1f %.1f %.1f", robotPose.getX(), robotPose.getY(), robotPose.getHeading());
       telemetry.addData("Goal distance", "%.1f", getGoalDistance());
       telemetry.addData("Goal heading", "%.1f", Math.toDegrees(getGoalHeading()));
     }
@@ -191,7 +171,7 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   }
 
   /**
-   * Stops the cannon.
+   * Stops the localizer.
    */
   @Override
   public void stop() {
@@ -203,13 +183,14 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     FtcLogger.exit();
   }
 
-  public boolean isValidShootingDistance() {
-    double distance = getGoalDistance();
-    return (distance >= CannonControlData.L30 && distance <= CannonControlData.L75) ||
-        (distance >= CannonControlData.L100 && distance <= CannonControlData.L120);
+  public boolean robotWithinLaunchZone() {
+    follower.updatePose();
+    Pose robotPose = follower.getPose();
+    return FtcField.goalLaunchTriangle.isInside(robotPose) ||
+        FtcField.audienceLaunchTriangle.isInside(robotPose);
   }
 
-  public boolean isValidShootingHeading() {
+  public boolean robotPointingAtGoal() {
     return Math.abs(Math.toDegrees(getRobotHeading() - getGoalHeading())) <= 15;
   }
 }
