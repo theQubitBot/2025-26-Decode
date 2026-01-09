@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.qubit.core;
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.RobotPositionEnum;
@@ -57,7 +59,32 @@ public class MatchConfig {
   public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
     this.telemetry = telemetry;
-    readFromFile();
+    if (configFeatureEnabled) {
+      readFromFile();
+      if (autoOp) {
+        Pose p = new Pose(0, 0, 0);
+        if (allianceColor == AllianceColorEnum.BLUE) {
+          if (robotPosition == RobotPositionEnum.GOAL) {
+            p = FtcField.blueGoalStartPose;
+          } else if (robotPosition == RobotPositionEnum.AUDIENCE) {
+            p = FtcField.blueAudienceStartPose;
+          }
+        } else if (allianceColor == AllianceColorEnum.RED) {
+          if (robotPosition == RobotPositionEnum.GOAL) {
+            p = FtcField.redGoalStartPose;
+          } else if (robotPosition == RobotPositionEnum.AUDIENCE) {
+            p = FtcField.redAudienceStartPose;
+          }
+        }
+
+        x = p.getX();
+        y = p.getY();
+        heading = p.getHeading();
+      } else {
+        // use the robot position saved from autoOp
+      }
+    }
+
     FtcLogger.exit();
   }
 
@@ -86,26 +113,24 @@ public class MatchConfig {
   private void readFromFile() {
     FtcLogger.enter();
 
-    if (configFeatureEnabled) {
-      try {
-        File file = AppUtil.getInstance().getSettingsFile(MATCH_CONFIG_FILENAME);
-        String data = ReadWriteFile.readFileOrThrow(file);
-        MatchConfig savedMatchConfig = FtcUtils.deserialize(data, MatchConfig.class);
-        allianceColor = savedMatchConfig.allianceColor;
-        robotPosition = savedMatchConfig.robotPosition;
-        delayInSeconds = savedMatchConfig.delayInSeconds;
-        obeliskTagEnum = savedMatchConfig.obeliskTagEnum;
-        deliverSecondRow = savedMatchConfig.deliverSecondRow;
-        deliverThirdRow = savedMatchConfig.deliverThirdRow;
-        x = savedMatchConfig.x;
-        y = savedMatchConfig.y;
-        heading = savedMatchConfig.heading;
-      } catch (IOException e) {
-        reset();
-      } catch (Exception e) {
-        // First time around, config file doesn't exist. Do nothing
-        reset();
-      }
+    try {
+      File file = AppUtil.getInstance().getSettingsFile(MATCH_CONFIG_FILENAME);
+      String data = ReadWriteFile.readFileOrThrow(file);
+      MatchConfig savedMatchConfig = FtcUtils.deserialize(data, MatchConfig.class);
+      allianceColor = savedMatchConfig.allianceColor;
+      robotPosition = savedMatchConfig.robotPosition;
+      delayInSeconds = savedMatchConfig.delayInSeconds;
+      obeliskTagEnum = savedMatchConfig.obeliskTagEnum;
+      deliverSecondRow = savedMatchConfig.deliverSecondRow;
+      deliverThirdRow = savedMatchConfig.deliverThirdRow;
+      x = savedMatchConfig.x;
+      y = savedMatchConfig.y;
+      heading = savedMatchConfig.heading;
+    } catch (IOException e) {
+      reset();
+    } catch (Exception e) {
+      // First time around, config file doesn't exist. Do nothing
+      reset();
     }
 
     FtcLogger.exit();
@@ -174,9 +199,6 @@ public class MatchConfig {
       if (!gamePad2Connected) {
         gamePad2Connected = isGamePadConnected(gamePad2);
       }
-
-      // When running config, erase previously saved robot pose
-      x = y = heading = 0;
     }
   }
 
@@ -205,7 +227,7 @@ public class MatchConfig {
       telemetry.addData(FtcUtils.TAG, "deliver 2nd row: %s", deliverSecondRow ? "yes" : "no");
       telemetry.addData(FtcUtils.TAG, "deliver 3rd row: %s", deliverThirdRow ? "yes" : "no");
       telemetry.addData(FtcUtils.TAG, "Motif %s", obeliskTagEnum);
-      telemetry.addData(FtcUtils.TAG, "Robot pose (%.1f, %.1f, %.1f)", x, y, heading);
+      telemetry.addData(FtcUtils.TAG, "Robot pose (%.1f, %.1f, %.1f)", x, y, Math.toDegrees(heading));
     }
   }
 

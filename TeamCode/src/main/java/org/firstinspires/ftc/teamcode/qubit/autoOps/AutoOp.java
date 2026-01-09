@@ -118,7 +118,7 @@ public class AutoOp extends LinearOpMode {
     if (robot.config.delayInSeconds > 0) {
       long countDown = robot.config.delayInSeconds;
       while (countDown > 0) {
-        if (!optionBase.saveAndTest(false)) return;
+        if (!optionBase.saveAndTest(true)) return;
         telemetry.addData(FtcUtils.TAG, "Delaying start by %d seconds",
             robot.config.delayInSeconds);
         telemetry.addData(FtcUtils.TAG, "Countdown %d seconds", countDown);
@@ -128,21 +128,21 @@ public class AutoOp extends LinearOpMode {
       }
     }
 
-    if (!optionBase.saveAndTest(false)) return;
+    if (!optionBase.saveAndTest(true)) return;
     telemetry.addData(FtcUtils.TAG, "Auto Op started.");
     telemetry.update();
 
     if (robot.config.allianceColor == AllianceColorEnum.BLUE) {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
-        optionBlueGoal.execute();
+        optionBlueGoal.execute(runtime);
       } else {
-        optionBlueAudience.execute();
+        optionBlueAudience.execute(runtime);
       }
     } else {
       if (robot.config.robotPosition == RobotPositionEnum.GOAL) {
-        optionRedGoal.execute();
+        optionRedGoal.execute(runtime);
       } else {
-        optionRedAudience.execute();
+        optionRedAudience.execute(runtime);
       }
     }
 

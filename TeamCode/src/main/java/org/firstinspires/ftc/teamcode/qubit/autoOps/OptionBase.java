@@ -25,6 +25,8 @@ public class OptionBase {
   protected BaseBot robot;
   protected Follower follower;
   protected Pose startPose;
+  protected double pickupMaxPower = 0.8;
+  protected double scoreMaxPower = 1.0;
   public CannonControlData ccd, ccd3;
 
   protected Runnable intakeSpinIn, intakeSpinHold,
@@ -63,10 +65,10 @@ public class OptionBase {
    * @param timeout   A user provided timeout for path execution. Path execution is
    *                  terminated if robot doesn't finish within the timeout value.
    */
-  public void runFollower(PathChain pathChain, boolean holdEnd, long timeout) {
+  public void runFollower(PathChain pathChain, double maxPower, boolean holdEnd, long timeout) {
     FtcLogger.enter();
     ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    follower.followPath(pathChain, holdEnd);
+    follower.followPath(pathChain, maxPower, holdEnd);
     if (timeout < 0) timeout = 5000; // a reasonable timeout for the path
     Deadline d = new Deadline(timeout, TimeUnit.MILLISECONDS);
     do {
@@ -100,6 +102,11 @@ public class OptionBase {
 
     FtcLogger.exit();
     return opModeIsActive;
+  }
+
+  public void showRuntime(ElapsedTime runtime) {
+    autoOpMode.telemetry.addData("Elapsed time", "%.0f", runtime.seconds());
+    autoOpMode.telemetry.update();
   }
 
   public void updateMotif() {

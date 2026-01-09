@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.FtcAprilTag;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcMotor;
@@ -23,8 +22,6 @@ public class CannonPowerTeleOp extends OpMode {
   double newMotorPower = FtcMotor.ZERO_POWER, oldMotorPower = FtcMotor.ZERO_POWER;
   final double largeDelta = 0.10;
   final double smallDelta = 0.01;
-
-  FtcAprilTag aprilTag;
   FtcCannon cannon;
 
   /*
@@ -38,10 +35,6 @@ public class CannonPowerTeleOp extends OpMode {
 
     telemetry.addData(FtcUtils.TAG, "Initializing, please wait...");
     telemetry.update();
-
-    aprilTag = new FtcAprilTag(null);
-    aprilTag.telemetryEnabled = true;
-    aprilTag.init(hardwareMap, telemetry, false);
 
     cannon = new FtcCannon(null);
     cannon.telemetryEnabled = true;
@@ -70,7 +63,6 @@ public class CannonPowerTeleOp extends OpMode {
     telemetry.update();
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    aprilTag.start();
     cannon.start();
     FtcLogger.exit();
   }
@@ -114,7 +106,6 @@ public class CannonPowerTeleOp extends OpMode {
     telemetry.addData(FtcUtils.TAG, "Power %.2f", newMotorPower);
     telemetry.addData(FtcUtils.TAG, "Velocity %5.2f, %5.2f",
         cannon.leftCannonMotor.getVelocity(), cannon.rightCannonMotor.getVelocity());
-    aprilTag.showTelemetry();
 
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         loopTime.milliseconds(), runtime.seconds());

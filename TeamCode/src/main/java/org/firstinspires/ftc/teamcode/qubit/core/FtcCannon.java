@@ -17,8 +17,6 @@ import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 import org.firstinspires.ftc.teamcode.qubit.core.enumerations.ObeliskTagEnum;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,9 +40,6 @@ public class FtcCannon extends FtcSubSystemBase {
   public static double MAX_VELOCITY = 1700.0;
   public static final double FIRING_VELOCITY_MARGIN = 25;
   private static final PIDFCoefficients CANNON_VELOCITY_PIDF = new PIDFCoefficients(60, 0.25, 2, 13.0);
-  public static final double GOAL_SWEET_SPOT_DISTANCE = CannonControlData.L45;
-  public static final double GOAL_SWEET_SPOT_DISTANCE3 = CannonControlData.L35;
-  public static final double AUDIENCE_DISTANCE = CannonControlData.L115;
 
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
@@ -52,28 +47,10 @@ public class FtcCannon extends FtcSubSystemBase {
   private VoltageSensor voltageSensor = null;
   public FtcMotor leftCannonMotor = null, rightCannonMotor = null;
   public FtcServo leftTriggerServo = null, rightTriggerServo = null;
-  public List<CannonControlData> controlData = new ArrayList<>(16);
 
   /* Constructor */
   public FtcCannon(BaseBot robot) {
     parent = robot;
-    // camera distance, motor velocity
-    controlData.add(new CannonControlData(CannonControlData.C0, CannonControlData.L0, CANNON_IDLE_VELOCITY));
-    controlData.add(new CannonControlData(CannonControlData.C30, CannonControlData.L30, 1040));
-    controlData.add(new CannonControlData(CannonControlData.C35, CannonControlData.L35, 1040));
-    controlData.add(new CannonControlData(CannonControlData.C40, CannonControlData.L40, 1060));
-    controlData.add(new CannonControlData(CannonControlData.C45, CannonControlData.L45, 1080));
-    controlData.add(new CannonControlData(CannonControlData.C50, CannonControlData.L50, 1100));
-    controlData.add(new CannonControlData(CannonControlData.C55, CannonControlData.L55, 1120));
-    controlData.add(new CannonControlData(CannonControlData.C60, CannonControlData.L60, 1140));
-    controlData.add(new CannonControlData(CannonControlData.C65, CannonControlData.L65, 1160));
-    controlData.add(new CannonControlData(CannonControlData.C70, CannonControlData.L70, 1180));
-    controlData.add(new CannonControlData(CannonControlData.C75, CannonControlData.L75, 1220));
-    controlData.add(new CannonControlData(CannonControlData.C100, CannonControlData.L100, 1400));
-    controlData.add(new CannonControlData(CannonControlData.C105, CannonControlData.L105, 1400));
-    controlData.add(new CannonControlData(CannonControlData.C110, CannonControlData.L110, 1420));
-    controlData.add(new CannonControlData(CannonControlData.C115, CannonControlData.L115, 1420));
-    controlData.add(new CannonControlData(CannonControlData.C120, CannonControlData.L120, 1440));
   }
 
   private void coast() {
@@ -89,6 +66,10 @@ public class FtcCannon extends FtcSubSystemBase {
       fireRight(ccd, true, autoOpMode);
       parent.sorter.tapPurple(autoOpMode);
       fireRight(ccd, false, autoOpMode);
+
+      // handle extra or mis-sorted artifact
+      parent.sorter.pushGreen(true);
+      fireLeft(ccd, false, autoOpMode);
     } else if (obeliskTag == ObeliskTagEnum.PGP) {
       parent.sorter.setStraight(false);
       fireRight(ccd, false, autoOpMode);
@@ -96,6 +77,8 @@ public class FtcCannon extends FtcSubSystemBase {
       fireLeft(ccd, false, autoOpMode);
       parent.sorter.pushPurple(true);
       fireRight(ccd, false, autoOpMode);
+      parent.sorter.pushGreen(true);
+      fireLeft(ccd, false, autoOpMode);
     } else { // PPG
       parent.sorter.setStraight(false);
       fireRight(ccd, true, autoOpMode);
@@ -103,6 +86,8 @@ public class FtcCannon extends FtcSubSystemBase {
       fireRight(ccd, false, autoOpMode);
       parent.sorter.pushGreen(true);
       fireLeft(ccd, false, autoOpMode);
+      parent.sorter.pushPurple(true);
+      fireRight(ccd, false, autoOpMode);
     }
 
     parent.sorter.setStraight(false);
@@ -142,27 +127,6 @@ public class FtcCannon extends FtcSubSystemBase {
     return (long) Math.abs((endVelocity - startVelocity) * 0.6);
   }
 
-  /**
-   * Finds the closest matching power for the given distance.
-   *
-   * @param distance The distance to the goal april tag.
-   * @return Power for the cannon motors.
-   */
-  public CannonControlData getClosestData(double distance) {
-    CannonControlData closestData = controlData.get(0);
-    double minDifference = Math.abs(distance - closestData.getDistance());
-    for (int i = 1; i < controlData.size(); i++) {
-      CannonControlData currentData = controlData.get(i);
-      double currentDifference = Math.abs(distance - currentData.getDistance());
-      if (currentDifference < minDifference) {
-        minDifference = currentDifference;
-        closestData = currentData;
-      }
-    }
-
-    return closestData;
-  }
-
   public PIDFCoefficients getPIDFCoefficients(DcMotor.RunMode runMode) {
     return leftCannonMotor.getPIDFCoefficients(runMode);
   }
@@ -172,7 +136,7 @@ public class FtcCannon extends FtcSubSystemBase {
    */
   public double getPower() {
     double power = FtcMotor.ZERO_POWER;
-    if (leftCannonMotor != null) {
+    if (leftCannonMotor != null && rightCannonMotor != null) {
       power = (leftCannonMotor.getPower() + rightCannonMotor.getPower()) / 2.0;
     }
 
@@ -241,7 +205,7 @@ public class FtcCannon extends FtcSubSystemBase {
   }
 
   public boolean isPrimed(double distance) {
-    CannonControlData ccd = getClosestData(distance);
+    CannonControlData ccd = CannonControlData.getClosestData(distance);
     return FtcUtils.areEqual(ccd.velocity, getVelocity(), FtcCannon.FIRING_VELOCITY_MARGIN);
   }
 
@@ -254,14 +218,14 @@ public class FtcCannon extends FtcSubSystemBase {
   @Override
   public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     if (leftCannonMotor != null && rightCannonMotor != null) {
-      CannonControlData ccd = getClosestData(CannonControlData.L0);
+      CannonControlData ccd = CannonControlData.getClosestData(CannonControlData.GOAL_MIN_DISTANCE);
       if (gamePad1.right_trigger >= 0.5 || gamePad2.right_trigger >= 0.5) {
-        ccd = getClosestData(GOAL_SWEET_SPOT_DISTANCE);
+        ccd = CannonControlData.getClosestData(CannonControlData.GOAL_SWEET_SPOT_DISTANCE);
       } else if (gamePad1.right_bumper || gamePad2.right_bumper) {
-        ccd = getClosestData(AUDIENCE_DISTANCE);
+        ccd = CannonControlData.getClosestData(CannonControlData.AUDIENCE_DISTANCE);
       } else if (parent.localizer.robotWithinLaunchZone() &&
           parent.localizer.robotPointingAtGoal()) {
-        ccd = getClosestData(parent.localizer.getGoalDistance());
+        ccd = CannonControlData.getClosestData(parent.localizer.getGoalDistance());
       }
 
       if (ccd.velocity == CANNON_IDLE_VELOCITY) {
@@ -362,8 +326,7 @@ public class FtcCannon extends FtcSubSystemBase {
     FtcLogger.enter();
     if (telemetryEnabled && telemetry != null) {
       if (leftCannonMotor != null && rightCannonMotor != null) {
-        telemetry.addData(TAG, "%4.0f",
-            leftCannonMotor.getVelocity());
+        telemetry.addData(TAG, "%4.0f", leftCannonMotor.getVelocity());
       }
 
       if (leftTriggerServo != null && rightTriggerServo != null) {

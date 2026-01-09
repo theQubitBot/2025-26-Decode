@@ -7,9 +7,10 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.qubit.core.CannonControlData;
 import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
-import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
@@ -41,7 +42,7 @@ public class OptionBlueAudience extends OptionBase {
     super(autoOpMode, robot, follower);
     startPose = FtcField.blueAudienceStartPose;
     follower.setStartingPose(startPose);
-    ccd = robot.cannon.getClosestData(FtcCannon.AUDIENCE_DISTANCE);
+    ccd = CannonControlData.getClosestData(CannonControlData.AUDIENCE_DISTANCE);
   }
 
   public OptionBlueAudience init() {
@@ -133,14 +134,15 @@ public class OptionBlueAudience extends OptionBase {
   /**
    * Executes the autonomous workflow.
    */
-  public void execute() {
+  public void execute(ElapsedTime runtime) {
     FtcLogger.enter();
 
     if (!saveAndTest(false)) return;
 
     // Deliver preloaded
     if (PARAMS.deliverPreloaded) {
-      if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, scoreMaxPower, true, 3000);
+      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
       if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
@@ -149,14 +151,18 @@ public class OptionBlueAudience extends OptionBase {
     // Deliver third trow
     if (!saveAndTest(false)) return;
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
-      if (PARAMS.executeTrajectories) runFollower(pickup3Path, true, 3000);
-      if (PARAMS.executeTrajectories) runFollower(score3Path, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(pickup3Path, pickupMaxPower, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(score3Path, scoreMaxPower, true, 3000);
+      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
 
-      if (PARAMS.executeTrajectories) runFollower(pickupLandingZone1Path, true, 3000);
-      if (PARAMS.executeTrajectories) runFollower(pickupLandingZone2Path, false, 3000);
-      if (PARAMS.executeTrajectories) runFollower(scoreLandingZonePath, true, 3000);
+      if (PARAMS.executeTrajectories)
+        runFollower(pickupLandingZone1Path, pickupMaxPower, true, 3000);
+      if (PARAMS.executeTrajectories)
+        runFollower(pickupLandingZone2Path, pickupMaxPower, false, 3000);
+      if (PARAMS.executeTrajectories) runFollower(scoreLandingZonePath, scoreMaxPower, true, 3000);
+      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
       if (PARAMS.executeRobotActions)
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
@@ -164,7 +170,7 @@ public class OptionBlueAudience extends OptionBase {
     // Leave
     if (!saveAndTest(false)) return;
     if (PARAMS.leave) {
-      if (PARAMS.executeTrajectories) runFollower(leavePath, true, 3000);
+      if (PARAMS.executeTrajectories) runFollower(leavePath, scoreMaxPower, true, 3000);
     }
 
     FtcLogger.exit();

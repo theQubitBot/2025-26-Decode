@@ -27,7 +27,6 @@ public class BotA extends BaseBot {
   public void disableTelemetry() {
     FtcLogger.enter();
     telemetryEnabled = false;
-    aprilTag.telemetryEnabled = false;
     artifactSensor.telemetryEnabled = false;
     blinkinLed.telemetryEnabled = false;
     cannon.telemetryEnabled = false;
@@ -41,7 +40,6 @@ public class BotA extends BaseBot {
   public void enableTelemetry() {
     FtcLogger.enter();
     telemetryEnabled = true;
-    aprilTag.telemetryEnabled = true;
     artifactSensor.telemetryEnabled = true;
     blinkinLed.telemetryEnabled = true;
     cannon.telemetryEnabled = true;
@@ -61,8 +59,10 @@ public class BotA extends BaseBot {
     config = new MatchConfig();
     config.init(hardwareMap, telemetry, autoOp);
 
-    aprilTag = new FtcAprilTag(this);
-    aprilTag.init(hardwareMap, telemetry, autoOp);
+    if (autoOp) {
+      aprilTag = new FtcAprilTag(this);
+      aprilTag.init(hardwareMap, telemetry, autoOp);
+    }
 
     artifactSensor = new LlArtifactSensor();
     artifactSensor.init(hardwareMap, telemetry, autoOp);
@@ -104,7 +104,6 @@ public class BotA extends BaseBot {
     sorter.operate(gamePad1, gamePad2, loopTime, runtime);
     localizer.operate(gamePad1, gamePad2, loopTime, runtime);
 
-    aprilTag.showTelemetry();
     blinkinLed.showTelemetry();
     cannon.showTelemetry();
     driveTrain.showTelemetry();
@@ -118,7 +117,10 @@ public class BotA extends BaseBot {
 
   public void start() {
     FtcLogger.enter();
-    aprilTag.start();
+    if (aprilTag != null) {
+      aprilTag.start();
+    }
+
     artifactSensor.start();
     blinkinLed.start();
     cannon.start();
@@ -130,7 +132,10 @@ public class BotA extends BaseBot {
 
   public void stop() {
     FtcLogger.enter();
-    aprilTag.stop();
+    if (aprilTag != null) {
+      aprilTag.stop();
+    }
+
     artifactSensor.stop();
     blinkinLed.stop();
     cannon.stop();

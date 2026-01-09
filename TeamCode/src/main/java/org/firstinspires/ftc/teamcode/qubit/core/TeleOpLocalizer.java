@@ -5,6 +5,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -54,8 +55,7 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   public double getGoalHeading() {
     follower.updatePose();
     Pose robotPose = follower.getPose();
-    return MathFunctions.normalizeAngle(Math.atan2(
-        tagPose.getY() - robotPose.getY(), tagPose.getX() - robotPose.getX()));
+    return Math.atan2(tagPose.getY() - robotPose.getY(), tagPose.getX() - robotPose.getX());
   }
 
   /**
@@ -89,11 +89,14 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
         parkingPose = FtcField.redParkingPose;
         tagPose = FtcField.redGoalPose;
       }
+    } else {
+      startingPose = new Pose(0, 0, 0);
+      parkingPose = new Pose(0, 0, 0);
+      tagPose = new Pose(0, 0, 0);
     }
 
     follower = Constants.createFollower(hardwareMap);
-    follower.setStartingPose(startingPose);
-    follower.update();
+    setStartingPose(startingPose);
     FtcLogger.exit();
   }
 
@@ -108,40 +111,50 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     FtcLogger.enter();
     if (gamePad1.dpadUpWasPressed() || gamePad2.dpadUpWasPressed()) {
       if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+      parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
       follower.turnTo(getGoalHeading());
     } else if (gamePad1.dpad_up || gamePad2.dpad_up) {
       follower.update();
     } else if (gamePad1.dpadUpWasReleased() || gamePad2.dpadUpWasReleased()) {
       if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+      parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     } else if (gamePad1.dpadDownWasPressed() || gamePad2.dpadDownWasPressed()) {
       if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+      parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
       follower.updatePose();
       follower.holdPoint(follower.getPose());
     } else if (gamePad1.dpad_down || gamePad2.dpad_down) {
       follower.update();
     } else if (gamePad1.dpadDownWasReleased() || gamePad2.dpadDownWasReleased()) {
       if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+      parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
     //  else Nothing to do. Pose will be  updated when needed.
 
-    if (FtcUtils.lastNSeconds(runtime, FtcUtils.ENDGAME_PARK_WARNING_SECONDS)) {
-      if (gamePad1.shareWasPressed() || gamePad2.shareWasPressed()) {
-        if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
-        follower.updatePose();
-        Pose startPose = follower.getPose();
-        PathChain parkPath = follower.pathBuilder()
-            .addPath(new BezierLine(startPose, parkingPose))
-            .setLinearHeadingInterpolation(startPose.getHeading(), parkingPose.getHeading())
-            .build();
-        follower.followPath(parkPath, true);
-      } else if (gamePad1.share || gamePad2.share) {
-        follower.update();
-      } else if (gamePad1.shareWasReleased() || gamePad2.shareWasReleased()) {
-        if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
-      }
+    if (gamePad1.shareWasPressed() || gamePad2.shareWasPressed()) {
+      if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+      parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+      follower.updatePose();
+      Pose startPose = follower.getPose();
+      PathChain parkPath = follower.pathBuilder()
+          .addPath(new BezierLine(startPose, parkingPose))
+          .setLinearHeadingInterpolation(startPose.getHeading(), parkingPose.getHeading())
+          .build();
+      follower.followPath(parkPath, true);
+    } else if (gamePad1.share || gamePad2.share) {
+      follower.update();
+    } else if (gamePad1.shareWasReleased() || gamePad2.shareWasReleased()) {
+      if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+      parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
 
     FtcLogger.exit();
+  }
+
+  public void setStartingPose(Pose pose) {
+    startingPose = pose;
+    follower.setStartingPose(startingPose);
+    follower.update();
   }
 
   /*
@@ -153,9 +166,12 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     if (telemetryEnabled && telemetry != null) {
       follower.updatePose();
       Pose robotPose = follower.getPose();
-      telemetry.addData("Pose", "%.1f %.1f %.1f", robotPose.getX(), robotPose.getY(), robotPose.getHeading());
+      telemetry.addData("robotPose", "%.1f %.1f %.1f",
+          robotPose.getX(), robotPose.getY(), Math.toDegrees(robotPose.getHeading()));
       telemetry.addData("Goal distance", "%.1f", getGoalDistance());
       telemetry.addData("Goal heading", "%.1f", Math.toDegrees(getGoalHeading()));
+      telemetry.addData("Inside launch", "%b, pointingAtGoal %b",
+          robotWithinLaunchZone(), robotPointingAtGoal());
     }
 
     FtcLogger.exit();
@@ -177,7 +193,13 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   public void stop() {
     FtcLogger.enter();
     if (follower != null) {
-      if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
+      follower.breakFollowing();
+      follower.updatePose();
+      Pose robotPose = follower.getPose();
+      parent.config.x = robotPose.getX();
+      parent.config.y = robotPose.getY();
+      parent.config.heading = robotPose.getHeading();
+      parent.config.saveToFile();
     }
 
     FtcLogger.exit();
@@ -191,6 +213,8 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   }
 
   public boolean robotPointingAtGoal() {
-    return Math.abs(Math.toDegrees(getRobotHeading() - getGoalHeading())) <= 15;
+    double delta = Math.abs(getRobotHeading() - getGoalHeading());
+    delta = MathFunctions.normalizeAngle(delta);
+    return FtcUtils.outsideRange(delta, FtcField.RADIAN15, FtcField.RADIAN345);
   }
 }

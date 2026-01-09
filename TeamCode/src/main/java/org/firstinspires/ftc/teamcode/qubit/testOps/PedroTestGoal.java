@@ -55,6 +55,6 @@ public class PedroTestGoal extends OptionBase {
    * Executes the autonomous workflow.
    */
   public void execute() {
-    runFollower(pathChain1, true, 4000);
+    runFollower(pathChain1, scoreMaxPower, true, 4000);
   }
 }

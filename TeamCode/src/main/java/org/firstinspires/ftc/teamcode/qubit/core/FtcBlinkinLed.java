@@ -87,9 +87,9 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   public void operate(Gamepad gamePad1, Gamepad gamePad2, double loopTime, ElapsedTime runtime) {
     FtcLogger.enter();
     if (gamePad1.right_bumper || gamePad2.right_bumper) {
-      checkCannonReadyAndIndicate(FtcCannon.AUDIENCE_DISTANCE);
+      checkCannonReadyAndIndicate(CannonControlData.AUDIENCE_DISTANCE);
     } else if (gamePad1.right_trigger >= FtcUtils.TRIGGER_THRESHOLD || gamePad2.right_trigger >= FtcUtils.TRIGGER_THRESHOLD) {
-      checkCannonReadyAndIndicate(FtcCannon.GOAL_SWEET_SPOT_DISTANCE);
+      checkCannonReadyAndIndicate(CannonControlData.GOAL_SWEET_SPOT_DISTANCE);
     } else if (FtcUtils.lastNSeconds(runtime, FtcUtils.ENDGAME_PARK_WARNING_SECONDS)) {
       set(parkingPattern);
     } else if (parent.localizer != null && parent.localizer.robotWithinLaunchZone() &&

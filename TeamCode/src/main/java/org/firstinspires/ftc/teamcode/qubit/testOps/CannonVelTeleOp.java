@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
@@ -16,8 +17,8 @@ import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 @Disabled
 @TeleOp(group = "TestOp")
 public class CannonVelTeleOp extends OpMode {
-  private ElapsedTime runtime = null;
-  private ElapsedTime loopTime = null;
+  ElapsedTime runtime = null;
+  ElapsedTime loopTime = null;
   double expectedVelocity;
   final double largeDelta = 100;
   final double smallDelta = 20;
@@ -38,6 +39,7 @@ public class CannonVelTeleOp extends OpMode {
     robot.init(hardwareMap, telemetry, false);
     robot.enableTelemetry();
 
+    robot.localizer.setStartingPose(FtcField.blueGoalStartPose);
     FtcLogger.exit();
   }
 
@@ -62,6 +64,7 @@ public class CannonVelTeleOp extends OpMode {
     runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     loopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     robot.start();
+    robot.sorter.setStraight(false);
     expectedVelocity = FtcCannon.MIN_VELOCITY;
     FtcLogger.exit();
   }
@@ -78,7 +81,9 @@ public class CannonVelTeleOp extends OpMode {
     telemetry.addData("dPad up/down", "Large (%.0f) vel +/-", largeDelta);
     telemetry.addData("dPad left/right", "Small (%.0f) vel +/-", smallDelta);
     telemetry.addLine();
-    if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
+    if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
+      expectedVelocity = 0;
+    } else if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
       expectedVelocity += largeDelta;
     } else if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) {
       expectedVelocity += smallDelta;
@@ -89,8 +94,7 @@ public class CannonVelTeleOp extends OpMode {
     }
 
     expectedVelocity = Range.clip(expectedVelocity, FtcCannon.MIN_VELOCITY, FtcCannon.MAX_VELOCITY);
-    robot.cannon.leftCannonMotor.setVelocity(expectedVelocity);
-    robot.cannon.rightCannonMotor.setVelocity(expectedVelocity);
+    robot.cannon.setVelocity(expectedVelocity, false);
 
     if (gamepad1.xWasPressed()) {
       robot.cannon.leftTriggerServo.setPosition(FtcCannon.LEFT_TRIGGER_UP_POSITION);
@@ -102,11 +106,9 @@ public class CannonVelTeleOp extends OpMode {
       robot.cannon.rightTriggerServo.setPosition(FtcCannon.RIGHT_TRIGGER_DOWN_POSITION);
     }
 
-    telemetry.addData("Power", "%.2f",
-        robot.cannon.leftCannonMotor.getPower());
+    telemetry.addData("Power", "%.2f", robot.cannon.getPower());
     telemetry.addData("Velocity", "expected %.0f, actual %.0f",
-        expectedVelocity, robot.cannon.rightCannonMotor.getVelocity());
-    telemetry.addData("Camera distance", "%.1f", robot.aprilTag.getGoalDistance());
+        expectedVelocity, robot.cannon.getVelocity());
     telemetry.addData("Localizer distance", "%.1f", robot.localizer.getGoalDistance());
 
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",

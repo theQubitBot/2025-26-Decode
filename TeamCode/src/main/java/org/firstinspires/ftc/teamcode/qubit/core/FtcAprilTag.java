@@ -365,7 +365,7 @@ public class FtcAprilTag extends FtcSubSystemBase {
   }
 
   public boolean isValidShootingDistance(double distance) {
-    return (distance > CannonControlData.C0 && distance <= CannonControlData.C75) ||
-        (distance >= CannonControlData.C100 && distance <= CannonControlData.C120);
+    return (distance > CannonControlData.GOAL_MIN_DISTANCE && distance <= CannonControlData.GOAL_MAX_DISTANCE) ||
+        (distance >= CannonControlData.AUDIENCE_MIN_DISTANCE && distance <= CannonControlData.AUDIENCE_MAX_DISTANCE);
   }
 }

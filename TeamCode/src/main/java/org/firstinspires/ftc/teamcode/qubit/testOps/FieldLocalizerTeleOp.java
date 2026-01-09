@@ -23,7 +23,7 @@ public class FieldLocalizerTeleOp extends OpMode {
   private double lastLoopTime = 1;
   private MatchConfig config;
   private Follower follower;
-  private Pose startPose;
+  private Pose startPose, robotPose;
 
   /*
    * Code to run ONCE when the driver hits INIT
@@ -84,9 +84,10 @@ public class FieldLocalizerTeleOp extends OpMode {
     loopTime.reset();
 
     follower.updatePose();
-    telemetry.addData("x", " %.1f", follower.getPose().getX());
-    telemetry.addData("y", " %.1f", follower.getPose().getY());
-    telemetry.addData("heading", "%.1f", Math.toDegrees(follower.getPose().getHeading()));
+    robotPose = follower.getPose();
+    telemetry.addData("x", " %.1f", robotPose.getX());
+    telemetry.addData("y", " %.1f", robotPose.getY());
+    telemetry.addData("heading", "%.1f", Math.toDegrees(robotPose.getHeading()));
     telemetry.addData("total heading", "%.1f", Math.toDegrees(follower.getTotalHeading()));
     telemetry.addLine();
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",

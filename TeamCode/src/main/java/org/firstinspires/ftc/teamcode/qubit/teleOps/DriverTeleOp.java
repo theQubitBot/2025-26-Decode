@@ -38,6 +38,9 @@ public class DriverTeleOp extends OpMode {
   @Override
   public void init_loop() {
     telemetry.addData(FtcUtils.TAG, "Waiting for driver to press play");
+    telemetry.addLine();
+    robot.localizer.showTelemetry();
+    telemetry.update();
     FtcUtils.sleep(FtcUtils.CYCLE_MS);
   }
 
