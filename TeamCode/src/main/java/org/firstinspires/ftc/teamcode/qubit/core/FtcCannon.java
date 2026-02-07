@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
@@ -24,6 +25,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class FtcCannon extends FtcSubSystemBase {
   private static final String TAG = "FtcCannon";
+  public static final String LEFT_HOOD_SERVO_NAME = "leftHoodServo";
+  public static final String RIGHT_HOOD_SERVO_NAME = "rightHoodServo";
   public static final String LEFT_CANNON_MOTOR_NAME = "leftCannonMotor";
   public static final String RIGHT_CANNON_MOTOR_NAME = "rightCannonMotor";
   private static final double CANNON_ZERO_VELOCITY = 0;
@@ -39,6 +42,7 @@ public class FtcCannon extends FtcSubSystemBase {
   public static double MIN_VELOCITY = CANNON_ZERO_VELOCITY;
   public static double MAX_VELOCITY = 1700.0;
   public static final double FIRING_VELOCITY_MARGIN = 25;
+  public static final double ACHIEVABLE_MAX_RPM_FRACTION = 1.0;
   private static final PIDFCoefficients CANNON_VELOCITY_PIDF = new PIDFCoefficients(60, 0.25, 2, 13.0);
 
   public boolean telemetryEnabled = true;
@@ -47,6 +51,7 @@ public class FtcCannon extends FtcSubSystemBase {
   private VoltageSensor voltageSensor = null;
   public FtcMotor leftCannonMotor = null, rightCannonMotor = null;
   public FtcServo leftTriggerServo = null, rightTriggerServo = null;
+  public FtcServo leftHoodServo = null, rightHoodServo = null;
 
   /* Constructor */
   public FtcCannon(BaseBot robot) {
@@ -127,6 +132,14 @@ public class FtcCannon extends FtcSubSystemBase {
     return (long) Math.abs((endVelocity - startVelocity) * 0.6);
   }
 
+  public double getHoodPosition() {
+    double hoodPosition = CannonControlData.HOOD_MAX_POSITION;
+    if (leftHoodServo != null)
+      hoodPosition = leftHoodServo.getPosition();
+
+    return hoodPosition;
+  }
+
   public PIDFCoefficients getPIDFCoefficients(DcMotor.RunMode runMode) {
     return leftCannonMotor.getPIDFCoefficients(runMode);
   }
@@ -147,10 +160,12 @@ public class FtcCannon extends FtcSubSystemBase {
    * Returns the current cannon velocity.
    */
   public double getVelocity() {
+    // Motors are hardware synchronized. Read only one motor.
     double velocity = 0;
     if (leftCannonMotor != null) {
       velocity = leftCannonMotor.getVelocity();
     }
+
 
     return velocity;
   }
@@ -175,17 +190,17 @@ public class FtcCannon extends FtcSubSystemBase {
     leftCannonMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, LEFT_CANNON_MOTOR_NAME));
     // RUE limits max motor speed to 85% by default
     // Raise that limit to 100%
-    MotorConfigurationType motorConfigurationType = leftCannonMotor.getMotorType().clone();
-    motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
-    leftCannonMotor.setMotorType(motorConfigurationType);
+    MotorConfigurationType motorConfigLeft = leftCannonMotor.getMotorType().clone();
+    motorConfigLeft.setAchieveableMaxRPMFraction(ACHIEVABLE_MAX_RPM_FRACTION);
+    leftCannonMotor.setMotorType(motorConfigLeft);
     leftCannonMotor.setDirection(DcMotorEx.Direction.FORWARD);
     leftCannonMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     leftCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
     rightCannonMotor = new FtcMotor(hardwareMap.get(DcMotorEx.class, RIGHT_CANNON_MOTOR_NAME));
-    motorConfigurationType = rightCannonMotor.getMotorType().clone();
-    motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
-    rightCannonMotor.setMotorType(motorConfigurationType);
+    MotorConfigurationType motorConfigRight = rightCannonMotor.getMotorType().clone();
+    motorConfigRight.setAchieveableMaxRPMFraction(ACHIEVABLE_MAX_RPM_FRACTION);
+    rightCannonMotor.setMotorType(motorConfigRight);
     rightCannonMotor.setDirection(DcMotorEx.Direction.REVERSE);
     rightCannonMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     rightCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -197,6 +212,12 @@ public class FtcCannon extends FtcSubSystemBase {
 
     rightTriggerServo = new FtcServo(hardwareMap.get(Servo.class, RIGHT_TRIGGER_SERVO_NAME));
     rightTriggerServo.setDirection(Servo.Direction.FORWARD);
+
+    leftHoodServo = new FtcServo(hardwareMap.get(Servo.class, LEFT_HOOD_SERVO_NAME));
+    leftHoodServo.setDirection(Servo.Direction.REVERSE);
+
+    rightHoodServo = new FtcServo(hardwareMap.get(Servo.class, RIGHT_HOOD_SERVO_NAME));
+    rightHoodServo.setDirection(Servo.Direction.FORWARD);
 
     showTelemetry();
     telemetry.addData(TAG, "initialized");
@@ -223,7 +244,7 @@ public class FtcCannon extends FtcSubSystemBase {
         ccd = CannonControlData.getClosestData(CannonControlData.GOAL_SWEET_SPOT_DISTANCE);
       } else if (gamePad1.right_bumper || gamePad2.right_bumper) {
         ccd = CannonControlData.getClosestData(CannonControlData.AUDIENCE_DISTANCE);
-      } else if (parent.localizer.robotWithinLaunchZone() &&
+      } else if (parent.localizer.robotInLaunchZone() &&
           parent.localizer.robotPointingAtGoal()) {
         ccd = CannonControlData.getClosestData(parent.localizer.getGoalDistance());
       }
@@ -236,6 +257,7 @@ public class FtcCannon extends FtcSubSystemBase {
           idle();
         }
       } else {
+        setHoodPosition(ccd);
         setVelocity(ccd, false);
       }
     }
@@ -273,8 +295,22 @@ public class FtcCannon extends FtcSubSystemBase {
     }
   }
 
+  public void setHoodPosition(CannonControlData ccd) {
+    setHoodPosition(ccd.hoodPosition);
+  }
+
+  public void setHoodPosition(double position) {
+    position = Range.clip(position,
+        CannonControlData.HOOD_MIN_POSITION, CannonControlData.HOOD_MAX_POSITION);
+    if (leftHoodServo != null)
+      leftHoodServo.setPosition(position);
+
+    if (rightHoodServo != null)
+      rightHoodServo.setPosition(position);
+  }
+
   private void setPIDFCoefficients(DcMotorEx.RunMode runMode, PIDFCoefficients pidf) {
-    double batteryVoltage = Math.max(1, voltageSensor.getVoltage()); // guard against 0 voltage
+    double batteryVoltage = Math.max(12, voltageSensor.getVoltage()); // guard against 0 voltage
     if (leftCannonMotor != null) {
       leftCannonMotor.setPIDFCoefficients(runMode, new PIDFCoefficients(
           pidf.p, pidf.i, pidf.d, pidf.f * 12.0 / batteryVoltage));
@@ -326,11 +362,12 @@ public class FtcCannon extends FtcSubSystemBase {
     FtcLogger.enter();
     if (telemetryEnabled && telemetry != null) {
       if (leftCannonMotor != null && rightCannonMotor != null) {
-        telemetry.addData(TAG, "%4.0f", leftCannonMotor.getVelocity());
+        telemetry.addData(TAG, "LM %4.0f, RM %4.0f",
+            leftCannonMotor.getVelocity(), rightCannonMotor.getVelocity());
       }
 
       if (leftTriggerServo != null && rightTriggerServo != null) {
-        telemetry.addData(TAG, "Left: %s, Right: %s",
+        telemetry.addData(TAG, "LeftT: %s, RightT: %s",
             FtcUtils.areEqual(leftTriggerServo.getPosition(), LEFT_TRIGGER_UP_POSITION, FtcUtils.EPSILON4) ? "Up" : "Down",
             FtcUtils.areEqual(rightTriggerServo.getPosition(), RIGHT_TRIGGER_UP_POSITION, FtcUtils.EPSILON4) ? "Up" : "Down");
       }
@@ -367,6 +404,28 @@ public class FtcCannon extends FtcSubSystemBase {
       rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
     }
 
+    if (leftHoodServo != null) {
+      if (leftHoodServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        leftHoodServo.getController().pwmEnable();
+      }
+
+      // Move the servo for correct initialization.
+      leftHoodServo.setPosition(CannonControlData.HOOD_MIN_POSITION);
+      FtcUtils.sleep(1);
+      leftHoodServo.setPosition(CannonControlData.HOOD_MAX_POSITION);
+    }
+
+    if (rightHoodServo != null) {
+      if (rightHoodServo.getController().getPwmStatus() != ServoController.PwmStatus.ENABLED) {
+        rightHoodServo.getController().pwmEnable();
+      }
+
+      // Move the servo for correct initialization.
+      rightHoodServo.setPosition(CannonControlData.HOOD_MIN_POSITION);
+      FtcUtils.sleep(1);
+      rightHoodServo.setPosition(CannonControlData.HOOD_MAX_POSITION);
+    }
+
     FtcLogger.exit();
   }
 
@@ -383,6 +442,14 @@ public class FtcCannon extends FtcSubSystemBase {
 
     if (rightTriggerServo != null) {
       rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
+    }
+
+    if (leftHoodServo != null) {
+      leftHoodServo.setPosition(CannonControlData.HOOD_REGULAR_POSITION);
+    }
+
+    if (rightHoodServo != null) {
+      rightHoodServo.setPosition(CannonControlData.HOOD_REGULAR_POSITION);
     }
 
     FtcLogger.exit();

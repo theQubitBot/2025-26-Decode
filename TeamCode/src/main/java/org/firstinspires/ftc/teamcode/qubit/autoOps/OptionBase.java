@@ -28,7 +28,17 @@ public class OptionBase {
   protected double pickupMaxPower = 0.8;
   protected double scoreMaxPower = 1.0;
   public CannonControlData ccd, ccd3;
+  protected Pose scorePose, score3Pose, leavePose, gatePose,
+      pickup1Pose, pickup1ControlPose,
+      pickup2Pose, pickup2ControlPose,
+      pickup3Pose, pickup3ControlPose,
+      pickupLandingZonePose, pickupLandingZoneControlPose;
 
+  protected PathChain scorePreloadPath, leavePath, gatePath,
+      pickup1Path, score1Path,
+      pickup2Path, score2Path,
+      pickup3Path, score3Path,
+      pickupLandingZone1Path, pickupLandingZone2Path, scoreLandingZonePath;
   protected Runnable intakeSpinIn, intakeSpinHold,
       sorterGreen, sorterPurple, sorterStraight,
       sorterPushGreen, sorterPushPurple, cannonIdle;

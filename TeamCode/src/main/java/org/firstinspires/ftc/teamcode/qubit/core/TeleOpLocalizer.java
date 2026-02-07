@@ -59,13 +59,13 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   }
 
   /**
-   * Returns robot heading.
+   * Returns robot pose.
    *
-   * @return Robot heading in radians.
+   * @return Robot pose.
    */
-  public double getRobotHeading() {
+  public Pose getRobotPose(){
     follower.updatePose();
-    return follower.getPose().getHeading();
+    return follower.getPose();
   }
 
   /**
@@ -82,6 +82,8 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     // Initializes poses for robot starting position
     if (parent != null && parent.config != null) {
       startingPose = new Pose(parent.config.x, parent.config.y, parent.config.heading);
+
+      // Regardless of robot starting position, parking and goal are fixed.
       if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
         parkingPose = FtcField.blueParkingPose;
         tagPose = FtcField.blueGoalPose;
@@ -164,14 +166,13 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   public void showTelemetry() {
     FtcLogger.enter();
     if (telemetryEnabled && telemetry != null) {
-      follower.updatePose();
-      Pose robotPose = follower.getPose();
+      Pose robotPose = getRobotPose();
       telemetry.addData("robotPose", "%.1f %.1f %.1f",
           robotPose.getX(), robotPose.getY(), Math.toDegrees(robotPose.getHeading()));
       telemetry.addData("Goal distance", "%.1f", getGoalDistance());
       telemetry.addData("Goal heading", "%.1f", Math.toDegrees(getGoalHeading()));
       telemetry.addData("Inside launch", "%b, pointingAtGoal %b",
-          robotWithinLaunchZone(), robotPointingAtGoal());
+          robotInLaunchZone(), robotPointingAtGoal());
     }
 
     FtcLogger.exit();
@@ -205,15 +206,15 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     FtcLogger.exit();
   }
 
-  public boolean robotWithinLaunchZone() {
+  public boolean robotInLaunchZone() {
     follower.updatePose();
     Pose robotPose = follower.getPose();
-    return FtcField.goalLaunchTriangle.isInside(robotPose) ||
-        FtcField.audienceLaunchTriangle.isInside(robotPose);
+    return FtcField.goalLaunchTriangle.contains(robotPose) ||
+        FtcField.audienceLaunchTriangle.contains(robotPose);
   }
 
   public boolean robotPointingAtGoal() {
-    double delta = Math.abs(getRobotHeading() - getGoalHeading());
+    double delta = Math.abs(getRobotPose().getHeading() - getGoalHeading());
     delta = MathFunctions.normalizeAngle(delta);
     return FtcUtils.outsideRange(delta, FtcField.RADIAN15, FtcField.RADIAN345);
   }

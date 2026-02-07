@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.qubit.testOps;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -43,6 +44,7 @@ public class DriveFrictionTeleOp extends OpMode {
     telemetry.update();
     BaseBot robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, false);
+    robot.bulkRead.setCachingMode(LynxModule.BulkCachingMode.AUTO);
     driveTrain = robot.driveTrain;
     driveTrain.setDriveTypeAndMode(DriveTrainEnum.MECANUM_WHEEL_DRIVE, DriveTypeEnum.FIELD_ORIENTED_DRIVE);
     driveTrain.init(hardwareMap, telemetry, false);

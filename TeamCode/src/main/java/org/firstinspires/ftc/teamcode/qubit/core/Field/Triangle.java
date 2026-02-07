@@ -55,7 +55,7 @@ public class Triangle {
    * @param p The given point.
    * @return True, if the given point is inside the triangle, false otherwise.
    */
-  public boolean isInside(Pose p) {
+  public boolean contains(Pose p) {
     // Calculate Barycentric coordinates
     double w1 = ((vertexB.getY() - vertexC.getY()) * (p.getX() - vertexC.getX()) +
         (vertexC.getX() - vertexB.getX()) * (p.getY() - vertexC.getY())) / invertedDeterminant;

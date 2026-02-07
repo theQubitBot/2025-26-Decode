@@ -67,7 +67,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
   private void checkCannonReadyAndIndicate(double distance) {
     if (parent.cannon != null) {
       if (parent.cannon.isPrimed(distance)) {
-        set(BlinkinPattern.GREEN);
+        set(BlinkinPattern.LAWN_GREEN);
       } else {
         stop();
       }
@@ -92,7 +92,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
       checkCannonReadyAndIndicate(CannonControlData.GOAL_SWEET_SPOT_DISTANCE);
     } else if (FtcUtils.lastNSeconds(runtime, FtcUtils.ENDGAME_PARK_WARNING_SECONDS)) {
       set(parkingPattern);
-    } else if (parent.localizer != null && parent.localizer.robotWithinLaunchZone() &&
+    } else if (parent.localizer != null && parent.localizer.robotInLaunchZone() &&
         parent.localizer.robotPointingAtGoal()) {
       checkCannonReadyAndIndicate(parent.localizer.getGoalDistance());
     } else {

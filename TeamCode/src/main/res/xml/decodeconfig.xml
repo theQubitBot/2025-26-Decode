@@ -6,11 +6,13 @@
         <LynxModule name="Expansion Hub 2" port="2">
             <goBILDA5202SeriesMotor name="rightFrontMotor" port="0" />
             <goBILDA5202SeriesMotor name="rightRearMotor" port="1" />
-            <goBILDA5202SeriesMotor name="rightIntakeMotor" port="2" />
-            <goBILDA5202SeriesMotor name="rightCannonMotor" port="3" />
+            <goBILDA5202SeriesMotor name="rightCannonMotor" port="2" />
+            <!-- Port 3 on expansion has busted encoder. Don't use it for anything that requires encoders. -->
+            <goBILDA5202SeriesMotor name="rightIntakeMotor" port="3" />
             <Servo name="rightTriggerServo" port="0" />
             <Servo name="aprilTagServo" port="2" />
             <RevBlinkinLedDriver name="blinkinLedDriver" port="4" />
+            <Servo name="rightHoodServo" port="5" />
             <goBILDAPinpoint name="pinpointDriver" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
@@ -21,6 +23,7 @@
             <Servo name="leftTriggerServo" port="0" />
             <Servo name="sorterServo" port="2" />
             <Servo name="lightServo" port="4" />
+            <Servo name="leftHoodServo" port="5" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>

@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 @Config
 @TeleOp(group = "TestOp")
 public class MotorVelocityPIDTuner extends LinearOpMode {
-  public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(60, 0.25, 2, 13.0);
+  public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0, 0);
 
   private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -35,18 +35,18 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
 
     batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
     DcMotorEx leftCannonMotor = hardwareMap.get(DcMotorEx.class, FtcCannon.LEFT_CANNON_MOTOR_NAME);
-    MotorConfigurationType motorConfigurationType = leftCannonMotor.getMotorType().clone();
-    motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
-    leftCannonMotor.setMotorType(motorConfigurationType);
+    MotorConfigurationType motorConfigLeft = leftCannonMotor.getMotorType().clone();
+    motorConfigLeft.setAchieveableMaxRPMFraction(FtcCannon.ACHIEVABLE_MAX_RPM_FRACTION);
+    leftCannonMotor.setMotorType(motorConfigLeft);
     leftCannonMotor.setDirection(DcMotorEx.Direction.FORWARD);
     leftCannonMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     leftCannonMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     setPIDFCoefficients(leftCannonMotor, MOTOR_VELO_PID);
 
     DcMotorEx rightCannonMotor = hardwareMap.get(DcMotorEx.class, FtcCannon.RIGHT_CANNON_MOTOR_NAME);
-    motorConfigurationType = rightCannonMotor.getMotorType().clone();
-    motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
-    rightCannonMotor.setMotorType(motorConfigurationType);
+    MotorConfigurationType motorConfigRight = rightCannonMotor.getMotorType().clone();
+    motorConfigRight.setAchieveableMaxRPMFraction(FtcCannon.ACHIEVABLE_MAX_RPM_FRACTION);
+    rightCannonMotor.setMotorType(motorConfigRight);
     rightCannonMotor.setDirection(DcMotorEx.Direction.REVERSE);
     rightCannonMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     rightCannonMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -79,10 +79,12 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
 
       telemetry.addData("targetVelocity", targetVelocity);
 
-      double motorVelocity = leftCannonMotor.getVelocity();
-      writer.append(runtime.milliseconds()).append(motorVelocity).flush();
-      telemetry.addData("velocity", motorVelocity);
-      telemetry.addData("error", targetVelocity - motorVelocity);
+      double motorVelocityL = leftCannonMotor.getVelocity();
+      double motorVelocityR = rightCannonMotor.getVelocity();
+      //writer.append(runtime.milliseconds()).append(motorVelocityL).flush();
+      telemetry.addData("velocityL", motorVelocityL);
+      telemetry.addData("velocityR", motorVelocityR);
+      telemetry.addData("error", targetVelocity - motorVelocityL);
 
       telemetry.addData("upperBound", MotorVelocityController.rpmToTicksPerSecond(MotorVelocityController.TESTING_MAX_RPM));
       telemetry.addData("lowerBound", 0);
@@ -104,8 +106,9 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
   }
 
   private void setPIDFCoefficients(DcMotorEx motor, PIDFCoefficients coefficients) {
+    double voltage = Math.max(12, batteryVoltageSensor.getVoltage());
     motor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(
-        coefficients.p, coefficients.i, coefficients.d, coefficients.f * 12 / batteryVoltageSensor.getVoltage()
+        coefficients.p, coefficients.i, coefficients.d, coefficients.f * 12 / voltage
     ));
   }
 

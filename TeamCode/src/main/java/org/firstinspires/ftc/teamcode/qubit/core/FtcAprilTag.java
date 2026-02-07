@@ -288,6 +288,7 @@ public class FtcAprilTag extends FtcSubSystemBase {
     if (aprilTagServo != null) {
       // Move the servo for correct initialization.
       aprilTagServo.setPosition(Servo.MIN_POSITION);
+      FtcUtils.sleep(1);
       aprilTagServo.setPosition(GOAL_POSITION);
     }
 

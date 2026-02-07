@@ -2,26 +2,33 @@ package org.firstinspires.ftc.teamcode.qubit.testOps;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.qubit.core.Field.FtcField;
+import org.firstinspires.ftc.teamcode.qubit.core.CannonControlData;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcCannon;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcLogger;
+import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
 @Disabled
 @TeleOp(group = "TestOp")
+/// Set the robot at blue goal. Initialize autoOp and then stop it.
+/// Then init and start CannonVelTeleOp.
 public class CannonVelTeleOp extends OpMode {
   ElapsedTime runtime = null;
   ElapsedTime loopTime = null;
   double expectedVelocity;
   final double largeDelta = 100;
   final double smallDelta = 20;
+
+  double hoodPosition;
   BaseBot robot;
 
   /*
@@ -37,9 +44,8 @@ public class CannonVelTeleOp extends OpMode {
     telemetry.update();
     robot = BaseBot.getBot();
     robot.init(hardwareMap, telemetry, false);
+    robot.bulkRead.setCachingMode(LynxModule.BulkCachingMode.AUTO);
     robot.enableTelemetry();
-
-    robot.localizer.setStartingPose(FtcField.blueGoalStartPose);
     FtcLogger.exit();
   }
 
@@ -66,6 +72,7 @@ public class CannonVelTeleOp extends OpMode {
     robot.start();
     robot.sorter.setStraight(false);
     expectedVelocity = FtcCannon.MIN_VELOCITY;
+    hoodPosition = robot.cannon.getHoodPosition();
     FtcLogger.exit();
   }
 
@@ -80,8 +87,12 @@ public class CannonVelTeleOp extends OpMode {
 
     telemetry.addData("dPad up/down", "Large (%.0f) vel +/-", largeDelta);
     telemetry.addData("dPad left/right", "Small (%.0f) vel +/-", smallDelta);
+    telemetry.addData("x/b", "left/right trigger");
+    telemetry.addData("y/a", "hood raise/lower");
     telemetry.addLine();
-    if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
+
+    // cannon
+    if (gamepad1.shareWasPressed() || gamepad2.shareWasPressed()) {
       expectedVelocity = 0;
     } else if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) {
       expectedVelocity += largeDelta;
@@ -96,6 +107,7 @@ public class CannonVelTeleOp extends OpMode {
     expectedVelocity = Range.clip(expectedVelocity, FtcCannon.MIN_VELOCITY, FtcCannon.MAX_VELOCITY);
     robot.cannon.setVelocity(expectedVelocity, false);
 
+    // triggers
     if (gamepad1.xWasPressed()) {
       robot.cannon.leftTriggerServo.setPosition(FtcCannon.LEFT_TRIGGER_UP_POSITION);
     } else if (gamepad1.xWasReleased()) {
@@ -106,13 +118,26 @@ public class CannonVelTeleOp extends OpMode {
       robot.cannon.rightTriggerServo.setPosition(FtcCannon.RIGHT_TRIGGER_DOWN_POSITION);
     }
 
-    telemetry.addData("Power", "%.2f", robot.cannon.getPower());
-    telemetry.addData("Velocity", "expected %.0f, actual %.0f",
-        expectedVelocity, robot.cannon.getVelocity());
-    telemetry.addData("Localizer distance", "%.1f", robot.localizer.getGoalDistance());
+    // hood
+    if (gamepad1.y) {
+      hoodPosition += FtcServo.LARGE_INCREMENT;
+    } else if (gamepad1.a) {
+      hoodPosition -= FtcServo.LARGE_INCREMENT;
+    }
 
-    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
-        loopTime.milliseconds(), runtime.seconds());
+    hoodPosition = Range.clip(hoodPosition, CannonControlData.HOOD_MIN_POSITION, CannonControlData.HOOD_MAX_POSITION);
+    robot.cannon.setHoodPosition(hoodPosition);
+
+    Pose robotPose = robot.localizer.getRobotPose();
+    telemetry.addData("robotPose", "x %.1f y %.1f heading %.1f",
+        robotPose.getX(), robotPose.getY(), Math.toDegrees(robotPose.getHeading()));
+    telemetry.addData("Goal distance", "%.1f", robot.localizer.getGoalDistance());
+    telemetry.addData("Velocity", "expected %.0f, actual %.0f %.0f", expectedVelocity,
+        robot.cannon.leftCannonMotor.getVelocity(),
+        robot.cannon.rightCannonMotor.getVelocity());
+    telemetry.addData("Hood", "%.4f", hoodPosition);
+
+    telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds", loopTime.milliseconds(), runtime.seconds());
     telemetry.update();
     FtcLogger.exit();
   }

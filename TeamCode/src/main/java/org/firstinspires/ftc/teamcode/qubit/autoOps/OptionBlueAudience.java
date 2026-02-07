@@ -5,7 +5,6 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -18,18 +17,6 @@ import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
  * A class to implement autonomous objective
  */
 public class OptionBlueAudience extends OptionBase {
-  public Pose scorePose = new Pose(-56, 16, FtcField.RADIAN22);
-  public Pose pickup3Pose = new Pose(-33, 60.5, FtcField.RADIAN90);
-  public Pose pickup3ControlPose = new Pose(-33, 24.5, FtcField.RADIAN90);
-  public Pose pickupLandingZonePose = new Pose(-57.5, 62, FtcField.RADIAN180);
-  public Pose pickupLandingZoneControlPose = new Pose(-41, 53, FtcField.RADIAN135);
-  public Pose leavePose = new Pose(-62, 39, FtcField.RADIAN0);
-
-  PathChain scorePreloadPath,
-      pickup3Path, score3Path,
-      pickupLandingZone1Path, pickupLandingZone2Path, scoreLandingZonePath,
-      leavePath;
-
   public static class Params {
     public boolean executeTrajectories = true, executeRobotActions = true;
     public boolean deliverPreloaded = true,
@@ -43,9 +30,18 @@ public class OptionBlueAudience extends OptionBase {
     startPose = FtcField.blueAudienceStartPose;
     follower.setStartingPose(startPose);
     ccd = CannonControlData.getClosestData(CannonControlData.AUDIENCE_DISTANCE);
+
+    scorePose = new Pose(-56, 16, FtcField.RADIAN22);
+    pickup3Pose = new Pose(-33, 60.5, FtcField.RADIAN90);
+    pickup3ControlPose = new Pose(-33, 24.5, FtcField.RADIAN90);
+    pickupLandingZonePose = new Pose(-57.5, 62, -FtcField.RADIAN135);
+    pickupLandingZoneControlPose = new Pose(-41, 57, FtcField.RADIAN135);
+    leavePose = new Pose(-62, 39, FtcField.RADIAN0);
   }
 
   public OptionBlueAudience init() {
+    if (PARAMS.executeRobotActions) robot.cannon.setHoodPosition(ccd);
+
     // preloaded artifacts
     scorePreloadPath = follower.pathBuilder()
         .addPath(new BezierLine(startPose, scorePose))
@@ -136,35 +132,43 @@ public class OptionBlueAudience extends OptionBase {
    */
   public void execute(ElapsedTime runtime) {
     FtcLogger.enter();
-
     if (!saveAndTest(false)) return;
 
     // Deliver preloaded
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, scoreMaxPower, true, 3000);
-      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
-      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
-      if (PARAMS.executeRobotActions)
+      if (PARAMS.executeRobotActions) {
+        robot.cannon.setVelocity(ccd.velocity, true);
+        robot.cannon.setVelocity(ccd.velocity, true);
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      }
     }
 
     // Deliver third trow
     if (!saveAndTest(false)) return;
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
-      if (PARAMS.executeTrajectories) runFollower(pickup3Path, pickupMaxPower, true, 3000);
-      if (PARAMS.executeTrajectories) runFollower(score3Path, scoreMaxPower, true, 3000);
-      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
-      if (PARAMS.executeRobotActions)
-        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      if (PARAMS.executeTrajectories) {
+        runFollower(pickup3Path, pickupMaxPower, true, 3000);
+        runFollower(score3Path, scoreMaxPower, true, 3000);
+      }
 
-      if (PARAMS.executeTrajectories)
-        runFollower(pickupLandingZone1Path, pickupMaxPower, true, 3000);
-      if (PARAMS.executeTrajectories)
-        runFollower(pickupLandingZone2Path, pickupMaxPower, false, 3000);
-      if (PARAMS.executeTrajectories) runFollower(scoreLandingZonePath, scoreMaxPower, true, 3000);
-      if (PARAMS.executeRobotActions) robot.cannon.setVelocity(ccd.velocity, true);
-      if (PARAMS.executeRobotActions)
+      if (PARAMS.executeRobotActions) {
+        robot.cannon.setVelocity(ccd.velocity, true);
+        robot.cannon.setVelocity(ccd.velocity, true);
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      }
+
+      if (PARAMS.executeTrajectories) {
+        runFollower(pickupLandingZone1Path, pickupMaxPower, true, 3000);
+        runFollower(pickupLandingZone2Path, pickupMaxPower, false, 3000);
+        runFollower(scoreLandingZonePath, scoreMaxPower, true, 3000);
+      }
+
+      if (PARAMS.executeRobotActions) {
+        robot.cannon.setVelocity(ccd.velocity, true);
+        robot.cannon.setVelocity(ccd.velocity, true);
+        robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      }
     }
 
     // Leave

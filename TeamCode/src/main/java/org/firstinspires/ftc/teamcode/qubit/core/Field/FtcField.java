@@ -39,10 +39,10 @@ public class FtcField {
 
   public static final Triangle goalLaunchTriangle = new Triangle(
       new Pose(62, 62, RADIAN0),
-      new Pose(0, 0, RADIAN0),
+      new Pose(-12, 0, RADIAN0),
       new Pose(62, -62, RADIAN0));
   public static final Triangle audienceLaunchTriangle = new Triangle(
-      new Pose(-62, 23.5, RADIAN0),
-      new Pose(-43, 0, RADIAN0),
-      new Pose(-62, -23.5, RADIAN0));
+      new Pose(-62, 36, RADIAN0),
+      new Pose(-36, 0, RADIAN0),
+      new Pose(-62, -36, RADIAN0));
 }
