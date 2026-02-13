@@ -5,9 +5,10 @@
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
             <goBILDA5202SeriesMotor name="rightFrontMotor" port="0" />
-            <goBILDA5202SeriesMotor name="rightRearMotor" port="1" />
-            <goBILDA5202SeriesMotor name="rightCannonMotor" port="2" />
-            <!-- Port 3 on expansion has busted encoder. Don't use it for anything that requires encoders. -->
+            <!-- Port 2, 3 on expansion has busted encoder ports.
+            Don't use them for anything that requires encoders. -->
+            <goBILDA5202SeriesMotor name="leftRearMotor" port="1" />
+            <goBILDA5202SeriesMotor name="rightRearMotor" port="2" />
             <goBILDA5202SeriesMotor name="rightIntakeMotor" port="3" />
             <Servo name="rightTriggerServo" port="0" />
             <Servo name="aprilTagServo" port="2" />
@@ -17,7 +18,7 @@
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <goBILDA5202SeriesMotor name="leftFrontMotor" port="0" />
-            <goBILDA5202SeriesMotor name="leftRearMotor" port="1" />
+            <goBILDA5202SeriesMotor name="rightCannonMotor" port="1" />
             <goBILDA5202SeriesMotor name="leftIntakeMotor" port="2" />
             <goBILDA5202SeriesMotor name="leftCannonMotor" port="3" />
             <Servo name="leftTriggerServo" port="0" />

@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.qubit.core.FtcServo;
 import org.firstinspires.ftc.teamcode.qubit.core.FtcUtils;
 import org.firstinspires.ftc.teamcode.qubit.core.TrollBots.BaseBot;
 
-@Disabled
+//@Disabled
 @TeleOp(group = "TestOp")
 /// Set the robot at blue goal. Initialize autoOp and then stop it.
 /// Then init and start CannonVelTeleOp.

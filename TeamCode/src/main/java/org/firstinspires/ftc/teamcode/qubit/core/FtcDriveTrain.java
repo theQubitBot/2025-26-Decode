@@ -252,7 +252,8 @@ public class FtcDriveTrain extends FtcSubSystemBase {
     // Handle precision drive mode
     if (gamePad1.dpadLeftWasPressed()) {
       // set global precision drive variable
-      precisionDriveMode = true;
+      // Lucas wants slo mode disabled as it gets in the way
+      precisionDriveMode = false;
     } else if (gamePad1.dpadRightWasPressed()) {
       // set global precision drive variable
       precisionDriveMode = false;
