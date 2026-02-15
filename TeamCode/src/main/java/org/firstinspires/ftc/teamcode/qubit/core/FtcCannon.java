@@ -52,10 +52,12 @@ public class FtcCannon extends FtcSubSystemBase {
   public FtcMotor leftCannonMotor = null, rightCannonMotor = null;
   public FtcServo leftTriggerServo = null, rightTriggerServo = null;
   public FtcServo leftHoodServo = null, rightHoodServo = null;
+  private Deadline sorterMoveDeadline;
 
   /* Constructor */
   public FtcCannon(BaseBot robot) {
     parent = robot;
+    sorterMoveDeadline = new Deadline(FtcSorter.SORTER_SERVO_MOVE_TIME, TimeUnit.MILLISECONDS);
   }
 
   private void coast() {
@@ -265,13 +267,21 @@ public class FtcCannon extends FtcSubSystemBase {
     if (leftTriggerServo != null) {
       if (gamePad1.xWasPressed() || gamePad2.xWasPressed()) {
         if (parent != null && parent.sorter != null) {
-          parent.sorter.setGreen(false);
+          parent.sorter.pushGreen(false);
+          sorterMoveDeadline.reset();
         }
 
         leftTriggerServo.setPosition(LEFT_TRIGGER_UP_POSITION);
+      } else if(gamePad1.x || gamePad2.x){
+        if(sorterMoveDeadline.hasExpired()){
+          if (parent != null && parent.sorter != null) {
+            parent.sorter.setStraight(false);
+          }
+        }
       } else if (gamePad1.xWasReleased() || gamePad2.xWasReleased()) {
         if (parent != null && parent.sorter != null) {
           parent.sorter.setStraight(false);
+          sorterMoveDeadline.expire();
         }
 
         leftTriggerServo.setPosition(LEFT_TRIGGER_DOWN_POSITION);
@@ -281,13 +291,21 @@ public class FtcCannon extends FtcSubSystemBase {
     if (rightTriggerServo != null) {
       if (gamePad1.bWasPressed() || gamePad2.bWasPressed()) {
         if (parent != null && parent.sorter != null) {
-          parent.sorter.setPurple(false);
+          parent.sorter.pushPurple(false);
+          sorterMoveDeadline.reset();
         }
 
         rightTriggerServo.setPosition(RIGHT_TRIGGER_UP_POSITION);
+      } else if(gamePad1.b || gamePad2.b){
+        if(sorterMoveDeadline.hasExpired()){
+          if (parent != null && parent.sorter != null) {
+            parent.sorter.setStraight(false);
+          }
+        }
       } else if (gamePad1.bWasReleased() || gamePad2.bWasReleased()) {
         if (parent != null && parent.sorter != null) {
           parent.sorter.setStraight(false);
+          sorterMoveDeadline.expire();
         }
 
         rightTriggerServo.setPosition(RIGHT_TRIGGER_DOWN_POSITION);
