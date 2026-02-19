@@ -41,9 +41,9 @@ public class FtcCannon extends FtcSubSystemBase {
   private static final int TRIGGER_MOVE_DOWN_TIME = 350; // milliseconds
   public static double MIN_VELOCITY = CANNON_ZERO_VELOCITY;
   public static double MAX_VELOCITY = 1700.0;
-  public static final double FIRING_VELOCITY_MARGIN = 25;
+  public static final double FIRING_VELOCITY_MARGIN = 20;
   public static final double ACHIEVABLE_MAX_RPM_FRACTION = 1.0;
-  private static final PIDFCoefficients CANNON_VELOCITY_PIDF = new PIDFCoefficients(60, 0.25, 2, 13.0);
+  private static final PIDFCoefficients CANNON_VELOCITY_PIDF = new PIDFCoefficients(80, 0, 1, 13.0);
 
   public boolean telemetryEnabled = true;
   private Telemetry telemetry = null;
