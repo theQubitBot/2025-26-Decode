@@ -6,13 +6,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
 public class MotorVelocityController {
   public static double MOTOR_TICKS_PER_REV = 28;
-  public static double MOTOR_MAX_RPM = 1440 * 60 / MOTOR_TICKS_PER_REV;
-  public static double MOTOR_TEST_RPM1 = 1080 * 60 / MOTOR_TICKS_PER_REV;
-  public static double MOTOR_TEST_RPM2 = 400 * 60 / MOTOR_TICKS_PER_REV;
+
+  // Motor velocity seems to be in multiples of 20.
+  // Keep target velocity off by 10 to see if oscillations average out.
+  public static double MOTOR_MAX_RPM = 1450 * 60 / MOTOR_TICKS_PER_REV;
+  public static double MOTOR_TEST_RPM1 = 1090 * 60 / MOTOR_TICKS_PER_REV;
+  public static double MOTOR_TEST_RPM2 = 410 * 60 / MOTOR_TICKS_PER_REV;
   public static double MOTOR_GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
 
   public static double TESTING_MAX_RPM = MOTOR_MAX_RPM;
-  public static double TESTING_MIN_RPM = 200 * 60 / MOTOR_TICKS_PER_REV;
+  public static double TESTING_MIN_RPM = 210 * 60 / MOTOR_TICKS_PER_REV;
 
   // These are prefixed with "STATE1", "STATE2", etc. because Dashboard displays variables in
   // alphabetical order. Thus, we preserve the actual order of the process
@@ -49,10 +52,12 @@ public class MotorVelocityController {
   }
 
   public double getTargetVelocity() {
+    double progress;
+    double target;
     if (currentState == State.RAMPING_UP) {
       if (stateTimer.seconds() <= ZSTATE1_RAMPING_UP_DURATION) {
-        double progress = stateTimer.seconds() / ZSTATE1_RAMPING_UP_DURATION;
-        double target = progress * (TESTING_MAX_RPM - TESTING_MIN_RPM) + TESTING_MIN_RPM;
+        progress = stateTimer.seconds() / ZSTATE1_RAMPING_UP_DURATION;
+        target = progress * (TESTING_MAX_RPM - TESTING_MIN_RPM) + TESTING_MIN_RPM;
         targetVelocity = rpmToTicksPerSecond(target);
       } else {
         currentState = State.COASTING_1;
@@ -67,8 +72,8 @@ public class MotorVelocityController {
       }
     } else if (currentState == State.RAMPING_DOWN) {
       if (stateTimer.seconds() <= ZSTATE3_RAMPING_DOWN_DURATION) {
-        double progress = stateTimer.seconds() / ZSTATE3_RAMPING_DOWN_DURATION;
-        double target = TESTING_MAX_RPM - progress * (TESTING_MAX_RPM - TESTING_MIN_RPM);
+        progress = stateTimer.seconds() / ZSTATE3_RAMPING_DOWN_DURATION;
+        target = TESTING_MAX_RPM - progress * (TESTING_MAX_RPM - TESTING_MIN_RPM);
         targetVelocity = rpmToTicksPerSecond(target);
       } else {
         currentState = State.COASTING_2;
