@@ -171,15 +171,7 @@ public class OptionRedGoal extends OptionBase {
 
     gatePath = follower.pathBuilder()
         .addPath(new BezierCurve(pickup3Pose, pickup3ControlPose, gatePose))
-        .setHeadingInterpolation(HeadingInterpolator.piecewise(
-                new HeadingInterpolator.PiecewiseNode(
-                    0, .45, HeadingInterpolator.linear(pickup3Pose.getHeading(), gatePose.getHeading())
-                ),
-                new HeadingInterpolator.PiecewiseNode(
-                    .46, 1, HeadingInterpolator.constant(gatePose.getHeading())
-                )
-            )
-        )
+        .setLinearHeadingInterpolation(pickup3Pose.getHeading(), gatePose.getHeading())
         .build();
 
     // leave
@@ -199,6 +191,7 @@ public class OptionRedGoal extends OptionBase {
 
     // Deliver preloaded artifacts
     if (!saveAndTest(false)) return;
+    if (PARAMS.executeRobotActions) robot.cannon.setHoodPosition(ccd);
 
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, scoreMaxPower, true, 3000);
@@ -211,8 +204,8 @@ public class OptionRedGoal extends OptionBase {
     if (!saveAndTest(false)) return;
     if (PARAMS.deliver1) {
       if (PARAMS.executeTrajectories) {
-        runFollower(pickup1Path, pickupMaxPower, true, 3000);
-        runFollower(score1Path, scoreMaxPower, true, 3000);
+        runFollower(pickup1Path, pickupMaxPower, true, 3200);
+        runFollower(score1Path, scoreMaxPower, true, 3200);
       }
 
       if (PARAMS.executeRobotActions)
@@ -223,8 +216,8 @@ public class OptionRedGoal extends OptionBase {
     if (!saveAndTest(false)) return;
     if (PARAMS.deliver2 && robot.config.deliverSecondRow) {
       if (PARAMS.executeTrajectories) {
-        runFollower(pickup2Path, pickupMaxPower, true, 3000);
-        runFollower(score2Path, scoreMaxPower, false, 3000);
+        runFollower(pickup2Path, pickupMaxPower, true, 3500);
+        runFollower(score2Path, scoreMaxPower, false, 3500);
       }
 
       if (PARAMS.executeRobotActions)
@@ -235,8 +228,8 @@ public class OptionRedGoal extends OptionBase {
     if (!saveAndTest(false)) return;
     if (PARAMS.deliver3 && robot.config.deliverThirdRow) {
       if (PARAMS.executeTrajectories) {
-        runFollower(pickup3Path, pickupMaxPower, true, 3000);
-        runFollower(gatePath, scoreMaxPower, true, 3000);
+        runFollower(pickup3Path, pickupMaxPower, true, 3500);
+        runFollower(gatePath, scoreMaxPower, true, 3500);
       }
 
       // Not enough time to shoot.

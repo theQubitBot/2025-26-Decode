@@ -98,6 +98,7 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     }
 
     follower = Constants.createFollower(hardwareMap);
+    follower.setMaxPower(1.0); // override any autoOp set max power.
     setStartingPose(startingPose);
     FtcLogger.exit();
   }

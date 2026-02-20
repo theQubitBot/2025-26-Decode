@@ -38,7 +38,8 @@ public class OptionBase {
       pickup1Path, score1Path,
       pickup2Path, score2Path,
       pickup3Path, score3Path,
-      pickupLandingZone1Path, pickupLandingZone2Path, scoreLandingZonePath;
+      pickupLandingZone1Path, pickupLandingZone2Path, pickupLandingZoneRotatePath,
+      scoreLandingZonePath;
   protected Runnable intakeSpinIn, intakeSpinHold,
       sorterGreen, sorterPurple, sorterStraight,
       sorterPushGreen, sorterPushPurple, cannonIdle;
@@ -79,6 +80,23 @@ public class OptionBase {
     FtcLogger.enter();
     ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     follower.followPath(pathChain, maxPower, holdEnd);
+    if (timeout < 0) timeout = 5000; // a reasonable timeout for the path
+    Deadline d = new Deadline(timeout, TimeUnit.MILLISECONDS);
+    do {
+      follower.update();
+    } while (autoOpMode.opModeIsActive() && !d.hasExpired() && follower.isBusy());
+    if (follower.isBusy()) follower.breakFollowing();
+    String message = String.format(Locale.US, "execution: %.0f ms", runtime.milliseconds());
+    FtcLogger.info(FtcUtils.TAG, message);
+    autoOpMode.telemetry.addData(FtcUtils.TAG, message);
+    autoOpMode.telemetry.update();
+    FtcLogger.exit();
+  }
+
+  public void turnTo(double radians, long timeout) {
+    FtcLogger.enter();
+    ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    follower.turnTo(radians);
     if (timeout < 0) timeout = 5000; // a reasonable timeout for the path
     Deadline d = new Deadline(timeout, TimeUnit.MILLISECONDS);
     do {

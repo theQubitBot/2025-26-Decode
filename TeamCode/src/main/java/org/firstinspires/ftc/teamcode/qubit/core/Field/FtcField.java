@@ -25,6 +25,7 @@ public class FtcField {
   public static final double RADIAN133 = Math.toRadians(133);
   public static final double RADIAN135 = Math.toRadians(135);
   public static final double RADIAN150 = Math.toRadians(150);
+  public static final double RADIAN170 = Math.toRadians(170);
   public static final double RADIAN180 = Math.toRadians(179.9999); // Force robot to turn anti clockwise (looking down from above)
   public static final double RADIAN345 = Math.toRadians(345);
   public static final Pose origin = new Pose(0, 0, RADIAN0);

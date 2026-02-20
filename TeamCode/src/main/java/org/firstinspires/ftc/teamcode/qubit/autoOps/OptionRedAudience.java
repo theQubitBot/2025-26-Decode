@@ -34,8 +34,7 @@ public class OptionRedAudience extends OptionBase {
     scorePose = new Pose(-56, -16, -FtcField.RADIAN22);
     pickup3Pose = new Pose(-33, -60.5, -FtcField.RADIAN90);
     pickup3ControlPose = new Pose(-33, -24.5, -FtcField.RADIAN90);
-    pickupLandingZonePose = new Pose(-57.5, -62, -FtcField.RADIAN180);
-    pickupLandingZoneControlPose = new Pose(-41, -53, -FtcField.RADIAN135);
+    pickupLandingZonePose = new Pose(-56, -62, -FtcField.RADIAN90);
     leavePose = new Pose(-62, -39, FtcField.RADIAN0);
   }
 
@@ -68,10 +67,10 @@ public class OptionRedAudience extends OptionBase {
             )
         )
         .addTemporalCallback(1, () -> {
-          if (PARAMS.executeRobotActions) sorterGreen.run();
+          if (PARAMS.executeRobotActions) intakeSpinIn.run();
         })
         .addTemporalCallback(2, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinIn.run();
+          if (PARAMS.executeRobotActions) sorterGreen.run();
         })
         .build();
 
@@ -90,18 +89,13 @@ public class OptionRedAudience extends OptionBase {
         .build();
 
     pickupLandingZone1Path = follower.pathBuilder()
-        .addPath(new BezierLine(scorePose, pickupLandingZoneControlPose))
-        .setLinearHeadingInterpolation(scorePose.getHeading(), pickupLandingZoneControlPose.getHeading())
-        .build();
-
-    pickupLandingZone2Path = follower.pathBuilder()
-        .addPath(new BezierLine(pickupLandingZoneControlPose, pickupLandingZonePose))
-        .setLinearHeadingInterpolation(pickupLandingZoneControlPose.getHeading(), pickupLandingZonePose.getHeading())
+        .addPath(new BezierLine(scorePose, pickupLandingZonePose))
+        .setLinearHeadingInterpolation(scorePose.getHeading(), pickupLandingZonePose.getHeading())
         .addTemporalCallback(1, () -> {
-          if (PARAMS.executeRobotActions) sorterPurple.run();
+          if (PARAMS.executeRobotActions) intakeSpinIn.run();
         })
         .addTemporalCallback(2, () -> {
-          if (PARAMS.executeRobotActions) intakeSpinIn.run();
+          if (PARAMS.executeRobotActions) sorterPurple.run();
         })
         .build();
 
@@ -133,13 +127,14 @@ public class OptionRedAudience extends OptionBase {
    */
   public void execute(ElapsedTime runtime) {
     FtcLogger.enter();
-
     if (!saveAndTest(false)) return;
+    if (PARAMS.executeRobotActions) robot.cannon.setHoodPosition(ccd);
 
     // Deliver preloaded
     if (PARAMS.deliverPreloaded) {
       if (PARAMS.executeTrajectories) runFollower(scorePreloadPath, scoreMaxPower, true, 3000);
       if (PARAMS.executeRobotActions) {
+        robot.cannon.setVelocity(ccd.velocity, true);
         robot.cannon.setVelocity(ccd.velocity, true);
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
       }
@@ -153,17 +148,36 @@ public class OptionRedAudience extends OptionBase {
         runFollower(score3Path, scoreMaxPower, true, 3000);
       }
 
-      if (PARAMS.executeRobotActions)
+      if (PARAMS.executeRobotActions) {
+        robot.cannon.setVelocity(ccd.velocity, true);
+        robot.cannon.setVelocity(ccd.velocity, true);
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
-
+      }
+    } else {
       if (PARAMS.executeTrajectories) {
         runFollower(pickupLandingZone1Path, pickupMaxPower, true, 3000);
-        runFollower(pickupLandingZone2Path, pickupMaxPower, false, 3000);
+        turnTo(-FtcField.RADIAN170, 2000);
         runFollower(scoreLandingZonePath, scoreMaxPower, true, 3000);
       }
-      
-      if (PARAMS.executeRobotActions)
+
+      if (PARAMS.executeRobotActions) {
+        robot.cannon.setVelocity(ccd.velocity, true);
+        robot.cannon.setVelocity(ccd.velocity, true);
         robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
+      }
+    }
+
+    // Landing zone
+    if (PARAMS.executeTrajectories) {
+      runFollower(pickupLandingZone1Path, pickupMaxPower, true, 3000);
+      turnTo(-FtcField.RADIAN170, 2000);
+      runFollower(scoreLandingZonePath, scoreMaxPower, true, 3000);
+    }
+
+    if (PARAMS.executeRobotActions) {
+      robot.cannon.setVelocity(ccd.velocity, true);
+      robot.cannon.setVelocity(ccd.velocity, true);
+      robot.cannon.fire(ccd, robot.config.obeliskTagEnum, autoOpMode);
     }
 
     // Leave
