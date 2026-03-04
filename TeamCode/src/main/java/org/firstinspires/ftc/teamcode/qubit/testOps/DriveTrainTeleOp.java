@@ -89,8 +89,9 @@ public class DriveTrainTeleOp extends OpMode {
 
     robot.bulkRead.clearBulkCache();
     robot.driveTrain.operate(gamepad1, gamepad2, lastLoopTime, runtime);
-    robot.driveTrain.showTelemetry();
-    robot.showGamePadTelemetry(gamepad1);
+    //robot.driveTrain.showTelemetry();
+    //robot.showGamePadTelemetry(gamepad1);
+    robot.localizer.showTelemetry();
     telemetry.addData(FtcUtils.TAG, "Loop %.0f ms, cumulative %.0f seconds",
         lastLoopTime, runtime.seconds());
     telemetry.update();

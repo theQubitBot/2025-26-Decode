@@ -22,7 +22,7 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
 
   // Start with LED strip being off.
   private BlinkinPattern currentPattern = RevBlinkinLedDriver.BlinkinPattern.BLACK;
-  private BlinkinPattern parkingPattern;
+  private BlinkinPattern parkingPattern, resetPattern;
   private Telemetry telemetry;
   private final BaseBot parent;
 
@@ -43,11 +43,13 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
       blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, BLINKIN_NAME);
       set(currentPattern);
 
-      if (parent.config != null) {
+      if (parent != null && parent.config != null) {
         if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
           parkingPattern = BlinkinPattern.HEARTBEAT_BLUE;
+          resetPattern = BlinkinPattern.SHOT_BLUE;
         } else {
           parkingPattern = BlinkinPattern.HEARTBEAT_RED;
+          resetPattern = BlinkinPattern.SHOT_RED;
         }
       } else {
         parkingPattern = BlinkinPattern.HEARTBEAT_WHITE;
@@ -90,6 +92,8 @@ public class FtcBlinkinLed extends FtcSubSystemBase {
       checkCannonReadyAndIndicate(CannonControlData.AUDIENCE_DISTANCE);
     } else if (gamePad1.right_trigger >= FtcUtils.TRIGGER_THRESHOLD || gamePad2.right_trigger >= FtcUtils.TRIGGER_THRESHOLD) {
       checkCannonReadyAndIndicate(CannonControlData.GOAL_SWEET_SPOT_DISTANCE);
+    } else if (gamePad1.options || gamePad2.options) {
+      set(resetPattern);
     } else if (FtcUtils.lastNSeconds(runtime, FtcUtils.ENDGAME_PARK_WARNING_SECONDS)) {
       set(parkingPattern);
     } else if (parent.localizer != null && parent.localizer.robotInLaunchZone() &&

@@ -33,10 +33,15 @@ public class FtcField {
   public static final Pose blueGoalStartPose = new Pose(52, 49, RADIAN45);
   public static final Pose blueAudienceStartPose = new Pose(-62.5, 16, RADIAN0);
   public static final Pose blueParkingPose = new Pose(-36.5, -35.5, RADIAN90);
+  public static final Pose blueGoalResetPose = new Pose(61, 6.5, RADIAN90);
+  public static final Pose blueAudienceResetPose = new Pose(-65, 6.5, RADIAN90);
+
   public static final Pose redGoalPose = new Pose(62.5, -62.5, -RADIAN45);
   public static final Pose redGoalStartPose = new Pose(52, -49, -RADIAN45);
   public static final Pose redAudienceStartPose = new Pose(-62.5, -16, RADIAN0);
   public static final Pose redParkingPose = new Pose(-36.5, 35.5, -RADIAN90);
+  public static final Pose redGoalResetPose = new Pose(61, -6.5, -RADIAN90);
+  public static final Pose redAudienceResetPose = new Pose(-65, -6.5, -RADIAN90);
 
   public static final Triangle goalLaunchTriangle = new Triangle(
       new Pose(62, 62, RADIAN0),

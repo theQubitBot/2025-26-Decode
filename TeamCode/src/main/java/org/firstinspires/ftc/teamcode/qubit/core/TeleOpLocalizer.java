@@ -4,6 +4,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
+import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -22,12 +23,13 @@ import org.firstinspires.ftc.teamcode.qubit.core.enumerations.AllianceColorEnum;
 public class TeleOpLocalizer extends FtcSubSystemBase {
   private static final String TAG = "TeleOpLocalizer";
   private Follower follower;
-  private Pose startingPose;
-  private Pose parkingPose;
-  private Pose tagPose;
-
+  private Pose startingPose, parkingPose, goalPose, resetAudiencePose, resetGoalPose;
+  private TeleOpLocalizerAsyncUpdater asyncUpdater = null;
+  private Thread asyncUpdaterThread = null;
+  private final Object savePositionLock = new Object();
+  private final Object followerLock = new Object();
+  private final double simTimeMs = 500;
   public boolean telemetryEnabled = true;
-  private Telemetry telemetry = null;
   private final BaseBot parent;
 
   /* Constructor */
@@ -42,9 +44,13 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
    * @return Distance to the goal (in inches).
    */
   public double getGoalDistance() {
-    follower.updatePose();
-    Pose robotPose = follower.getPose();
-    return robotPose.distanceFrom(tagPose);
+    updateFollower();
+    Pose robotPose;
+    synchronized (followerLock) {
+      robotPose = follower.getPose();
+    }
+
+    return robotPose.distanceFrom(goalPose);
   }
 
   /**
@@ -53,9 +59,40 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
    * @return Goal heading in radians.
    */
   public double getGoalHeading() {
-    follower.updatePose();
-    Pose robotPose = follower.getPose();
-    return Math.atan2(tagPose.getY() - robotPose.getY(), tagPose.getX() - robotPose.getX());
+    updateFollower();
+    Pose robotPose;
+    synchronized (followerLock) {
+      robotPose = follower.getPose();
+    }
+
+    return Math.atan2(goalPose.getY() - robotPose.getY(), goalPose.getX() - robotPose.getX());
+  }
+
+  public double getGoalHeadingInMotion() {
+    updateFollower();
+    double uX, uY, aX, aY;
+    synchronized (followerLock) {
+      uX = follower.poseTracker.getVelocity().getXComponent();
+      uY = follower.poseTracker.getVelocity().getYComponent();
+      aX = follower.poseTracker.getAcceleration().getXComponent();
+      aY = follower.poseTracker.getAcceleration().getYComponent();
+    }
+
+    double futureX = uX * simTimeMs + 0.5 * aX * simTimeMs * simTimeMs;
+    double futureY = uY * simTimeMs + 0.5 * aY * simTimeMs * simTimeMs;
+    return Math.atan2(goalPose.getY() - futureY, goalPose.getX() - futureX);
+  }
+
+  public double getRobotHeadingInMotion() {
+    updateFollower();
+    double currentHeading, omega, headingDelta;
+    synchronized (followerLock) {
+      currentHeading = follower.getPose().getHeading();
+      omega = follower.poseTracker.getAngularVelocity();
+    }
+
+    headingDelta = omega * simTimeMs;
+    return currentHeading + headingDelta;
   }
 
   /**
@@ -63,9 +100,14 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
    *
    * @return Robot pose.
    */
-  public Pose getRobotPose(){
-    follower.updatePose();
-    return follower.getPose();
+  public Pose getRobotPose() {
+    updateFollower();
+    Pose robotPose;
+    synchronized (followerLock) {
+      robotPose = follower.getPose();
+    }
+
+    return robotPose;
   }
 
   /**
@@ -77,6 +119,7 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   @Override
   public void init(HardwareMap hardwareMap, Telemetry telemetry, Boolean autoOp) {
     FtcLogger.enter();
+    this.hardwareMap = hardwareMap;
     this.telemetry = telemetry;
 
     // Initializes poses for robot starting position
@@ -86,20 +129,24 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
       // Regardless of robot starting position, parking and goal are fixed.
       if (parent.config.allianceColor == AllianceColorEnum.BLUE) {
         parkingPose = FtcField.blueParkingPose;
-        tagPose = FtcField.blueGoalPose;
+        goalPose = FtcField.blueGoalPose;
+        resetAudiencePose = FtcField.blueAudienceResetPose;
+        resetGoalPose = FtcField.blueGoalResetPose;
       } else {
         parkingPose = FtcField.redParkingPose;
-        tagPose = FtcField.redGoalPose;
+        goalPose = FtcField.redGoalPose;
+        resetAudiencePose = FtcField.redAudienceResetPose;
+        resetGoalPose = FtcField.redGoalResetPose;
       }
     } else {
       startingPose = new Pose(0, 0, 0);
       parkingPose = new Pose(0, 0, 0);
-      tagPose = new Pose(0, 0, 0);
+      goalPose = new Pose(0, 0, 0);
+      resetAudiencePose = new Pose(0, 0, 0);
+      resetGoalPose = new Pose(0, 0, 0);
     }
 
-    follower = Constants.createFollower(hardwareMap);
-    follower.setMaxPower(1.0); // override any autoOp set max power.
-    setStartingPose(startingPose);
+    reset(startingPose);
     FtcLogger.exit();
   }
 
@@ -131,10 +178,7 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     } else if (gamePad1.dpadDownWasReleased() || gamePad2.dpadDownWasReleased()) {
       if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
       parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-    }
-    //  else Nothing to do. Pose will be  updated when needed.
-
-    if (gamePad1.shareWasPressed() || gamePad2.shareWasPressed()) {
+    } else if (gamePad1.shareWasPressed() || gamePad2.shareWasPressed()) {
       if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
       parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
       follower.updatePose();
@@ -149,15 +193,61 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     } else if (gamePad1.shareWasReleased() || gamePad2.shareWasReleased()) {
       if (follower.isBusy() || follower.isTurning()) follower.breakFollowing();
       parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+    } else if (gamePad1.optionsWasPressed()) {
+      reset(resetAudiencePose);
+      gamePad1.rumble(500);
+    } else if (gamePad2.optionsWasPressed()) {
+      reset(resetGoalPose);
+      gamePad2.rumble(500);
     }
+    //  else Nothing to do. Pose will be  updated when needed.
 
     FtcLogger.exit();
   }
 
-  public void setStartingPose(Pose pose) {
-    startingPose = pose;
-    follower.setStartingPose(startingPose);
-    follower.update();
+  public void reset(Pose resetPose) {
+    synchronized (followerLock) {
+      if (follower != null) {
+        // clear previous follower, if any
+        follower.breakFollowing();
+      }
+
+      startingPose = resetPose;
+      follower = Constants.createFollower(hardwareMap);
+      follower.setMaxPower(1.0); // override any autoOp set max power.
+      follower.setStartingPose(startingPose);
+      follower.update();
+      if (parent != null && parent.driveTrain != null) {
+        parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+      }
+    }
+  }
+
+  public boolean robotInLaunchZone() {
+    Pose robotPose = getRobotPose();
+    return FtcField.goalLaunchTriangle.contains(robotPose) ||
+        FtcField.audienceLaunchTriangle.contains(robotPose);
+  }
+
+  public boolean robotPointingAtGoal() {
+    double delta = Math.abs(getRobotPose().getHeading() - getGoalHeading());
+    delta = MathFunctions.normalizeAngle(delta);
+    return FtcUtils.outsideRange(delta, FtcField.RADIAN15, FtcField.RADIAN345);
+  }
+
+  public void savePosition() {
+    if (follower != null) {
+      updateFollower();
+      Pose robotPose = getRobotPose();
+      if (parent != null && parent.config != null) {
+        synchronized (savePositionLock) {
+          parent.config.x = robotPose.getX();
+          parent.config.y = robotPose.getY();
+          parent.config.heading = robotPose.getHeading();
+          parent.config.saveToFile();
+        }
+      }
+    }
   }
 
   /*
@@ -168,8 +258,22 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     FtcLogger.enter();
     if (telemetryEnabled && telemetry != null) {
       Pose robotPose = getRobotPose();
+      Vector robotVelocity, robotAcceleration;
+      double robotAngularVelocity;
+      synchronized (followerLock) {
+        robotVelocity = follower.poseTracker.getVelocity();
+        robotAcceleration = follower.poseTracker.getAcceleration();
+        robotAngularVelocity = follower.poseTracker.getAngularVelocity();
+      }
+
       telemetry.addData("robotPose", "%.1f %.1f %.1f",
           robotPose.getX(), robotPose.getY(), Math.toDegrees(robotPose.getHeading()));
+//      telemetry.addData("robotVelocity", "%.1f %.1f",
+//          robotVelocity.getMagnitude(), Math.toDegrees(robotVelocity.getTheta()));
+//      telemetry.addData("robotAcceleration", "%.1f %.1f",
+//          robotAcceleration.getMagnitude(), Math.toDegrees(robotAcceleration.getTheta()));
+//      telemetry.addData("robotAngularVelocity", "%.1f",
+//          robotAngularVelocity);
       telemetry.addData("Goal distance", "%.1f", getGoalDistance());
       telemetry.addData("Goal heading", "%.1f", Math.toDegrees(getGoalHeading()));
       telemetry.addData("Inside launch", "%b, pointingAtGoal %b",
@@ -188,6 +292,14 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
     FtcLogger.exit();
   }
 
+  private void startAsyncOperations() {
+    asyncUpdater = new TeleOpLocalizerAsyncUpdater(this);
+    asyncUpdaterThread = new Thread(asyncUpdater, TeleOpLocalizerAsyncUpdater.TAG);
+    asyncUpdaterThread.setPriority(Thread.NORM_PRIORITY + 1); // Priority 6 for position updates
+    asyncUpdaterThread.setDaemon(true); // Auto-terminate on shutdown for fast OpMode transitions
+    asyncUpdaterThread.start();
+  }
+
   /**
    * Stops the localizer.
    */
@@ -195,28 +307,42 @@ public class TeleOpLocalizer extends FtcSubSystemBase {
   public void stop() {
     FtcLogger.enter();
     if (follower != null) {
-      follower.breakFollowing();
-      follower.updatePose();
-      Pose robotPose = follower.getPose();
-      parent.config.x = robotPose.getX();
-      parent.config.y = robotPose.getY();
-      parent.config.heading = robotPose.getHeading();
-      parent.config.saveToFile();
+      synchronized (followerLock) {
+        follower.breakFollowing();
+        parent.driveTrain.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+      }
+
+      savePosition();
     }
 
     FtcLogger.exit();
   }
 
-  public boolean robotInLaunchZone() {
-    follower.updatePose();
-    Pose robotPose = follower.getPose();
-    return FtcField.goalLaunchTriangle.contains(robotPose) ||
-        FtcField.audienceLaunchTriangle.contains(robotPose);
+  private void stopAsyncOperations() {
+    // Stop and join existing thread before creating a new one
+    if (asyncUpdater != null) {
+      asyncUpdater.stop();
+
+      // Wait for thread to finish before cleaning up resources
+      if (asyncUpdaterThread != null && asyncUpdaterThread.isAlive()) {
+        try {
+          asyncUpdaterThread.join(6);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      asyncUpdater = null;
+      asyncUpdaterThread = null;
+    }
   }
 
-  public boolean robotPointingAtGoal() {
-    double delta = Math.abs(getRobotPose().getHeading() - getGoalHeading());
-    delta = MathFunctions.normalizeAngle(delta);
-    return FtcUtils.outsideRange(delta, FtcField.RADIAN15, FtcField.RADIAN345);
+  private void updateFollower() {
+    synchronized (followerLock) {
+      if (follower != null) {
+        follower.updatePose();
+        //follower.updateErrorAndVectors();
+      }
+    }
   }
 }
